@@ -1,0 +1,45 @@
+<div class="shell" [class.collapsed]="sidebarCollapsed()">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-icon">✈</span>
+      @if (!sidebarCollapsed()) {
+        <div>
+          <div class="brand-title">One Click Yatra</div>
+          <div class="brand-subtitle">CRM</div>
+        </div>
+      }
+    </div>
+
+    <nav class="nav">
+      @for (item of navItems; track item.route) {
+        <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
+          <span class="nav-icon">{{ item.icon }}</span>
+          @if (!sidebarCollapsed()) {
+            <span class="nav-label">{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button type="button" class="icon-button" (click)="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
+      <input class="search" type="search" placeholder="Search by Lead, Customer, Booking, Invoice…" />
+      <div class="topbar-actions">
+        <span class="icon-button" aria-hidden="true">🔔</span>
+        @if (currentUser(); as user) {
+          <div class="profile">
+            <div class="profile-name">{{ user.fullName }}</div>
+            <div class="profile-role">{{ user.roles[0] }}</div>
+          </div>
+          <button type="button" class="logout-button" (click)="logout()">Logout</button>
+        }
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

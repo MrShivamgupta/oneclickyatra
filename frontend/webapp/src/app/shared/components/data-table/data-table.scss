@@ -1,0 +1,51 @@
+@use '../../styles/index' as tokens;
+
+.table-wrapper {
+  overflow-x: auto;
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: tokens.$font-size-sm;
+}
+
+th {
+  text-align: left;
+  padding: tokens.$space-3 tokens.$space-4;
+  background: tokens.$color-bg;
+  color: tokens.$color-text-secondary;
+  font-weight: tokens.$font-weight-semibold;
+  border-bottom: 1px solid tokens.$color-border;
+  white-space: nowrap;
+}
+
+::ng-deep td {
+  padding: tokens.$space-3 tokens.$space-4;
+  border-bottom: 1px solid tokens.$color-border;
+}
+
+::ng-deep tr:last-child td {
+  border-bottom: none;
+}
+
+.empty-cell {
+  text-align: center;
+  padding: tokens.$space-8;
+  color: tokens.$color-text-secondary;
+}
+
+.skeleton-cell {
+  height: 14px;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-bg;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}

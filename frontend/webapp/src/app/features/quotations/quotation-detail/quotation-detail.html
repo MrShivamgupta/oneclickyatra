@@ -1,0 +1,239 @@
+<div class="page-header">
+  <div>
+    <a routerLink="/admin/quotations" class="back-link">← Back to quotations</a>
+    <h1>{{ isNew() ? 'New Quotation' : (quotation()?.quotationNumber ?? 'Quotation') }}</h1>
+    @if (!isNew() && quotation(); as q) {
+      <p class="subtitle">
+        <span class="badge status" [attr.data-status]="q.status">{{ q.status }}</span>
+        <span>{{ q.title }}</span>
+      </p>
+    }
+  </div>
+  @if (!isNew() && isDeletable) {
+    <button type="button" class="secondary-button danger" (click)="confirmDelete()">Delete Quotation</button>
+  }
+</div>
+
+@if (loading()) {
+  <p>Loading…</p>
+}
+
+<div class="detail-grid">
+  <section class="card">
+    <h2>Basic Info</h2>
+    <form [formGroup]="basicForm" (ngSubmit)="saveBasic()">
+      @if (isNew()) {
+        <label>
+          Lead
+          <select [ngModel]="selectedLeadId()" (ngModelChange)="selectedLeadId.set($event)" [ngModelOptions]="{standalone: true}">
+            <option value="">Select a lead</option>
+            @for (lead of leads(); track lead.id) {
+              <option [value]="lead.id">{{ lead.customerName }} ({{ lead.mobile }})</option>
+            }
+          </select>
+        </label>
+      } @else if (quotation(); as q) {
+        <label>
+          Lead
+          <input type="text" [value]="q.leadCustomerName ?? '—'" disabled />
+        </label>
+      }
+
+      <label>
+        Title
+        <input type="text" formControlName="title" placeholder="e.g. Goa Family Package" [readonly]="!isEditable" />
+      </label>
+
+      <label>
+        Valid until (optional)
+        <input type="date" formControlName="validUntil" [readonly]="!isEditable" />
+      </label>
+
+      <label>
+        Notes for the customer (optional)
+        <textarea formControlName="notes" rows="3" [readonly]="!isEditable"></textarea>
+      </label>
+
+      @if (basicError()) {
+        <div class="form-error">{{ basicError() }}</div>
+      }
+
+      @if (isEditable) {
+        <div class="form-actions">
+          <button type="submit" class="primary-button" [disabled]="basicSaving()">
+            {{ basicSaving() ? 'Saving…' : (isNew() ? 'Create Quotation' : 'Save Changes') }}
+          </button>
+        </div>
+      }
+    </form>
+  </section>
+
+  @if (!isNew() && quotation(); as q) {
+    @if (q.status === 'Approved') {
+      <section class="card">
+        <h2>Approved</h2>
+        <p class="hint">Approved by <strong>{{ q.approvedByName }}</strong> on {{ q.approvedAt | date: 'medium' }}.</p>
+        @if (convertError()) {
+          <div class="form-error">{{ convertError() }}</div>
+        }
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="convertSaving()" (click)="convertToBooking()">
+            {{ convertSaving() ? 'Converting…' : 'Convert to Booking' }}
+          </button>
+        </div>
+      </section>
+    }
+    @if (q.status === 'Converted') {
+      <section class="card">
+        <h2>Converted</h2>
+        <p class="hint">This quotation has already been converted into a booking.</p>
+        <a routerLink="/admin/bookings" class="link-button">View Bookings →</a>
+      </section>
+    }
+    @if (q.status === 'Rejected') {
+      <section class="card">
+        <h2>Rejected</h2>
+        <p class="hint">{{ q.rejectionReason || 'No reason provided.' }}</p>
+      </section>
+    }
+
+    <section class="card">
+      <h2>Send &amp; Share</h2>
+      @if (q.status === 'Draft') {
+        @if (sendError()) {
+          <div class="form-error">{{ sendError() }}</div>
+        }
+        <p class="hint">Add at least one option below, then send this quotation to generate a customer link.</p>
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="sendSaving() || options().length === 0" (click)="send()">
+            {{ sendSaving() ? 'Sending…' : 'Send Quotation' }}
+          </button>
+        </div>
+      } @else {
+        <p class="hint">Regenerate a secure link any time to (re)share this quotation with the customer.</p>
+        <div class="form-actions" style="justify-content: flex-start; gap: 12px; flex-wrap: wrap;">
+          <button type="button" class="secondary-button" [disabled]="linkSaving()" (click)="regenerateLink()">
+            {{ linkSaving() ? 'Generating…' : (lastKnownPublicToken() ? 'Regenerate Link' : 'Generate Share Link') }}
+          </button>
+          <button type="button" class="secondary-button" [disabled]="pdfDownloading()" (click)="downloadPdf()">
+            {{ pdfDownloading() ? 'Preparing PDF…' : 'Download PDF' }}
+          </button>
+        </div>
+        @if (shareUrl; as url) {
+          <div class="share-box">
+            <input type="text" [value]="url" readonly />
+            <button type="button" class="link-button" (click)="copyShareLink()">Copy</button>
+            <a class="link-button" [href]="whatsAppShareUrl()" target="_blank" rel="noopener">Share via WhatsApp</a>
+          </div>
+        }
+      }
+    </section>
+  }
+
+  @if (!isNew()) {
+    <section class="card options-card">
+      <div class="options-header">
+        <h2>Options</h2>
+        @if (isEditable) {
+          <button type="button" class="secondary-button" (click)="addOption()">+ Add Option</button>
+        }
+      </div>
+
+      @if (options().length === 0) {
+        <p class="hint">No options yet. Add at least one package option for the customer to choose from.</p>
+      }
+
+      @for (option of options(); track $index; let optionIndex = $index) {
+        <div class="option-block">
+          <div class="option-block-header">
+            <label class="checkbox-label">
+              <input type="checkbox" [ngModel]="option.isRecommended" (ngModelChange)="option.isRecommended = $event" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" />
+              Recommended
+            </label>
+            @if (isEditable) {
+              <button type="button" class="link-button danger" (click)="removeOption(optionIndex)">Remove option</button>
+            }
+          </div>
+
+          <div class="option-fields">
+            <label>
+              Option name
+              <input type="text" [(ngModel)]="option.optionName" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="e.g. Standard" />
+            </label>
+            <label>
+              Destination
+              <select [(ngModel)]="option.destinationId" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable">
+                <option [ngValue]="null">None</option>
+                @for (destination of destinations(); track destination.id) {
+                  <option [ngValue]="destination.id">{{ destination.name }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              Days
+              <input type="number" min="0" [(ngModel)]="option.durationDays" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" />
+            </label>
+            <label>
+              Nights
+              <input type="number" min="0" [(ngModel)]="option.durationNights" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" />
+            </label>
+            <label>
+              Hotel category
+              <input type="text" [(ngModel)]="option.hotelCategory" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="e.g. 4 Star" />
+            </label>
+            <label>
+              Number of people
+              <input type="number" min="1" [(ngModel)]="option.numberOfPeople" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" />
+            </label>
+            <label>
+              Price per person
+              <input type="number" min="0" [(ngModel)]="option.pricePerPerson" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" />
+            </label>
+            <label>
+              Total (preview)
+              <input type="text" [value]="'Rs. ' + optionTotal(option)" disabled />
+            </label>
+          </div>
+
+          <div class="items-header">
+            <span>Price breakdown (optional)</span>
+            @if (isEditable) {
+              <button type="button" class="link-button" (click)="addItem(optionIndex)">+ Add line item</button>
+            }
+          </div>
+          @for (item of option.items; track $index; let itemIndex = $index) {
+            <div class="item-row">
+              <input type="text" [(ngModel)]="item.description" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="Description, e.g. Hotel stay" />
+              <input type="text" [(ngModel)]="item.category" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="Category" />
+              <input type="number" [(ngModel)]="item.amount" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="Amount" />
+              @if (isEditable) {
+                <button type="button" class="link-button danger" (click)="removeItem(optionIndex, itemIndex)">✕</button>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (optionsError()) {
+        <div class="form-error">{{ optionsError() }}</div>
+      }
+
+      @if (isEditable && options().length > 0) {
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="optionsSaving()" (click)="saveOptions()">
+            {{ optionsSaving() ? 'Saving…' : 'Save Options' }}
+          </button>
+        </div>
+      }
+    </section>
+  }
+</div>
+
+<app-confirmation-dialog
+  [open]="deleteConfirmOpen()"
+  title="Delete quotation?"
+  [message]="'This will permanently remove \'' + (quotation()?.quotationNumber ?? '') + '\'.'"
+  confirmLabel="Delete"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

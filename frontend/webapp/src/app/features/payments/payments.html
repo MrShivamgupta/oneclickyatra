@@ -1,0 +1,30 @@
+<div class="page-header">
+  <div>
+    <h1>Payments</h1>
+    <p class="subtitle">Every payment order created through the gateway, across all bookings.</p>
+  </div>
+</div>
+
+<app-filter-bar placeholder="Search by booking # or customer…" (searchChange)="onSearchChange($event)">
+  <select (change)="onStatusFilterChange($any($event.target).value)">
+    <option value="">All statuses</option>
+    @for (status of statuses; track status) {
+      <option [value]="status">{{ status }}</option>
+    }
+  </select>
+</app-filter-bar>
+
+<app-data-table [columns]="columns" [rows]="payments()" [loading]="loading()" emptyMessage="No payments yet.">
+  <ng-template #rowTemplate let-payment>
+    <tr class="clickable-row" (click)="openBooking(payment)">
+      <td>{{ payment.bookingNumber }}</td>
+      <td>{{ payment.customerName ?? '—' }}</td>
+      <td>Rs. {{ payment.amount | number: '1.0-0' }}</td>
+      <td><span class="badge status" [attr.data-status]="payment.status">{{ payment.status }}</span></td>
+      <td class="hint">{{ payment.gatewayOrderId ?? '—' }}</td>
+      <td>{{ payment.createdAt | date: 'dd MMM yyyy, HH:mm' }}</td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="10" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />

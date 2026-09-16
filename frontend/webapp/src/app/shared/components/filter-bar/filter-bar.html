@@ -1,0 +1,12 @@
+<div class="filter-bar">
+  <input
+    type="search"
+    class="search-input"
+    [placeholder]="placeholder()"
+    [(ngModel)]="searchTerm"
+    (ngModelChange)="onInput()"
+  />
+  <div class="extra-filters">
+    <ng-content />
+  </div>
+</div>

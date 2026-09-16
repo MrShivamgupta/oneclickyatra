@@ -1,0 +1,21 @@
+<div class="page-header">
+  <div>
+    <h1>Master Data</h1>
+    <p class="subtitle">Reference data used by packages, destinations and quotations.</p>
+  </div>
+</div>
+
+<div class="tabs">
+  @for (tab of tabs; track tab.key) {
+    <button type="button" [class.active]="activeTab() === tab.key" (click)="selectTab(tab.key)">
+      {{ tab.label }}
+    </button>
+  }
+</div>
+
+@switch (activeTab()) {
+  @case ('countries') { <app-countries-tab /> }
+  @case ('cities') { <app-cities-tab /> }
+  @case ('categories') { <app-categories-tab /> }
+  @case ('seasons') { <app-seasons-tab /> }
+}

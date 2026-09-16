@@ -1,0 +1,54 @@
+@use '../../shared/styles-public/index' as tokens;
+
+.state-message {
+  max-width: 480px;
+  margin: tokens.$space-12 auto;
+  padding: tokens.$space-6;
+  text-align: center;
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-sm;
+
+  h1 {
+    font-size: tokens.$font-size-xl;
+    color: tokens.$color-text-primary;
+    margin: 0 0 tokens.$space-3;
+  }
+
+  &.error {
+    color: tokens.$color-primary-dark;
+  }
+}
+
+.cms-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: tokens.$space-12 tokens.$space-4;
+
+  h1 {
+    font-size: tokens.$font-size-3xl;
+    color: tokens.$color-text-primary;
+    margin: 0 0 tokens.$space-6;
+  }
+}
+
+.cms-content {
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-base;
+  line-height: 1.7;
+
+  // The backend-authored content is inserted via [innerHTML], so it never receives the
+  // emulated encapsulation attribute — ::ng-deep is required to reach into it.
+  ::ng-deep p {
+    margin: 0 0 tokens.$space-4;
+  }
+
+  ::ng-deep a {
+    color: tokens.$color-primary;
+  }
+
+  ::ng-deep h2,
+  ::ng-deep h3 {
+    color: tokens.$color-text-primary;
+    margin: tokens.$space-6 0 tokens.$space-3;
+  }
+}

@@ -1,0 +1,15 @@
+@use '../../shared/styles/index' as tokens;
+
+.hint {
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+}
+
+.badge.status {
+  &[data-status='Created'] { background: rgba(107, 114, 128, 0.15); color: tokens.$color-text-secondary; }
+  &[data-status='Pending'] { background: rgba(230, 164, 23, 0.15); color: #a86c00; }
+  &[data-status='Paid'] { background: rgba(31, 169, 113, 0.15); color: #157a4f; }
+  &[data-status='Failed'] { background: rgba(224, 69, 63, 0.12); color: tokens.$color-danger; }
+  &[data-status='Refunded'] { background: rgba(139, 92, 246, 0.15); color: #6d28d9; }
+  &[data-status='PartiallyRefunded'] { background: rgba(139, 92, 246, 0.15); color: #6d28d9; }
+}

@@ -1,0 +1,139 @@
+@use '../../shared/styles-public/index' as tokens;
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: tokens.$space-4 tokens.$space-8;
+  border-bottom: 1px solid tokens.$color-border;
+  position: relative;
+
+  @include tokens.respond-below(tokens.$breakpoint-tablet) {
+    padding: tokens.$space-4;
+  }
+}
+
+.brand {
+  font-weight: tokens.$font-weight-bold;
+  font-size: tokens.$font-size-lg;
+  text-decoration: none;
+  color: tokens.$color-text-primary;
+  z-index: 2;
+}
+
+.menu-toggle {
+  display: none;
+  border: 1px solid tokens.$color-border;
+  background: tokens.$color-surface;
+  border-radius: tokens.$radius-sm;
+  padding: tokens.$space-2 tokens.$space-3;
+  font-size: tokens.$font-size-lg;
+  cursor: pointer;
+  color: tokens.$color-text-primary;
+  z-index: 2;
+
+  @include tokens.respond-below(tokens.$breakpoint-tablet) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: tokens.$space-5;
+  flex-wrap: wrap;
+
+  a,
+  .logout-link {
+    text-decoration: none;
+    color: tokens.$color-text-secondary;
+    font-size: tokens.$font-size-sm;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+
+    &:hover,
+    &.active {
+      color: tokens.$color-primary;
+    }
+  }
+
+  .login-link {
+    padding: tokens.$space-2 tokens.$space-5;
+    border-radius: tokens.$radius-pill;
+    background: tokens.$color-primary;
+    color: tokens.$color-text-inverse;
+    font-weight: tokens.$font-weight-semibold;
+
+    &:hover,
+    &.active {
+      background: tokens.$color-primary-dark;
+      color: tokens.$color-text-inverse;
+    }
+  }
+
+  .admin-link {
+    font-weight: tokens.$font-weight-semibold;
+    color: tokens.$color-accent;
+  }
+
+  @include tokens.respond-below(tokens.$breakpoint-tablet) {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: tokens.$color-surface;
+    border-bottom: 1px solid tokens.$color-border;
+    box-shadow: tokens.$shadow-md;
+    padding: tokens.$space-3 0;
+    z-index: 1;
+
+    &.open {
+      display: flex;
+    }
+
+    a,
+    .logout-link {
+      padding: tokens.$space-3 tokens.$space-6;
+      font-size: tokens.$font-size-base;
+
+      &.login-link {
+        margin: tokens.$space-2 tokens.$space-6 0;
+        text-align: center;
+      }
+    }
+  }
+}
+
+.site-footer {
+  padding: tokens.$space-6 tokens.$space-8;
+  text-align: center;
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-xs;
+  border-top: 1px solid tokens.$color-border;
+}
+
+.footer-nav {
+  display: flex;
+  justify-content: center;
+  gap: tokens.$space-5;
+  margin-bottom: tokens.$space-3;
+  flex-wrap: wrap;
+
+  a {
+    text-decoration: none;
+    color: tokens.$color-text-secondary;
+
+    &:hover {
+      color: tokens.$color-primary;
+    }
+  }
+}

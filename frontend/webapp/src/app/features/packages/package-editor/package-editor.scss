@@ -1,0 +1,135 @@
+@use '../../../shared/styles/index' as tokens;
+@use '../../../shared/styles/admin-crud' as crud;
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: tokens.$space-4;
+  margin-bottom: tokens.$space-5;
+  flex-wrap: wrap;
+
+  h1 { margin: 0; font-size: tokens.$font-size-xl; }
+  .subtitle { margin: tokens.$space-1 0 0; color: tokens.$color-text-secondary; font-size: tokens.$font-size-sm; }
+}
+
+.secondary-button {
+  @include crud.secondary-button;
+  text-decoration: none;
+  color: tokens.$color-text-primary;
+  display: inline-block;
+}
+
+.primary-button { @include crud.primary-button; }
+
+.tabs {
+  display: flex;
+  gap: tokens.$space-2;
+  border-bottom: 1px solid tokens.$color-border;
+  margin-bottom: tokens.$space-5;
+  flex-wrap: wrap;
+}
+
+.tabs button {
+  padding: tokens.$space-2 tokens.$space-4;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+
+  &.active {
+    color: tokens.$color-primary;
+    border-bottom-color: tokens.$color-primary;
+    font-weight: tokens.$font-weight-semibold;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(.active):not(:disabled) {
+    color: tokens.$color-text-primary;
+  }
+}
+
+.panel {
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-6;
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-4;
+
+  h3 {
+    margin: tokens.$space-2 0 0;
+    font-size: tokens.$font-size-base;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: tokens.$space-4;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-1;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+
+  input, select, textarea {
+    @include crud.field-input;
+  }
+
+  &.narrow { max-width: 140px; }
+  &.wide { flex: 2; }
+}
+
+.row-card {
+  display: flex;
+  align-items: flex-end;
+  gap: tokens.$space-3;
+  flex-wrap: wrap;
+  padding: tokens.$space-3;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-bg;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: tokens.$space-2;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+}
+
+.form-error {
+  color: tokens.$color-danger;
+  background: rgba(224, 69, 63, 0.08);
+  padding: tokens.$space-2 tokens.$space-3;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+}
+
+.form-success {
+  color: #157a4f;
+  background: rgba(31, 169, 113, 0.1);
+  padding: tokens.$space-2 tokens.$space-3;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+}
+
+.panel-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.link-button { @include crud.link-button; &.danger { color: tokens.$color-danger; } }

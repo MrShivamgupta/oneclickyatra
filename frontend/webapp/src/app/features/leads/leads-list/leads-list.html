@@ -1,0 +1,44 @@
+<div class="page-header">
+  <div>
+    <h1>Lead Management</h1>
+    <p class="subtitle">Track enquiries from first contact through to conversion.</p>
+  </div>
+  <button type="button" class="primary-button" (click)="createLead()">+ Add Lead</button>
+</div>
+
+<app-filter-bar placeholder="Search leads by name, mobile or email…" (searchChange)="onSearchChange($event)">
+  <select (change)="onStatusFilterChange($any($event.target).value)">
+    <option value="">All statuses</option>
+    @for (status of statuses; track status) {
+      <option [value]="status">{{ status }}</option>
+    }
+  </select>
+  <select (change)="onDestinationFilterChange($any($event.target).value)">
+    <option value="">All destinations</option>
+    @for (destination of destinations(); track destination.id) {
+      <option [value]="destination.id">{{ destination.name }}</option>
+    }
+  </select>
+</app-filter-bar>
+
+<app-data-table [columns]="columns" [rows]="leads()" [loading]="loading()" emptyMessage="No leads yet. Click 'Add Lead' to create one.">
+  <ng-template #rowTemplate let-lead>
+    <tr class="clickable-row" (click)="openLead(lead)">
+      <td>
+        <strong>{{ lead.customerName }}</strong>
+        <div class="hint">{{ lead.mobile }}</div>
+      </td>
+      <td>{{ lead.destinationName ?? '—' }}</td>
+      <td>{{ lead.leadScore }}</td>
+      <td>
+        <span class="badge status" [attr.data-status]="lead.status">{{ lead.status }}</span>
+      </td>
+      <td>{{ lead.assignedToName ?? 'Unassigned' }}</td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="$event.stopPropagation(); openLead(lead)">View</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="10" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />

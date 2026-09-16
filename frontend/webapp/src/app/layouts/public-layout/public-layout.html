@@ -1,0 +1,49 @@
+<header class="site-header">
+  <a class="brand" routerLink="/" (click)="closeMobileNav()">✈ One Click Yatra</a>
+
+  <button
+    type="button"
+    class="menu-toggle"
+    [attr.aria-expanded]="mobileNavOpen()"
+    aria-label="Toggle navigation menu"
+    (click)="toggleMobileNav()"
+  >
+    {{ mobileNavOpen() ? '✕' : '☰' }}
+  </button>
+
+  <nav class="site-nav" [class.open]="mobileNavOpen()">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileNav()">Home</a>
+    <a routerLink="/destinations" routerLinkActive="active" (click)="closeMobileNav()">Destinations</a>
+    <a routerLink="/packages" routerLinkActive="active" (click)="closeMobileNav()">Packages</a>
+    <a routerLink="/enquiry" routerLinkActive="active" (click)="closeMobileNav()">Enquiry</a>
+    <a routerLink="/about" routerLinkActive="active" (click)="closeMobileNav()">About</a>
+    <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileNav()">Contact</a>
+
+    @if (authService.isAuthenticated()) {
+      @if (isStaff()) {
+        <a routerLink="/admin/dashboard" class="admin-link" (click)="closeMobileNav()">Admin</a>
+      }
+      <button type="button" class="logout-link" (click)="logout()">Logout</button>
+    } @else {
+      <a routerLink="/register" routerLinkActive="active" (click)="closeMobileNav()">Register</a>
+      <a routerLink="/login" class="login-link" routerLinkActive="active" (click)="closeMobileNav()">Login</a>
+    }
+  </nav>
+</header>
+
+<main>
+  <router-outlet />
+</main>
+
+<footer class="site-footer">
+  <nav class="footer-nav">
+    <a routerLink="/about">About</a>
+    <a routerLink="/contact">Contact</a>
+    <a routerLink="/terms">Terms &amp; Conditions</a>
+    <a routerLink="/privacy">Privacy Policy</a>
+    @if (!authService.isAuthenticated()) {
+      <a routerLink="/register">Register</a>
+    }
+  </nav>
+  <p>© 2026 One Click Yatra. All rights reserved.</p>
+</footer>

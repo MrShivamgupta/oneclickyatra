@@ -1,0 +1,51 @@
+@use 'index' as tokens;
+
+@mixin page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: tokens.$space-4;
+  margin-bottom: tokens.$space-5;
+  flex-wrap: wrap;
+}
+
+@mixin primary-button {
+  padding: tokens.$space-2 tokens.$space-5;
+  border: none;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-primary;
+  color: tokens.$color-text-inverse;
+  font-weight: tokens.$font-weight-semibold;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) { background: tokens.$color-primary-dark; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+@mixin secondary-button {
+  padding: tokens.$space-2 tokens.$space-5;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-surface;
+  cursor: pointer;
+}
+
+@mixin field-input {
+  padding: tokens.$space-2 tokens.$space-3;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+  font-family: inherit;
+}
+
+@mixin link-button($color: tokens.$color-primary) {
+  border: none;
+  background: none;
+  color: $color;
+  cursor: pointer;
+  font-size: tokens.$font-size-sm;
+  padding: 0;
+
+  &:hover { text-decoration: underline; }
+}

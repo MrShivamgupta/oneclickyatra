@@ -1,0 +1,129 @@
+@if (loading()) {
+  <div class="state-message">Loading your quotation…</div>
+} @else if (notFound()) {
+  <div class="state-message">
+    <h1>Quotation not found</h1>
+    <p>This link may have expired or been replaced with a newer one. Please contact your travel agent for an updated link.</p>
+  </div>
+} @else if (quotation(); as q) {
+  <div class="quote-page">
+    <header class="quote-header">
+      <div class="brand">One Click Yatra</div>
+      <h1>{{ q.title }}</h1>
+      <p class="meta">
+        Quotation {{ q.quotationNumber }}
+        @if (q.validUntil) { · Valid until {{ q.validUntil | date: 'dd MMM yyyy' }} }
+      </p>
+      @if (q.leadCustomerName) {
+        <p class="greeting">Prepared for {{ q.leadCustomerName }}</p>
+      }
+      @if (q.notes) {
+        <p class="notes">{{ q.notes }}</p>
+      }
+      <button type="button" class="link-button" [disabled]="pdfDownloading()" (click)="downloadPdf()">
+        {{ pdfDownloading() ? 'Preparing PDF…' : 'Download as PDF' }}
+      </button>
+    </header>
+
+    @if (q.status === 'Expired') {
+      <div class="status-banner expired">This quotation has expired. Please contact your travel agent for an updated offer.</div>
+    } @else if (q.status === 'Approved' || decisionMade() === 'approved') {
+      <div class="status-banner approved">
+        Thank you! You've approved this quotation. Our team will reach out shortly to confirm your booking.
+      </div>
+    } @else if (q.status === 'Rejected' || decisionMade() === 'rejected') {
+      <div class="status-banner rejected">
+        You've declined this quotation. Feel free to reach out if you'd like us to revise it.
+      </div>
+    }
+
+    <div class="options-grid">
+      @for (option of q.options; track option.id) {
+        <div class="option-card" [class.recommended]="option.isRecommended" [class.selected]="selectedOptionId() === option.id">
+          @if (option.isRecommended) {
+            <div class="ribbon">Recommended</div>
+          }
+          <h2>{{ option.optionName }}</h2>
+          <p class="option-meta">
+            @if (option.destinationName) { {{ option.destinationName }} · }
+            @if (option.durationDays || option.durationNights) { {{ option.durationDays }}D/{{ option.durationNights }}N · }
+            {{ option.hotelCategory }}
+          </p>
+
+          @if (option.items.length > 0) {
+            <ul class="item-list">
+              @for (item of option.items; track item.id) {
+                <li>
+                  <span>{{ item.description }}</span>
+                  <span>Rs. {{ item.amount | number: '1.0-0' }}</span>
+                </li>
+              }
+            </ul>
+          }
+
+          <div class="price-row">
+            <span>Per person ({{ option.numberOfPeople }} pax)</span>
+            <strong>Rs. {{ option.pricePerPerson | number: '1.0-0' }}</strong>
+          </div>
+          <div class="price-row total">
+            <span>Total</span>
+            <strong>Rs. {{ option.totalPrice | number: '1.0-0' }}</strong>
+          </div>
+
+          @if (q.status === 'Sent' && decisionMode() === 'approve') {
+            <label class="choose-label">
+              <input type="radio" name="selectedOption" [value]="option.id" [checked]="selectedOptionId() === option.id" (change)="selectedOptionId.set(option.id ?? null)" />
+              Choose this option
+            </label>
+          }
+        </div>
+      }
+    </div>
+
+    @if (q.status === 'Sent' && decisionMade() === null) {
+      <div class="decision-panel">
+        @if (decisionMode() === 'none') {
+          <div class="decision-actions">
+            <button type="button" class="primary-button" (click)="startApprove()">Approve a Package</button>
+            <button type="button" class="secondary-button" (click)="startReject()">Decline</button>
+          </div>
+        } @else if (decisionMode() === 'approve') {
+          <h3>Confirm your approval</h3>
+          <p class="hint">Select a package above, then confirm your details below.</p>
+          <label>
+            Your name
+            <input type="text" [ngModel]="approvedByName()" (ngModelChange)="approvedByName.set($event)" placeholder="Full name" />
+          </label>
+          <label>
+            Comments (optional)
+            <textarea rows="2" [ngModel]="comments()" (ngModelChange)="comments.set($event)" placeholder="Any special requests?"></textarea>
+          </label>
+          @if (submitError()) { <div class="form-error">{{ submitError() }}</div> }
+          <div class="decision-actions">
+            <button type="button" class="secondary-button" (click)="cancelDecision()">Back</button>
+            <button type="button" class="primary-button" [disabled]="submitting()" (click)="submitApprove()">
+              {{ submitting() ? 'Submitting…' : 'Confirm Approval' }}
+            </button>
+          </div>
+        } @else {
+          <h3>Let us know why</h3>
+          <label>
+            Your name
+            <input type="text" [ngModel]="rejectedByName()" (ngModelChange)="rejectedByName.set($event)" placeholder="Full name" />
+          </label>
+          <label>
+            Reason (optional)
+            <textarea rows="2" [ngModel]="reason()" (ngModelChange)="reason.set($event)" placeholder="Help us improve our offer"></textarea>
+          </label>
+          @if (submitError()) { <div class="form-error">{{ submitError() }}</div> }
+          <div class="decision-actions">
+            <button type="button" class="secondary-button" (click)="cancelDecision()">Back</button>
+            <button type="button" class="primary-button" [disabled]="submitting()" (click)="submitReject()">
+              {{ submitting() ? 'Submitting…' : 'Confirm Decline' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

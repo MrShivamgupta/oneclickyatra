@@ -1,0 +1,19 @@
+@if (loading()) {
+  <div class="state-message">Loading…</div>
+} @else if (notFound()) {
+  <div class="state-message">
+    <h1>Page not found</h1>
+    <p>The page you're looking for doesn't exist or isn't published yet.</p>
+  </div>
+} @else if (error()) {
+  <div class="state-message error">
+    <p>{{ error() }}</p>
+  </div>
+} @else if (page(); as page) {
+  <article class="cms-page">
+    <h1>{{ page.title }}</h1>
+    @if (page.content) {
+      <div class="cms-content" [innerHTML]="page.content"></div>
+    }
+  </article>
+}

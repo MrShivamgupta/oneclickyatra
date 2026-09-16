@@ -1,0 +1,125 @@
+@use '../../../shared/styles/index' as tokens;
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: tokens.$color-navy-900;
+  padding: tokens.$space-4;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: tokens.$color-surface;
+  border-radius: tokens.$radius-lg;
+  box-shadow: tokens.$shadow-lg;
+  padding: tokens.$space-8;
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-4;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: tokens.$space-2;
+  margin-bottom: tokens.$space-2;
+}
+
+.brand-icon {
+  font-size: tokens.$font-size-2xl;
+}
+
+.brand-title {
+  font-weight: tokens.$font-weight-bold;
+  font-size: tokens.$font-size-lg;
+}
+
+.brand-subtitle {
+  font-size: tokens.$font-size-xs;
+  color: tokens.$color-text-secondary;
+}
+
+h1 {
+  font-size: tokens.$font-size-xl;
+  margin: 0;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-1;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+}
+
+input {
+  padding: tokens.$space-3;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-base;
+
+  &:focus {
+    outline: 2px solid tokens.$color-primary;
+    outline-offset: 1px;
+  }
+}
+
+.field-hint {
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-xs;
+}
+
+.field-error,
+.form-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-xs;
+}
+
+.form-error {
+  background: rgba(224, 69, 63, 0.08);
+  padding: tokens.$space-2 tokens.$space-3;
+  border-radius: tokens.$radius-sm;
+
+  ul {
+    margin: tokens.$space-1 0 0;
+    padding-left: tokens.$space-4;
+  }
+}
+
+button {
+  padding: tokens.$space-3;
+  border: none;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-primary;
+  color: tokens.$color-text-inverse;
+  font-weight: tokens.$font-weight-semibold;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: tokens.$color-primary-dark;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.form-footer {
+  text-align: center;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+
+  a {
+    color: tokens.$color-primary;
+    font-weight: tokens.$font-weight-semibold;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

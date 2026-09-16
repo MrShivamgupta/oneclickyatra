@@ -1,0 +1,22 @@
+@use 'app/shared/styles/index' as tokens;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: tokens.$font-family-base;
+  font-size: tokens.$font-size-base;
+  color: tokens.$color-text-primary;
+  background: tokens.$color-bg;
+}
+
+a {
+  color: inherit;
+}

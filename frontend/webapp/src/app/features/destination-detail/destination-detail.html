@@ -1,0 +1,36 @@
+@if (loading()) {
+  <div class="state-message">Loading destination…</div>
+} @else if (notFound()) {
+  <div class="state-message">
+    <h1>Destination not found</h1>
+    <p>We couldn't find the destination you're looking for. It may have been removed or unpublished.</p>
+    <a class="back-link" routerLink="/destinations">Browse all destinations</a>
+  </div>
+} @else if (error()) {
+  <div class="state-message error">
+    <p>{{ error() }}</p>
+    <a class="back-link" routerLink="/destinations">Back to destinations</a>
+  </div>
+} @else if (destination(); as destination) {
+  <section class="hero" [style.background-image]="destination.heroImageUrl ? 'url(' + destination.heroImageUrl + ')' : null">
+    <div class="hero-overlay">
+      @if (destination.isFeatured) {
+        <span class="badge featured">Featured</span>
+      }
+      <h1>{{ destination.name }}</h1>
+      <p class="location">{{ destination.cityName ? destination.cityName + ', ' : '' }}{{ destination.countryName }}</p>
+    </div>
+  </section>
+
+  <section class="content">
+    @if (destination.description) {
+      <p class="description">{{ destination.description }}</p>
+    } @else if (destination.shortDescription) {
+      <p class="description">{{ destination.shortDescription }}</p>
+    }
+
+    <a class="packages-link" [routerLink]="['/packages']" [queryParams]="{ destinationId: destination.id }">
+      Explore packages in {{ destination.name }} →
+    </a>
+  </section>
+}

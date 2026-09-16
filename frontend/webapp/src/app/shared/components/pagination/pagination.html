@@ -1,0 +1,15 @@
+<div class="pagination">
+  <span class="range-text">
+    @if (totalCount() > 0) {
+      Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ totalCount() }}
+    } @else {
+      No records
+    }
+  </span>
+
+  <div class="controls">
+    <button type="button" (click)="goTo(pageNumber() - 1)" [disabled]="pageNumber() <= 1">Prev</button>
+    <span class="page-text">Page {{ pageNumber() }} of {{ totalPages() }}</span>
+    <button type="button" (click)="goTo(pageNumber() + 1)" [disabled]="pageNumber() >= totalPages()">Next</button>
+  </div>
+</div>

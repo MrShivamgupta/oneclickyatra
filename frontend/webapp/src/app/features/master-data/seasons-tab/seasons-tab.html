@@ -1,0 +1,55 @@
+<form class="inline-form" [formGroup]="form" (ngSubmit)="save()">
+  <label class="field">
+    Name
+    <input type="text" formControlName="name" placeholder="e.g. Winter" />
+  </label>
+  <label class="field">
+    Start month
+    <select formControlName="startMonth">
+      @for (month of months; track $index) {
+        <option [value]="$index + 1">{{ month }}</option>
+      }
+    </select>
+  </label>
+  <label class="field">
+    End month
+    <select formControlName="endMonth">
+      @for (month of months; track $index) {
+        <option [value]="$index + 1">{{ month }}</option>
+      }
+    </select>
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="primary-button" [disabled]="isSaving()">
+      {{ editingId() ? 'Update' : 'Add' }} Season
+    </button>
+    @if (editingId()) {
+      <button type="button" class="secondary-button" (click)="cancelEdit()">Cancel</button>
+    }
+  </div>
+  @if (formError()) {
+    <div class="form-error">{{ formError() }}</div>
+  }
+</form>
+
+<app-data-table [columns]="columns" [rows]="seasons()" [loading]="loading()" emptyMessage="No seasons yet.">
+  <ng-template #rowTemplate let-season>
+    <tr>
+      <td>{{ season.name }}</td>
+      <td>{{ monthLabel(season.startMonth) }} – {{ monthLabel(season.endMonth) }}</td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="edit(season)">Edit</button>
+        <button type="button" class="link-button danger" (click)="confirmDelete(season)">Delete</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-confirmation-dialog
+  [open]="deleteTarget() !== null"
+  title="Delete season?"
+  [message]="'This will remove \'' + (deleteTarget()?.name ?? '') + '\'.'"
+  confirmLabel="Delete"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

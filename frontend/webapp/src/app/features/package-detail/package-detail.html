@@ -1,0 +1,164 @@
+@if (loading()) {
+  <div class="state-message">Loading package…</div>
+} @else if (notFound()) {
+  <div class="state-message">
+    <h2>Package not found</h2>
+    <p>The package you're looking for doesn't exist or is no longer available.</p>
+    <a class="back-link" routerLink="/packages">← Back to all packages</a>
+  </div>
+} @else if (error()) {
+  <div class="state-message error">
+    <p>{{ error() }}</p>
+    <a class="back-link" routerLink="/packages">← Back to all packages</a>
+  </div>
+} @else if (detail(); as pkgDetail) {
+  <section
+    class="hero"
+    [style.background-image]="coverImageUrl() ? 'url(' + coverImageUrl() + ')' : null"
+  >
+    <div class="hero-overlay">
+      <p class="breadcrumb">
+        <a routerLink="/packages">Packages</a> / {{ pkgDetail.package.destinationName }}
+      </p>
+      <h1>{{ pkgDetail.package.title }}</h1>
+      <div class="hero-meta">
+        <span>{{ pkgDetail.package.destinationName }}</span>
+        @if (pkgDetail.package.categoryName) { <span>{{ pkgDetail.package.categoryName }}</span> }
+        @if (pkgDetail.package.seasonName) { <span>{{ pkgDetail.package.seasonName }}</span> }
+        <span>{{ pkgDetail.package.durationDays }}D / {{ pkgDetail.package.durationNights }}N</span>
+      </div>
+      <a class="cta-button" [routerLink]="['/enquiry']" [queryParams]="enquiryQueryParams()">Enquire Now</a>
+    </div>
+  </section>
+
+  <section class="content">
+    @if (galleryImages().length > 0) {
+      <div class="section-block media-gallery">
+        <h2>Gallery</h2>
+        <div class="gallery-grid">
+          @for (image of galleryImages(); track image.mediaUrl) {
+            <img [src]="image.mediaUrl" [alt]="pkgDetail.package.title" loading="lazy" />
+          }
+        </div>
+      </div>
+    }
+
+    @if (pkgDetail.package.shortDescription) {
+      <p class="short-description">{{ pkgDetail.package.shortDescription }}</p>
+    }
+    @if (pkgDetail.package.description) {
+      <p class="full-description">{{ pkgDetail.package.description }}</p>
+    }
+
+    @if (sortedItinerary().length > 0) {
+      <div class="section-block">
+        <h2>Day-by-day itinerary</h2>
+        <ol class="itinerary-list">
+          @for (day of sortedItinerary(); track day.dayNumber) {
+            <li>
+              <div class="day-badge">Day {{ day.dayNumber }}</div>
+              <div class="day-content">
+                <h3>{{ day.title }}</h3>
+                @if (day.description) { <p>{{ day.description }}</p> }
+              </div>
+            </li>
+          }
+        </ol>
+      </div>
+    }
+
+    @if (pkgDetail.inclusions.length > 0) {
+      <div class="section-block">
+        <h2>Inclusions & exclusions</h2>
+        <div class="inclusions-grid">
+          <div class="inclusions-column">
+            <h3 class="included-heading">What's included</h3>
+            @if (includedItems().length === 0) {
+              <p class="empty-note">No inclusions listed.</p>
+            } @else {
+              <ul class="included-list">
+                @for (item of includedItems(); track item.description) {
+                  <li>{{ item.description }}</li>
+                }
+              </ul>
+            }
+          </div>
+          <div class="inclusions-column">
+            <h3 class="excluded-heading">What's not included</h3>
+            @if (excludedItems().length === 0) {
+              <p class="empty-note">No exclusions listed.</p>
+            } @else {
+              <ul class="excluded-list">
+                @for (item of excludedItems(); track item.description) {
+                  <li>{{ item.description }}</li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (pkgDetail.pricing.length > 0) {
+      <div class="section-block">
+        <h2>Pricing</h2>
+        <div class="table-wrap">
+          <table class="detail-table">
+            <thead>
+              <tr>
+                <th>Tier</th>
+                <th>Hotel category</th>
+                <th>Price per person</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tier of pkgDetail.pricing; track tier.tierName) {
+                <tr>
+                  <td>{{ tier.tierName }}</td>
+                  <td>{{ tier.hotelCategory ?? '—' }}</td>
+                  <td>{{ tier.currency }} {{ formatPrice(tier.pricePerPerson) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (pkgDetail.inventory.length > 0) {
+      <div class="section-block">
+        <h2>Upcoming departures</h2>
+        <div class="table-wrap">
+          <table class="detail-table">
+            <thead>
+              <tr>
+                <th>Departure date</th>
+                <th>Status</th>
+                <th>Available seats</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (departure of pkgDetail.inventory; track departure.departureDate) {
+                <tr>
+                  <td>{{ formatDate(departure.departureDate) }}</td>
+                  <td>
+                    <span class="status-badge" [class]="departure.status.toLowerCase()">{{ departure.status }}</span>
+                  </td>
+                  <td>{{ availableSeats(departure) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <div class="enquiry-banner">
+      <div>
+        <h2>Ready to plan this trip?</h2>
+        <p>Send us an enquiry and our travel experts will get back to you with a tailored itinerary.</p>
+      </div>
+      <a class="cta-button" [routerLink]="['/enquiry']" [queryParams]="enquiryQueryParams()">Enquire Now</a>
+    </div>
+  </section>
+}

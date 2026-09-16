@@ -1,0 +1,52 @@
+@use '../../shared/styles/index' as tokens;
+@use '../../shared/styles/admin-crud' as crud;
+
+.inline-form {
+  display: flex;
+  align-items: flex-end;
+  gap: tokens.$space-3;
+  flex-wrap: wrap;
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-4;
+  margin-bottom: tokens.$space-4;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-1;
+  font-size: tokens.$font-size-xs;
+  color: tokens.$color-text-secondary;
+
+  input, select {
+    @include crud.field-input;
+    min-width: 160px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: tokens.$space-2;
+}
+
+.primary-button { @include crud.primary-button; }
+.secondary-button { @include crud.secondary-button; }
+
+.form-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-xs;
+  flex-basis: 100%;
+}
+
+.actions-cell {
+  display: flex;
+  gap: tokens.$space-3;
+  white-space: nowrap;
+}
+
+.link-button {
+  @include crud.link-button;
+  &.danger { color: tokens.$color-danger; }
+}

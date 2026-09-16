@@ -1,0 +1,64 @@
+@use '../../styles/index' as admin;
+@use '../../styles-public/index' as public;
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: admin.$space-3 0;
+  font-size: admin.$font-size-sm;
+  color: admin.$color-text-secondary;
+  flex-wrap: wrap;
+  gap: admin.$space-3;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: admin.$space-3;
+}
+
+button {
+  padding: admin.$space-1 admin.$space-3;
+  border: 1px solid admin.$color-border;
+  border-radius: admin.$radius-sm;
+  background: admin.$color-surface;
+  color: admin.$color-text-primary;
+  cursor: pointer;
+  font-size: admin.$font-size-sm;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    background: admin.$color-bg;
+  }
+}
+
+:host(.theme-public) {
+  .pagination {
+    padding: public.$space-3 0;
+    font-size: public.$font-size-sm;
+    color: public.$color-text-secondary;
+    gap: public.$space-3;
+  }
+
+  .controls {
+    gap: public.$space-3;
+  }
+
+  button {
+    padding: public.$space-1 public.$space-3;
+    border-color: public.$color-border;
+    border-radius: public.$radius-sm;
+    background: public.$color-surface;
+    color: public.$color-text-primary;
+    font-size: public.$font-size-sm;
+
+    &:hover:not(:disabled) {
+      background: public.$color-bg;
+    }
+  }
+}

@@ -1,0 +1,117 @@
+<div class="page-header">
+  <div>
+    <h1>Destinations</h1>
+    <p class="subtitle">Manage the destinations shown across the public site and used when building packages.</p>
+  </div>
+  <button type="button" class="primary-button" (click)="openCreateModal()">+ Add Destination</button>
+</div>
+
+<app-filter-bar placeholder="Search destinations…" (searchChange)="onSearchChange($event)">
+  <select (change)="onCountryFilterChange($any($event.target).value)">
+    <option value="">All countries</option>
+    @for (country of countries(); track country.id) {
+      <option [value]="country.id">{{ country.name }}</option>
+    }
+  </select>
+</app-filter-bar>
+
+<app-data-table [columns]="columns" [rows]="destinations()" [loading]="loading()" emptyMessage="No destinations yet. Click 'Add Destination' to create one.">
+  <ng-template #rowTemplate let-destination>
+    <tr>
+      <td>
+        <div class="name-cell">
+          <strong>{{ destination.name }}</strong>
+          @if (destination.isFeatured) { <span class="badge featured">Featured</span> }
+        </div>
+      </td>
+      <td>{{ destination.countryName }}</td>
+      <td>{{ destination.cityName ?? '—' }}</td>
+      <td>
+        <span class="badge" [class.published]="destination.isPublished" [class.draft]="!destination.isPublished">
+          {{ destination.isPublished ? 'Published' : 'Draft' }}
+        </span>
+      </td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="openEditModal(destination)">Edit</button>
+        <button type="button" class="link-button danger" (click)="confirmDelete(destination)">Delete</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="10" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />
+
+@if (isModalOpen()) {
+  <div class="overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>{{ editingId() ? 'Edit Destination' : 'Add Destination' }}</h2>
+
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <label>
+          Country
+          <select formControlName="countryId">
+            <option value="">Select a country</option>
+            @for (country of countries(); track country.id) {
+              <option [value]="country.id">{{ country.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          City (optional)
+          <select formControlName="cityId">
+            <option value="">None</option>
+            @for (city of formCities(); track city.id) {
+              <option [value]="city.id">{{ city.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          Name
+          <input type="text" formControlName="name" placeholder="e.g. Goa" />
+        </label>
+
+        <label>
+          Slug
+          <input type="text" formControlName="slug" placeholder="e.g. goa-india" />
+          <span class="hint">Lowercase, hyphen-separated. Used in public URLs.</span>
+        </label>
+
+        <label>
+          Short description
+          <textarea formControlName="shortDescription" rows="2"></textarea>
+        </label>
+
+        <div class="checkbox-row">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="isFeatured" /> Featured
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="isPublished" /> Published
+          </label>
+        </div>
+
+        @if (formError()) {
+          <div class="form-error">{{ formError() }}</div>
+        }
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-button" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="primary-button" [disabled]="isSaving()">
+            {{ isSaving() ? 'Saving…' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<app-confirmation-dialog
+  [open]="deleteTarget() !== null"
+  title="Delete destination?"
+  [message]="'This will remove \'' + (deleteTarget()?.name ?? '') + '\' from the destination list.'"
+  confirmLabel="Delete"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

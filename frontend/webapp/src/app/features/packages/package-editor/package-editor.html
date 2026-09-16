@@ -1,0 +1,283 @@
+<div class="page-header">
+  <div>
+    <h1>{{ isNew ? 'New Package' : 'Edit Package' }}</h1>
+    <p class="subtitle">
+      @if (isNew) {
+        Save the basic info first, then the other tabs unlock.
+      } @else {
+        Manage itinerary, inclusions, pricing, inventory and media.
+      }
+    </p>
+  </div>
+  <a routerLink="/admin/packages" class="secondary-button">← Back to list</a>
+</div>
+
+<div class="tabs">
+  @for (tab of tabs; track tab.key) {
+    <button
+      type="button"
+      [class.active]="activeTab() === tab.key"
+      [disabled]="tab.key !== 'basic' && isNew"
+      (click)="selectTab(tab.key)"
+    >
+      {{ tab.label }}
+    </button>
+  }
+</div>
+
+@switch (activeTab()) {
+  @case ('basic') {
+    <form class="panel" [formGroup]="basicForm" (ngSubmit)="saveBasicInfo()">
+      <div class="grid">
+        <label class="field">
+          Destination
+          <select formControlName="destinationId">
+            <option value="">Select a destination</option>
+            @for (destination of destinations(); track destination.id) {
+              <option [value]="destination.id">{{ destination.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          Category
+          <select formControlName="categoryId">
+            <option value="">None</option>
+            @for (category of categories(); track category.id) {
+              <option [value]="category.id">{{ category.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          Season
+          <select formControlName="seasonId">
+            <option value="">None</option>
+            @for (season of seasons(); track season.id) {
+              <option [value]="season.id">{{ season.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          Title
+          <input type="text" formControlName="title" placeholder="e.g. Goa Family Getaway" />
+        </label>
+        <label class="field">
+          Slug
+          <input type="text" formControlName="slug" placeholder="e.g. goa-family-getaway" />
+        </label>
+        <label class="field">
+          Duration (days)
+          <input type="number" formControlName="durationDays" min="1" />
+        </label>
+        <label class="field">
+          Duration (nights)
+          <input type="number" formControlName="durationNights" min="0" />
+        </label>
+        <label class="field">
+          Hero image URL
+          <input type="text" formControlName="heroImageUrl" placeholder="https://…" />
+        </label>
+      </div>
+      <label class="field">
+        Short description
+        <textarea formControlName="shortDescription" rows="2"></textarea>
+      </label>
+      <label class="field">
+        Full description
+        <textarea formControlName="description" rows="4"></textarea>
+      </label>
+
+      @if (basicError()) {
+        <div class="form-error">{{ basicError() }}</div>
+      }
+
+      <div class="panel-actions">
+        <button type="submit" class="primary-button" [disabled]="basicSaving()">
+          {{ basicSaving() ? 'Saving…' : 'Save Basic Info' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @case ('itinerary') {
+    <div class="panel">
+      @for (day of itineraryDays(); track $index) {
+        <div class="row-card">
+          <label class="field narrow">
+            Day
+            <input type="number" [(ngModel)]="day.dayNumber" [ngModelOptions]="{standalone: true}" min="1" />
+          </label>
+          <label class="field">
+            Title
+            <input type="text" [(ngModel)]="day.title" [ngModelOptions]="{standalone: true}" />
+          </label>
+          <label class="field wide">
+            Description
+            <input type="text" [(ngModel)]="day.description" [ngModelOptions]="{standalone: true}" />
+          </label>
+          <button type="button" class="link-button danger" (click)="removeItineraryDay($index)">Remove</button>
+        </div>
+      }
+      <button type="button" class="secondary-button" (click)="addItineraryDay()">+ Add day</button>
+
+      @if (sectionError()) { <div class="form-error">{{ sectionError() }}</div> }
+      @if (sectionSaved() === 'itinerary') { <div class="form-success">Itinerary saved.</div> }
+
+      <div class="panel-actions">
+        <button type="button" class="primary-button" [disabled]="sectionSaving()" (click)="saveItinerary()">
+          {{ sectionSaving() ? 'Saving…' : 'Save Itinerary' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @case ('inclusions') {
+    <div class="panel">
+      <h3>Inclusions</h3>
+      @for (item of inclusions(); track $index) {
+        @if (item.isIncluded) {
+          <div class="row-card">
+            <label class="field wide">
+              Description
+              <input type="text" [(ngModel)]="item.description" [ngModelOptions]="{standalone: true}" />
+            </label>
+            <button type="button" class="link-button danger" (click)="removeInclusion($index)">Remove</button>
+          </div>
+        }
+      }
+      <button type="button" class="secondary-button" (click)="addInclusion(true)">+ Add inclusion</button>
+
+      <h3>Exclusions</h3>
+      @for (item of inclusions(); track $index) {
+        @if (!item.isIncluded) {
+          <div class="row-card">
+            <label class="field wide">
+              Description
+              <input type="text" [(ngModel)]="item.description" [ngModelOptions]="{standalone: true}" />
+            </label>
+            <button type="button" class="link-button danger" (click)="removeInclusion($index)">Remove</button>
+          </div>
+        }
+      }
+      <button type="button" class="secondary-button" (click)="addInclusion(false)">+ Add exclusion</button>
+
+      @if (sectionError()) { <div class="form-error">{{ sectionError() }}</div> }
+      @if (sectionSaved() === 'inclusions') { <div class="form-success">Inclusions saved.</div> }
+
+      <div class="panel-actions">
+        <button type="button" class="primary-button" [disabled]="sectionSaving()" (click)="saveInclusions()">
+          {{ sectionSaving() ? 'Saving…' : 'Save Inclusions' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @case ('pricing') {
+    <div class="panel">
+      @for (tier of pricingTiers(); track $index) {
+        <div class="row-card">
+          <label class="field">
+            Tier name
+            <input type="text" [(ngModel)]="tier.tierName" [ngModelOptions]="{standalone: true}" placeholder="e.g. Standard" />
+          </label>
+          <label class="field narrow">
+            Hotel category
+            <input type="text" [(ngModel)]="tier.hotelCategory" [ngModelOptions]="{standalone: true}" placeholder="3-star" />
+          </label>
+          <label class="field narrow">
+            Price / person
+            <input type="number" [(ngModel)]="tier.pricePerPerson" [ngModelOptions]="{standalone: true}" min="0" />
+          </label>
+          <label class="field narrow">
+            Currency
+            <input type="text" [(ngModel)]="tier.currency" [ngModelOptions]="{standalone: true}" maxlength="3" />
+          </label>
+          <button type="button" class="link-button danger" (click)="removePricingTier($index)">Remove</button>
+        </div>
+      }
+      <button type="button" class="secondary-button" (click)="addPricingTier()">+ Add pricing tier</button>
+
+      @if (sectionError()) { <div class="form-error">{{ sectionError() }}</div> }
+      @if (sectionSaved() === 'pricing') { <div class="form-success">Pricing saved.</div> }
+
+      <div class="panel-actions">
+        <button type="button" class="primary-button" [disabled]="sectionSaving()" (click)="savePricing()">
+          {{ sectionSaving() ? 'Saving…' : 'Save Pricing' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @case ('inventory') {
+    <div class="panel">
+      @for (departure of inventoryDepartures(); track $index) {
+        <div class="row-card">
+          <label class="field narrow">
+            Departure date
+            <input type="date" [(ngModel)]="departure.departureDate" [ngModelOptions]="{standalone: true}" />
+          </label>
+          <label class="field narrow">
+            Total seats
+            <input type="number" [(ngModel)]="departure.totalSeats" [ngModelOptions]="{standalone: true}" min="0" />
+          </label>
+          <label class="field narrow">
+            Booked seats
+            <input type="number" [(ngModel)]="departure.bookedSeats" [ngModelOptions]="{standalone: true}" min="0" />
+          </label>
+          <label class="field narrow">
+            Status
+            <select [(ngModel)]="departure.status" [ngModelOptions]="{standalone: true}">
+              <option value="Open">Open</option>
+              <option value="Closed">Closed</option>
+              <option value="SoldOut">SoldOut</option>
+            </select>
+          </label>
+          <button type="button" class="link-button danger" (click)="removeInventoryDeparture($index)">Remove</button>
+        </div>
+      }
+      <button type="button" class="secondary-button" (click)="addInventoryDeparture()">+ Add departure</button>
+
+      @if (sectionError()) { <div class="form-error">{{ sectionError() }}</div> }
+      @if (sectionSaved() === 'inventory') { <div class="form-success">Inventory saved.</div> }
+
+      <div class="panel-actions">
+        <button type="button" class="primary-button" [disabled]="sectionSaving()" (click)="saveInventory()">
+          {{ sectionSaving() ? 'Saving…' : 'Save Inventory' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @case ('media') {
+    <div class="panel">
+      @for (media of mediaItems(); track $index) {
+        <div class="row-card">
+          <label class="field wide">
+            Media URL
+            <input type="text" [(ngModel)]="media.mediaUrl" [ngModelOptions]="{standalone: true}" placeholder="https://…" />
+          </label>
+          <label class="field narrow">
+            Type
+            <select [(ngModel)]="media.mediaType" [ngModelOptions]="{standalone: true}">
+              <option value="Image">Image</option>
+              <option value="Video">Video</option>
+            </select>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="media.isCoverImage" [ngModelOptions]="{standalone: true}" /> Cover image
+          </label>
+          <button type="button" class="link-button danger" (click)="removeMediaItem($index)">Remove</button>
+        </div>
+      }
+      <button type="button" class="secondary-button" (click)="addMediaItem()">+ Add media</button>
+
+      @if (sectionError()) { <div class="form-error">{{ sectionError() }}</div> }
+      @if (sectionSaved() === 'media') { <div class="form-success">Media saved.</div> }
+
+      <div class="panel-actions">
+        <button type="button" class="primary-button" [disabled]="sectionSaving()" (click)="saveMedia()">
+          {{ sectionSaving() ? 'Saving…' : 'Save Media' }}
+        </button>
+      </div>
+    </div>
+  }
+}

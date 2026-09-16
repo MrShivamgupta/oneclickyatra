@@ -1,0 +1,103 @@
+# Production stack for Oracle Cloud / any Linux VM.
+# Usage (from repo root):
+#   cd docker
+#   cp .env.example .env   # fill in secrets
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Oracle Cloud ARM (Ampere) VMs: SQL Server image is amd64-only — we set platform: linux/amd64
+# (QEMU emulation). Allocate at least 4 GB RAM to the VM for SQL Server + API + web.
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    container_name: oneclickyatra-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SQL_SA_PASSWORD}
+      MSSQL_PID: "Developer"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 45s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: oneclickyatra-redis
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  dbinit:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    container_name: oneclickyatra-dbinit
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      SQL_SA_PASSWORD: ${SQL_SA_PASSWORD}
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - >
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P "$$SQL_SA_PASSWORD" -C
+        -Q "IF DB_ID('OneClickYatra') IS NULL CREATE DATABASE OneClickYatra;"
+    restart: "no"
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: backend/OneClickYatra.MigrationRunner/Dockerfile
+    container_name: oneclickyatra-migrate
+    depends_on:
+      dbinit:
+        condition: service_completed_successfully
+    environment:
+      ConnectionStrings__SqlServer: "Server=sqlserver;Database=OneClickYatra;User Id=sa;Password=${SQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False"
+    command: ["migrate"]
+    restart: "no"
+
+  api:
+    build:
+      context: ..
+      dockerfile: backend/OneClickYatra.Api/Dockerfile
+    container_name: oneclickyatra-api
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__SqlServer: "Server=sqlserver;Database=OneClickYatra;User Id=sa;Password=${SQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False"
+      ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD}"
+      Jwt__Key: ${JWT_KEY}
+      Cors__AllowedOrigins__0: "http://${PUBLIC_DOMAIN}"
+      Cors__AllowedOrigins__1: "https://${PUBLIC_DOMAIN}"
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    container_name: oneclickyatra-web
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:

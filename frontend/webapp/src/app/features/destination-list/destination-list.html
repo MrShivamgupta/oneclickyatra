@@ -1,0 +1,57 @@
+<section class="page-intro">
+  <h1>Explore destinations</h1>
+  <p>Browse curated destinations from around the world and find inspiration for your next trip.</p>
+</section>
+
+<section class="search-section">
+  <app-filter-bar
+    placeholder="Search destinations…"
+    variant="public"
+    [initialValue]="searchTerm()"
+    (searchChange)="onSearchChange($event)"
+  />
+
+  @if (loading()) {
+    <div class="state-message">Loading destinations…</div>
+  } @else if (error()) {
+    <div class="state-message error">
+      <p>{{ error() }}</p>
+      <button type="button" class="retry-button" (click)="load()">Try again</button>
+    </div>
+  } @else if (destinations().length === 0) {
+    <div class="state-message">
+      No destinations match your search. Try a different keyword or
+      <a routerLink="/enquiry">send us an enquiry</a>.
+    </div>
+  } @else {
+    <div class="destination-grid">
+      @for (destination of destinations(); track destination.id) {
+        <a class="destination-card" [routerLink]="['/destinations', destination.slug]">
+          @if (destination.heroImageUrl) {
+            <div class="card-image" [style.background-image]="'url(' + destination.heroImageUrl + ')'"></div>
+          } @else {
+            <div class="card-image placeholder"></div>
+          }
+          @if (destination.isFeatured) {
+            <span class="badge featured">Featured</span>
+          }
+          <div class="card-body">
+            <h2>{{ destination.name }}</h2>
+            <p class="country">{{ destination.countryName }}</p>
+            @if (destination.shortDescription) {
+              <p class="description">{{ destination.shortDescription }}</p>
+            }
+          </div>
+        </a>
+      }
+    </div>
+
+    <app-pagination
+      variant="public"
+      [pageNumber]="pageNumber()"
+      [pageSize]="12"
+      [totalCount]="totalCount()"
+      (pageChange)="onPageChange($event)"
+    />
+  }
+</section>

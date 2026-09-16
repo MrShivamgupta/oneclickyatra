@@ -1,0 +1,225 @@
+@use '../../../shared/styles/index' as tokens;
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: tokens.$space-4;
+  margin-bottom: tokens.$space-5;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: tokens.$space-1 0 0;
+    font-size: tokens.$font-size-xl;
+  }
+
+  .subtitle {
+    margin: tokens.$space-2 0 0;
+    display: flex;
+    align-items: center;
+    gap: tokens.$space-2;
+  }
+}
+
+.back-link {
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: tokens.$space-5;
+  align-items: start;
+}
+
+.card {
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-5;
+
+  h2 {
+    margin: 0 0 tokens.$space-4;
+    font-size: tokens.$font-size-lg;
+  }
+}
+
+.passengers-card,
+.addons-card,
+.history-card {
+  grid-column: 1 / -1;
+}
+
+.options-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: tokens.$space-4;
+
+  h2 { margin: 0; }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-4;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-1;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+}
+
+input,
+select,
+textarea {
+  padding: tokens.$space-2 tokens.$space-3;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+  font-family: inherit;
+
+  &:disabled,
+  &[readonly] {
+    background: tokens.$color-bg;
+    color: tokens.$color-text-secondary;
+  }
+}
+
+.checkbox-label {
+  flex-direction: row;
+  align-items: center;
+  gap: tokens.$space-2;
+  white-space: nowrap;
+}
+
+.hint {
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+  margin: 0 0 tokens.$space-3;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.form-error {
+  color: tokens.$color-danger;
+  background: rgba(224, 69, 63, 0.08);
+  padding: tokens.$space-2 tokens.$space-3;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+  margin-bottom: tokens.$space-3;
+}
+
+.primary-button {
+  padding: tokens.$space-2 tokens.$space-5;
+  border: none;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-primary;
+  color: tokens.$color-text-inverse;
+  font-weight: tokens.$font-weight-semibold;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) { background: tokens.$color-primary-dark; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.secondary-button {
+  padding: tokens.$space-2 tokens.$space-5;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-surface;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &.danger { color: tokens.$color-danger; border-color: rgba(224, 69, 63, 0.4); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.link-button {
+  border: none;
+  background: none;
+  color: tokens.$color-primary;
+  cursor: pointer;
+  font-size: tokens.$font-size-sm;
+  padding: 0;
+
+  &.danger { color: tokens.$color-danger; }
+  &:hover { text-decoration: underline; }
+}
+
+.badge.status {
+  display: inline-block;
+  padding: 2px tokens.$space-2;
+  border-radius: tokens.$radius-pill;
+  font-size: tokens.$font-size-xs;
+
+  &[data-status='Draft'] { background: rgba(107, 114, 128, 0.15); color: tokens.$color-text-secondary; }
+  &[data-status='Quoted'] { background: rgba(139, 92, 246, 0.15); color: #6d28d9; }
+  &[data-status='PendingPayment'] { background: rgba(230, 164, 23, 0.15); color: #a86c00; }
+  &[data-status='Confirmed'] { background: rgba(31, 169, 113, 0.15); color: #157a4f; }
+  &[data-status='InProgress'] { background: rgba(59, 130, 246, 0.15); color: #1d4ed8; }
+  &[data-status='Completed'] { background: rgba(21, 122, 79, 0.18); color: #0f5c3c; }
+  &[data-status='Cancelled'] { background: rgba(224, 69, 63, 0.12); color: tokens.$color-danger; }
+  &[data-status='RefundPending'] { background: rgba(230, 164, 23, 0.15); color: #a86c00; }
+  &[data-status='Refunded'] { background: rgba(107, 114, 128, 0.15); color: tokens.$color-text-secondary; }
+}
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: tokens.$space-3;
+}
+
+.passenger-row,
+.addon-row {
+  display: grid;
+  gap: tokens.$space-2;
+  margin-bottom: tokens.$space-2;
+  align-items: center;
+}
+
+.passenger-row {
+  grid-template-columns: 2fr 0.7fr 1fr 1fr 1fr auto auto;
+}
+
+.addon-row {
+  grid-template-columns: 1.5fr 2fr 1fr 0.7fr auto;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-3;
+
+  li {
+    border-left: 2px solid tokens.$color-border;
+    padding-left: tokens.$space-3;
+  }
+}
+
+.history-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: tokens.$font-size-sm;
+}
+
+.history-reason {
+  margin-top: tokens.$space-1;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+}

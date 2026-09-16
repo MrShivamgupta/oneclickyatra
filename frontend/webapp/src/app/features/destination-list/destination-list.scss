@@ -1,0 +1,138 @@
+@use '../../shared/styles-public/index' as tokens;
+
+.page-intro {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: tokens.$space-10 tokens.$space-4 tokens.$space-6;
+  text-align: center;
+
+  h1 {
+    font-size: tokens.$font-size-2xl;
+    margin: 0 0 tokens.$space-3;
+  }
+
+  p {
+    color: tokens.$color-text-secondary;
+    margin: 0;
+  }
+}
+
+.state-message {
+  max-width: 480px;
+  margin: tokens.$space-10 auto;
+  padding: tokens.$space-6;
+  text-align: center;
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-sm;
+
+  &.error {
+    color: tokens.$color-primary-dark;
+  }
+}
+
+.retry-button {
+  display: inline-block;
+  margin-top: tokens.$space-4;
+  padding: tokens.$space-2 tokens.$space-6;
+  border: none;
+  border-radius: tokens.$radius-pill;
+  background: tokens.$color-primary;
+  color: tokens.$color-text-inverse;
+  font-weight: tokens.$font-weight-semibold;
+  cursor: pointer;
+
+  &:hover {
+    background: tokens.$color-primary-dark;
+  }
+}
+
+.search-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 tokens.$space-8 tokens.$space-12;
+
+  @include tokens.respond-below(tokens.$breakpoint-tablet) {
+    padding: 0 tokens.$space-4 tokens.$space-8;
+  }
+
+  .state-message a {
+    color: tokens.$color-primary;
+    font-weight: tokens.$font-weight-semibold;
+  }
+}
+
+.destination-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: tokens.$space-6;
+}
+
+.destination-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-lg;
+  overflow: hidden;
+  text-decoration: none;
+  color: tokens.$color-text-primary;
+  box-shadow: tokens.$shadow-sm;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    box-shadow: tokens.$shadow-md;
+    transform: translateY(-2px);
+  }
+}
+
+.card-image {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  background-color: tokens.$color-bg-alt;
+
+  &.placeholder {
+    background-image: linear-gradient(135deg, tokens.$color-bg-alt 0%, tokens.$color-border 100%);
+  }
+}
+
+.badge.featured {
+  position: absolute;
+  top: tokens.$space-3;
+  right: tokens.$space-3;
+  padding: tokens.$space-1 tokens.$space-3;
+  border-radius: tokens.$radius-pill;
+  background: tokens.$color-accent;
+  color: tokens.$color-text-inverse;
+  font-size: tokens.$font-size-xs;
+  font-weight: tokens.$font-weight-semibold;
+}
+
+.card-body {
+  padding: tokens.$space-5;
+
+  h2 {
+    font-size: tokens.$font-size-lg;
+    margin: 0 0 tokens.$space-1;
+  }
+
+  .country {
+    color: tokens.$color-accent;
+    font-size: tokens.$font-size-xs;
+    font-weight: tokens.$font-weight-semibold;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 tokens.$space-2;
+  }
+
+  .description {
+    color: tokens.$color-text-secondary;
+    font-size: tokens.$font-size-sm;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

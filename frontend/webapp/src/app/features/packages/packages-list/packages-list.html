@@ -1,0 +1,54 @@
+<div class="page-header">
+  <div>
+    <h1>Tour Packages</h1>
+    <p class="subtitle">Manage packages, itineraries, pricing, inventory and media shown on the public site.</p>
+  </div>
+  <button type="button" class="primary-button" (click)="createPackage()">+ Add Package</button>
+</div>
+
+<app-filter-bar placeholder="Search packages…" (searchChange)="onSearchChange($event)">
+  <select (change)="onDestinationFilterChange($any($event.target).value)">
+    <option value="">All destinations</option>
+    @for (destination of destinations(); track destination.id) {
+      <option [value]="destination.id">{{ destination.name }}</option>
+    }
+  </select>
+  <select (change)="onStatusFilterChange($any($event.target).value)">
+    <option value="">All statuses</option>
+    <option value="Draft">Draft</option>
+    <option value="Published">Published</option>
+  </select>
+</app-filter-bar>
+
+<app-data-table [columns]="columns" [rows]="packages()" [loading]="loading()" emptyMessage="No packages yet. Click 'Add Package' to create one.">
+  <ng-template #rowTemplate let-pkg>
+    <tr>
+      <td><strong>{{ pkg.title }}</strong></td>
+      <td>{{ pkg.destinationName }}</td>
+      <td>{{ pkg.durationDays }}D / {{ pkg.durationNights }}N</td>
+      <td>
+        <span class="badge" [class.published]="pkg.status === 'Published'" [class.draft]="pkg.status === 'Draft'">
+          {{ pkg.status }}
+        </span>
+      </td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="editPackage(pkg)">Edit</button>
+        <button type="button" class="link-button" (click)="togglePublish(pkg)">
+          {{ pkg.status === 'Published' ? 'Unpublish' : 'Publish' }}
+        </button>
+        <button type="button" class="link-button danger" (click)="confirmDelete(pkg)">Delete</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="10" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />
+
+<app-confirmation-dialog
+  [open]="deleteTarget() !== null"
+  title="Delete package?"
+  [message]="'This will permanently remove \'' + (deleteTarget()?.title ?? '') + '\' and all its itinerary, pricing and inventory data.'"
+  confirmLabel="Delete"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

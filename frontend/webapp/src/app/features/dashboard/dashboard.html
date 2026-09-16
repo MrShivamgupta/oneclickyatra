@@ -1,0 +1,210 @@
+<div class="dashboard-header">
+  <div>
+    <h1>Dashboard</h1>
+    @if (authService.currentUser(); as user) {
+      <p class="subtitle">Welcome back, {{ user.fullName }}</p>
+    }
+  </div>
+
+  <div class="header-controls">
+    <select class="date-filter" [value]="selectedPreset()" (change)="onPresetChange($any($event.target).value)">
+      @for (preset of presets; track preset) {
+        <option [value]="preset">{{ presetLabels[preset] }}</option>
+      }
+    </select>
+
+    @if (selectedPreset() === 'Custom') {
+      <input type="date" [value]="customFrom()" (change)="customFrom.set($any($event.target).value)" />
+      <span class="range-separator">to</span>
+      <input type="date" [value]="customTo()" (change)="customTo.set($any($event.target).value)" />
+      <button type="button" class="secondary-button" (click)="applyCustomRange()">Apply</button>
+    }
+
+    <div class="quick-actions">
+      <button type="button" class="primary-button" (click)="toggleQuickActions()">+ Quick Action</button>
+      @if (quickActionsOpen()) {
+        <div class="quick-actions-menu">
+          <button type="button" (click)="navigateQuickAction('/admin/leads/new')">New Lead</button>
+          <button type="button" (click)="navigateQuickAction('/admin/quotations/new')">New Quotation</button>
+          <button type="button" (click)="navigateQuickAction('/admin/bookings/new')">New Booking</button>
+          <button type="button" (click)="navigateQuickAction('/admin/customers')">New Customer</button>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+@if (alerts().length > 0) {
+  <div class="alerts-banner">
+    @for (alert of alerts(); track alert.message) {
+      <a [routerLink]="alert.link" class="alert-item" [attr.data-severity]="alert.severity">⚠ {{ alert.message }}</a>
+    }
+  </div>
+}
+
+<div class="kpi-grid">
+  @for (card of kpiCards(); track card.label) {
+    <a class="kpi-card" [routerLink]="card.link">
+      <div class="kpi-label">{{ card.label }}</div>
+      <div class="kpi-value">
+        @if (card.format === 'currency') {
+          Rs. {{ card.value | number: '1.0-0' }}
+        } @else if (card.format === 'percent') {
+          {{ card.value | number: '1.0-1' }}%
+        } @else {
+          {{ card.value | number: '1.0-0' }}
+        }
+      </div>
+    </a>
+  }
+</div>
+
+<div class="charts-grid">
+  <section class="chart-card">
+    <h2>Revenue Trend</h2>
+    @if (revenueTrend().length === 0) {
+      <p class="hint">No revenue in the selected period.</p>
+    } @else {
+      <app-chart-canvas type="line" [data]="revenueChartData()" />
+    }
+  </section>
+
+  <section class="chart-card">
+    <h2>Lead Conversion Funnel</h2>
+    <app-chart-canvas type="bar" [data]="leadFunnelChartData()" [options]="{ indexAxis: 'y' }" />
+  </section>
+
+  <section class="chart-card">
+    <h2>Destination Performance</h2>
+    @if (destinationPerformance().length === 0) {
+      <p class="hint">No destination-tagged bookings in the selected period.</p>
+    } @else {
+      <app-chart-canvas type="bar" [data]="destinationChartData()" />
+    }
+  </section>
+
+  <section class="chart-card">
+    <h2>Team Performance</h2>
+    @if (salesPerformance().length === 0) {
+      <p class="hint">No leads assigned to staff in the selected period.</p>
+    } @else {
+      <app-chart-canvas type="bar" [data]="salesChartData()" />
+    }
+  </section>
+</div>
+
+<div class="tables-grid">
+  <section class="table-card">
+    <div class="table-card-header">
+      <h2>Recent Leads</h2>
+      <a routerLink="/admin/leads">View All →</a>
+    </div>
+    @if (recentLeads().length === 0) {
+      <p class="hint">No leads yet.</p>
+    } @else {
+      <ul class="mini-list">
+        @for (lead of recentLeads(); track lead.id) {
+          <li>
+            <a [routerLink]="['/admin/leads', lead.id]">{{ lead.customerName }}</a>
+            <span class="badge status" [attr.data-status]="lead.status">{{ lead.status }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section class="table-card">
+    <div class="table-card-header">
+      <h2>Recent Bookings</h2>
+      <a routerLink="/admin/bookings">View All →</a>
+    </div>
+    @if (recentBookings().length === 0) {
+      <p class="hint">No bookings yet.</p>
+    } @else {
+      <ul class="mini-list">
+        @for (booking of recentBookings(); track booking.id) {
+          <li>
+            <a [routerLink]="['/admin/bookings', booking.id]">{{ booking.bookingNumber }} · {{ booking.customerName }}</a>
+            <span class="badge status" [attr.data-status]="booking.status">{{ booking.status }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section class="table-card">
+    <div class="table-card-header">
+      <h2>Today's Follow-Ups</h2>
+      <a routerLink="/admin/followups">View All →</a>
+    </div>
+    @if (todayFollowUps().length === 0) {
+      <p class="hint">Nothing scheduled for today.</p>
+    } @else {
+      <ul class="mini-list">
+        @for (followUp of todayFollowUps(); track followUp.id) {
+          <li>
+            <a [routerLink]="['/admin/leads', followUp.leadId]">{{ followUp.leadCustomerName }}</a>
+            <span class="badge">{{ followUp.type }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section class="table-card">
+    <div class="table-card-header">
+      <h2>Pending Enquiries</h2>
+      <a routerLink="/admin/enquiries">View All →</a>
+    </div>
+    @if (pendingEnquiries().length === 0) {
+      <p class="hint">No pending enquiries.</p>
+    } @else {
+      <ul class="mini-list">
+        @for (enquiry of pendingEnquiries(); track enquiry.id) {
+          <li>
+            <a routerLink="/admin/enquiries">{{ enquiry.fullName }}</a>
+            <span class="hint">{{ enquiry.destinationName ?? '—' }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section class="table-card">
+    <div class="table-card-header">
+      <h2>Refund Requests</h2>
+      <a routerLink="/admin/bookings">View All →</a>
+    </div>
+    @if (refundRequests().length === 0) {
+      <p class="hint">No refund requests pending.</p>
+    } @else {
+      <ul class="mini-list">
+        @for (booking of refundRequests(); track booking.id) {
+          <li>
+            <a [routerLink]="['/admin/bookings', booking.id]">{{ booking.bookingNumber }} · {{ booking.customerName }}</a>
+            <span>Rs. {{ booking.totalAmount | number: '1.0-0' }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section class="table-card">
+    <div class="table-card-header">
+      <h2>Upcoming Departures</h2>
+      <a routerLink="/admin/bookings">View All →</a>
+    </div>
+    @if (upcomingDepartures().length === 0) {
+      <p class="hint">No departures in the next 30 days.</p>
+    } @else {
+      <ul class="mini-list">
+        @for (booking of upcomingDepartures(); track booking.id) {
+          <li>
+            <a [routerLink]="['/admin/bookings', booking.id]">{{ booking.customerName }}</a>
+            <span>{{ booking.travelDate | date: 'dd MMM' }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</div>

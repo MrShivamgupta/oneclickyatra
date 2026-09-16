@@ -1,0 +1,77 @@
+@use '../../styles/index' as admin;
+@use '../../styles-public/index' as public;
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: admin.$space-3;
+  flex-wrap: wrap;
+  margin-bottom: admin.$space-4;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 220px;
+  max-width: 360px;
+  padding: admin.$space-2 admin.$space-3;
+  border: 1px solid admin.$color-border;
+  border-radius: admin.$radius-sm;
+  font-size: admin.$font-size-sm;
+  background: admin.$color-surface;
+  color: admin.$color-text-primary;
+
+  &:focus {
+    outline: 2px solid admin.$color-primary;
+    outline-offset: 1px;
+  }
+}
+
+.extra-filters {
+  display: flex;
+  align-items: center;
+  gap: admin.$space-3;
+  flex-wrap: wrap;
+
+  select {
+    padding: admin.$space-2 admin.$space-3;
+    border: 1px solid admin.$color-border;
+    border-radius: admin.$radius-sm;
+    font-size: admin.$font-size-sm;
+    background: admin.$color-surface;
+    color: admin.$color-text-primary;
+    min-width: 180px;
+  }
+}
+
+:host(.theme-public) {
+  .filter-bar {
+    gap: public.$space-3;
+    margin-bottom: public.$space-4;
+  }
+
+  .search-input {
+    padding: public.$space-2 public.$space-3;
+    border-color: public.$color-border;
+    border-radius: public.$radius-sm;
+    font-size: public.$font-size-sm;
+    background: public.$color-surface;
+    color: public.$color-text-primary;
+
+    &:focus {
+      outline-color: public.$color-primary;
+    }
+  }
+
+  .extra-filters {
+    gap: public.$space-3;
+
+    select {
+      padding: public.$space-2 public.$space-3;
+      border-color: public.$color-border;
+      border-radius: public.$radius-sm;
+      font-size: public.$font-size-sm;
+      background: public.$color-surface;
+      color: public.$color-text-primary;
+    }
+  }
+}

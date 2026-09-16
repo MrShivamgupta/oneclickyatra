@@ -1,0 +1,58 @@
+@use '../../styles/index' as tokens;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background: tokens.$color-surface;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-6;
+  max-width: 400px;
+  width: calc(100% - #{tokens.$space-8});
+  box-shadow: tokens.$shadow-lg;
+}
+
+h2 {
+  margin: 0 0 tokens.$space-2;
+  font-size: tokens.$font-size-lg;
+}
+
+p {
+  margin: 0 0 tokens.$space-5;
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-sm;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: tokens.$space-3;
+}
+
+button {
+  padding: tokens.$space-2 tokens.$space-5;
+  border: none;
+  border-radius: tokens.$radius-sm;
+  cursor: pointer;
+  font-weight: tokens.$font-weight-semibold;
+  font-size: tokens.$font-size-sm;
+  background: tokens.$color-primary;
+  color: tokens.$color-text-inverse;
+
+  &.danger {
+    background: tokens.$color-danger;
+  }
+
+  &.secondary {
+    background: tokens.$color-bg;
+    color: tokens.$color-text-primary;
+    border: 1px solid tokens.$color-border;
+  }
+}

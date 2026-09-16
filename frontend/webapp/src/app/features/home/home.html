@@ -1,0 +1,87 @@
+<section class="hero">
+  <h1>Plan your next unforgettable trip</h1>
+  <p>Search destinations, compare packages and book everything in one place.</p>
+
+  <form class="search-card" (ngSubmit)="search()">
+    <label>
+      Destination
+      <input type="text" name="destination" [(ngModel)]="destination" placeholder="Where do you want to go?" />
+    </label>
+    <label>
+      Travel dates
+      <input type="date" name="travelDate" [(ngModel)]="travelDate" />
+    </label>
+    <label>
+      Travelers
+      <input type="number" name="travelers" [(ngModel)]="travelers" min="1" />
+    </label>
+    <button type="submit">Search</button>
+  </form>
+</section>
+
+<section class="featured-section">
+  <div class="section-header">
+    <h2>Popular Destinations</h2>
+    <a routerLink="/destinations">View all →</a>
+  </div>
+
+  @if (loadingDestinations()) {
+    <div class="state-message">Loading destinations…</div>
+  } @else if (featuredDestinations().length === 0) {
+    <div class="state-message">No featured destinations yet — check back soon.</div>
+  } @else {
+    <div class="card-grid">
+      @for (destination of featuredDestinations(); track destination.id) {
+        <a class="destination-card" [routerLink]="['/destinations', destination.slug]">
+          <div class="card-image" [style.background-image]="destination.heroImageUrl ? 'url(' + destination.heroImageUrl + ')' : null">
+            @if (!destination.heroImageUrl) {
+              <span class="image-placeholder">📍</span>
+            }
+          </div>
+          <div class="card-body">
+            <h3>{{ destination.name }}</h3>
+            <p>{{ destination.countryName }}</p>
+          </div>
+        </a>
+      }
+    </div>
+  }
+</section>
+
+<section class="featured-section">
+  <div class="section-header">
+    <h2>Featured Packages</h2>
+    <a routerLink="/packages">View all →</a>
+  </div>
+
+  @if (loadingPackages()) {
+    <div class="state-message">Loading packages…</div>
+  } @else if (featuredPackages().length === 0) {
+    <div class="state-message">No packages published yet — check back soon.</div>
+  } @else {
+    <div class="card-grid">
+      @for (pkg of featuredPackages(); track pkg.id) {
+        <a class="destination-card" [routerLink]="['/packages', pkg.slug]">
+          <div class="card-image" [style.background-image]="pkg.heroImageUrl ? 'url(' + pkg.heroImageUrl + ')' : null">
+            @if (!pkg.heroImageUrl) {
+              <span class="image-placeholder">✈</span>
+            }
+          </div>
+          <div class="card-body">
+            <h3>{{ pkg.title }}</h3>
+            <p>{{ pkg.destinationName }} · {{ pkg.durationDays }}D/{{ pkg.durationNights }}N</p>
+            @if (pkg.startingPricePerPerson) {
+              <p class="card-price">From {{ pkg.priceCurrency ?? 'INR' }} {{ formatPrice(pkg.startingPricePerPerson) }}</p>
+            }
+          </div>
+        </a>
+      }
+    </div>
+  }
+</section>
+
+<section class="cta-section">
+  <h2>Can't find what you're looking for?</h2>
+  <p>Tell us your travel plans and our team will put together a custom itinerary for you.</p>
+  <a routerLink="/enquiry" class="cta-button">Enquire Now</a>
+</section>

@@ -1,0 +1,13 @@
+@use '../../../shared/styles/index' as tokens;
+
+.badge.status {
+  &[data-status='Draft'] { background: rgba(107, 114, 128, 0.15); color: tokens.$color-text-secondary; }
+  &[data-status='Quoted'] { background: rgba(139, 92, 246, 0.15); color: #6d28d9; }
+  &[data-status='PendingPayment'] { background: rgba(230, 164, 23, 0.15); color: #a86c00; }
+  &[data-status='Confirmed'] { background: rgba(31, 169, 113, 0.15); color: #157a4f; }
+  &[data-status='InProgress'] { background: rgba(59, 130, 246, 0.15); color: #1d4ed8; }
+  &[data-status='Completed'] { background: rgba(21, 122, 79, 0.18); color: #0f5c3c; }
+  &[data-status='Cancelled'] { background: rgba(224, 69, 63, 0.12); color: tokens.$color-danger; }
+  &[data-status='RefundPending'] { background: rgba(230, 164, 23, 0.15); color: #a86c00; }
+  &[data-status='Refunded'] { background: rgba(107, 114, 128, 0.15); color: tokens.$color-text-secondary; }
+}

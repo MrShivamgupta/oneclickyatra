@@ -1,0 +1,48 @@
+<form class="inline-form" [formGroup]="form" (ngSubmit)="save()">
+  <label class="field">
+    Country
+    <select formControlName="countryId">
+      <option value="">Select a country</option>
+      @for (country of countries(); track country.id) {
+        <option [value]="country.id">{{ country.name }}</option>
+      }
+    </select>
+  </label>
+  <label class="field">
+    Name
+    <input type="text" formControlName="name" placeholder="e.g. Goa" />
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="primary-button" [disabled]="isSaving()">
+      {{ editingId() ? 'Update' : 'Add' }} City
+    </button>
+    @if (editingId()) {
+      <button type="button" class="secondary-button" (click)="cancelEdit()">Cancel</button>
+    }
+  </div>
+  @if (formError()) {
+    <div class="form-error">{{ formError() }}</div>
+  }
+</form>
+
+<app-data-table [columns]="columns" [rows]="cities()" [loading]="loading()" emptyMessage="No cities yet.">
+  <ng-template #rowTemplate let-city>
+    <tr>
+      <td>{{ city.name }}</td>
+      <td>{{ city.countryName }}</td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="edit(city)">Edit</button>
+        <button type="button" class="link-button danger" (click)="confirmDelete(city)">Delete</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-confirmation-dialog
+  [open]="deleteTarget() !== null"
+  title="Delete city?"
+  [message]="'This will remove \'' + (deleteTarget()?.name ?? '') + '\'.'"
+  confirmLabel="Delete"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

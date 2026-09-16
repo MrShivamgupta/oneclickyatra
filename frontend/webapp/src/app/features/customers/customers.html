@@ -1,0 +1,70 @@
+<div class="page-header">
+  <div>
+    <h1>Customer Database</h1>
+    <p class="subtitle">Every converted lead lands here. Manage confirmed traveller contact details.</p>
+  </div>
+  <button type="button" class="primary-button" (click)="openCreateModal()">+ Add Customer</button>
+</div>
+
+<app-filter-bar placeholder="Search customers…" (searchChange)="onSearchChange($event)" />
+
+<app-data-table [columns]="columns" [rows]="customers()" [loading]="loading()" emptyMessage="No customers yet. Convert a lead or add one manually.">
+  <ng-template #rowTemplate let-customer>
+    <tr>
+      <td><strong>{{ customer.fullName }}</strong></td>
+      <td>{{ customer.email ?? '—' }}</td>
+      <td>{{ customer.phone }}</td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="openEditModal(customer)">Edit</button>
+        <button type="button" class="link-button danger" (click)="confirmDelete(customer)">Delete</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="10" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />
+
+@if (isModalOpen()) {
+  <div class="overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>{{ editingId() ? 'Edit Customer' : 'Add Customer' }}</h2>
+
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <label>
+          Full name
+          <input type="text" formControlName="fullName" placeholder="e.g. Rahul Verma" />
+        </label>
+
+        <label>
+          Email (optional)
+          <input type="text" formControlName="email" placeholder="e.g. rahul@example.com" />
+        </label>
+
+        <label>
+          Phone
+          <input type="text" formControlName="phone" placeholder="e.g. +919812300001" />
+        </label>
+
+        @if (formError()) {
+          <div class="form-error">{{ formError() }}</div>
+        }
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-button" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="primary-button" [disabled]="isSaving()">
+            {{ isSaving() ? 'Saving…' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<app-confirmation-dialog
+  [open]="deleteTarget() !== null"
+  title="Delete customer?"
+  [message]="'This will remove \'' + (deleteTarget()?.fullName ?? '') + '\' from the customer database.'"
+  confirmLabel="Delete"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

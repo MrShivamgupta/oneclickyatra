@@ -1,0 +1,219 @@
+<div class="page-header">
+  <div>
+    <a routerLink="/admin/leads" class="back-link">← Back to leads</a>
+    <h1>{{ isNew() ? 'New Lead' : (lead()?.customerName ?? 'Lead') }}</h1>
+    @if (!isNew() && lead(); as l) {
+      <p class="subtitle">
+        <span class="badge status" [attr.data-status]="l.status">{{ l.status }}</span>
+        @if (l.customerId) { <span class="badge converted">Converted to customer</span> }
+      </p>
+    }
+  </div>
+  @if (!isNew()) {
+    <button type="button" class="secondary-button danger" (click)="confirmDelete()">Delete Lead</button>
+  }
+</div>
+
+@if (loading()) {
+  <p>Loading…</p>
+}
+
+<div class="detail-grid">
+  <section class="card">
+    <h2>Basic Info</h2>
+    <form [formGroup]="basicForm" (ngSubmit)="saveBasic()">
+      <label>
+        Customer name
+        <input type="text" formControlName="customerName" placeholder="e.g. Rahul Verma" />
+      </label>
+
+      <label>
+        Mobile
+        <input type="text" formControlName="mobile" placeholder="e.g. +919812300001" />
+      </label>
+
+      <label>
+        Email (optional)
+        <input type="text" formControlName="email" placeholder="e.g. rahul@example.com" />
+      </label>
+
+      <label>
+        Destination (optional)
+        <select formControlName="destinationId">
+          <option value="">None</option>
+          @for (destination of destinations(); track destination.id) {
+            <option [value]="destination.id">{{ destination.name }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        Travel date (optional)
+        <input type="date" formControlName="travelDate" />
+      </label>
+
+      <label>
+        Budget (optional)
+        <input type="number" formControlName="budget" placeholder="e.g. 80000" />
+      </label>
+
+      <label>
+        Source (optional)
+        <input type="text" formControlName="source" placeholder="e.g. Website, Instagram, Referral" />
+      </label>
+
+      @if (basicError()) {
+        <div class="form-error">{{ basicError() }}</div>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="primary-button" [disabled]="basicSaving()">
+          {{ basicSaving() ? 'Saving…' : (isNew() ? 'Create Lead' : 'Save Changes') }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  @if (!isNew()) {
+    <section class="card">
+      <h2>Status</h2>
+      <label>
+        Lead status
+        <select [ngModel]="statusValue()" (ngModelChange)="statusValue.set($event)" [ngModelOptions]="{standalone: true}">
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ status }}</option>
+          }
+        </select>
+      </label>
+      <div class="form-actions">
+        <button type="button" class="primary-button" [disabled]="statusSaving()" (click)="saveStatus()">
+          {{ statusSaving() ? 'Updating…' : 'Update Status' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Lead Score</h2>
+      <label>
+        Score (0–100)
+        <input type="number" min="0" max="100" [ngModel]="scoreValue()" (ngModelChange)="scoreValue.set($event)" [ngModelOptions]="{standalone: true}" />
+      </label>
+      <div class="form-actions">
+        <button type="button" class="primary-button" [disabled]="scoreSaving()" (click)="saveScore()">
+          {{ scoreSaving() ? 'Updating…' : 'Update Score' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Assignment</h2>
+      <label>
+        Assigned to
+        <select [ngModel]="assignValue()" (ngModelChange)="assignValue.set($event)" [ngModelOptions]="{standalone: true}">
+          <option value="">Unassigned</option>
+          @for (member of staff(); track member.id) {
+            <option [value]="member.id">{{ member.fullName }}</option>
+          }
+        </select>
+      </label>
+      <div class="form-actions">
+        <button type="button" class="primary-button" [disabled]="assignSaving() || !assignValue()" (click)="saveAssign()">
+          {{ assignSaving() ? 'Assigning…' : 'Assign' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Quotation</h2>
+      <p class="hint">Build a multi-option quotation for this lead to share for approval.</p>
+      <div class="form-actions">
+        <a [routerLink]="['/admin/quotations/new']" [queryParams]="{ leadId: lead()?.id }" class="secondary-button">+ Create Quotation</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Conversion</h2>
+      @if (lead()?.customerId) {
+        <p class="hint">This lead has already been converted to a customer.</p>
+        <a routerLink="/admin/customers" class="link-button">View Customer Database →</a>
+      } @else {
+        <p class="hint">Once terms are agreed, convert this lead into a customer record.</p>
+        @if (convertError()) {
+          <div class="form-error">{{ convertError() }}</div>
+        }
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="convertSaving()" (click)="convertToCustomer()">
+            {{ convertSaving() ? 'Converting…' : 'Convert to Customer' }}
+          </button>
+        </div>
+      }
+    </section>
+
+    <section class="card followups-card">
+      <h2>Follow-Ups</h2>
+
+      @if (followUps().length === 0) {
+        <p class="hint">No follow-ups scheduled yet.</p>
+      } @else {
+        <ul class="followup-list">
+          @for (followUp of followUps(); track followUp.id) {
+            <li>
+              <div class="followup-main">
+                <span class="badge followup-type">{{ followUp.type }}</span>
+                <span>{{ followUp.scheduledAt | date: 'medium' }}</span>
+                <span class="badge status" [attr.data-status]="followUp.status">{{ followUp.status }}</span>
+              </div>
+              @if (followUp.notes) {
+                <div class="followup-notes">{{ followUp.notes }}</div>
+              }
+              @if (followUp.status === 'Pending') {
+                <div class="followup-actions">
+                  <button type="button" class="link-button" (click)="markFollowUpStatus(followUp, 'Completed')">Mark Completed</button>
+                  <button type="button" class="link-button danger" (click)="markFollowUpStatus(followUp, 'Cancelled')">Cancel</button>
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      <form [formGroup]="followUpForm" (ngSubmit)="scheduleFollowUp()" class="followup-form">
+        <label>
+          Scheduled at
+          <input type="datetime-local" formControlName="scheduledAt" />
+        </label>
+        <label>
+          Type
+          <select formControlName="type">
+            @for (type of followUpTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Notes (optional)
+          <input type="text" formControlName="notes" placeholder="e.g. Confirm travel dates" />
+        </label>
+
+        @if (followUpError()) {
+          <div class="form-error">{{ followUpError() }}</div>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="secondary-button" [disabled]="followUpSaving()">
+            {{ followUpSaving() ? 'Scheduling…' : '+ Schedule Follow-Up' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  }
+</div>
+
+<app-confirmation-dialog
+  [open]="deleteConfirmOpen()"
+  title="Delete lead?"
+  [message]="'This will permanently remove \'' + (lead()?.customerName ?? '') + '\' from the lead list.'"
+  confirmLabel="Delete"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

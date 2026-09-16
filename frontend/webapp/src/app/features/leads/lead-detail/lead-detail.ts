@@ -1,0 +1,287 @@
+import { DatePipe } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ConfirmationDialog } from '../../../shared/components/confirmation-dialog/confirmation-dialog';
+import { LeadService } from '../../../core/services/lead.service';
+import { DestinationService } from '../../../core/services/destination.service';
+import { UserService } from '../../../core/services/user.service';
+import { FollowUpService } from '../../../core/services/followup.service';
+import { Destination } from '../../../core/models/master-data.models';
+import { FollowUp, FOLLOW_UP_TYPES, FollowUpType, Lead, LEAD_STATUSES, UserSummary } from '../../../core/models/crm.models';
+
+@Component({
+  selector: 'app-lead-detail',
+  standalone: true,
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, ConfirmationDialog, DatePipe],
+  templateUrl: './lead-detail.html',
+  styleUrl: './lead-detail.scss'
+})
+export class LeadDetail {
+  private readonly leadService = inject(LeadService);
+  private readonly destinationService = inject(DestinationService);
+  private readonly userService = inject(UserService);
+  private readonly followUpService = inject(FollowUpService);
+  private readonly formBuilder = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  readonly statuses = LEAD_STATUSES;
+  readonly followUpTypes = FOLLOW_UP_TYPES;
+
+  readonly leadId = signal<string | null>(null);
+  readonly isNew = signal(false);
+  readonly lead = signal<Lead | null>(null);
+  readonly loading = signal(false);
+
+  readonly destinations = signal<Destination[]>([]);
+  readonly staff = signal<UserSummary[]>([]);
+  readonly followUps = signal<FollowUp[]>([]);
+
+  readonly basicError = signal<string | null>(null);
+  readonly basicSaving = signal(false);
+
+  readonly statusValue = signal('New');
+  readonly statusSaving = signal(false);
+
+  readonly scoreValue = signal(0);
+  readonly scoreSaving = signal(false);
+
+  readonly assignValue = signal('');
+  readonly assignSaving = signal(false);
+
+  readonly convertSaving = signal(false);
+  readonly convertError = signal<string | null>(null);
+
+  readonly followUpError = signal<string | null>(null);
+  readonly followUpSaving = signal(false);
+
+  readonly deleteConfirmOpen = signal(false);
+
+  readonly basicForm = this.formBuilder.nonNullable.group({
+    customerName: ['', [Validators.required, Validators.maxLength(150)]],
+    mobile: ['', Validators.required],
+    email: [''],
+    destinationId: [''],
+    travelDate: [''],
+    budget: [null as number | null],
+    source: ['']
+  });
+
+  readonly followUpForm = this.formBuilder.nonNullable.group({
+    scheduledAt: ['', Validators.required],
+    type: ['Call' as FollowUpType, Validators.required],
+    notes: ['']
+  });
+
+  constructor() {
+    this.destinationService.search({ pageNumber: 1, pageSize: 100 }).subscribe((response) => {
+      if (response.success && response.data) this.destinations.set(response.data.items);
+    });
+    this.userService.listStaff().subscribe((response) => {
+      if (response.success && response.data) this.staff.set(response.data);
+    });
+
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (!idParam || idParam === 'new') {
+      this.isNew.set(true);
+      return;
+    }
+
+    this.leadId.set(idParam);
+    this.load();
+  }
+
+  load(): void {
+    const id = this.leadId();
+    if (!id) return;
+    this.loading.set(true);
+    this.leadService.getById(id).subscribe({
+      next: (response) => {
+        this.loading.set(false);
+        if (response.success && response.data) this.applyLead(response.data);
+      },
+      error: () => this.loading.set(false)
+    });
+    this.loadFollowUps();
+  }
+
+  private applyLead(lead: Lead): void {
+    this.lead.set(lead);
+    this.basicForm.setValue({
+      customerName: lead.customerName,
+      mobile: lead.mobile,
+      email: lead.email ?? '',
+      destinationId: lead.destinationId ?? '',
+      travelDate: lead.travelDate ?? '',
+      budget: lead.budget ?? null,
+      source: lead.source ?? ''
+    });
+    this.statusValue.set(lead.status);
+    this.scoreValue.set(lead.leadScore);
+    this.assignValue.set(lead.assignedToUserId ?? '');
+  }
+
+  loadFollowUps(): void {
+    const id = this.leadId();
+    if (!id) return;
+    this.leadService.listFollowUps(id).subscribe((response) => {
+      if (response.success && response.data) this.followUps.set(response.data);
+    });
+  }
+
+  private buildLeadRequest() {
+    const raw = this.basicForm.getRawValue();
+    return {
+      customerName: raw.customerName,
+      mobile: raw.mobile,
+      email: raw.email || null,
+      destinationId: raw.destinationId || null,
+      travelDate: raw.travelDate || null,
+      budget: raw.budget,
+      source: raw.source || null
+    };
+  }
+
+  saveBasic(): void {
+    if (this.basicForm.invalid) {
+      this.basicForm.markAllAsTouched();
+      return;
+    }
+
+    this.basicSaving.set(true);
+    this.basicError.set(null);
+    const request = this.buildLeadRequest();
+
+    if (this.isNew()) {
+      this.leadService.create(request).subscribe({
+        next: (response) => {
+          this.basicSaving.set(false);
+          if (response.success && response.data) {
+            this.router.navigate(['/admin/leads', response.data.id]);
+          }
+        },
+        error: (error) => {
+          this.basicSaving.set(false);
+          this.basicError.set(error?.error?.message ?? 'Something went wrong. Please try again.');
+        }
+      });
+      return;
+    }
+
+    const id = this.leadId();
+    if (!id) return;
+    this.leadService.update(id, request).subscribe({
+      next: (response) => {
+        this.basicSaving.set(false);
+        if (response.success && response.data) this.applyLead(response.data);
+      },
+      error: (error) => {
+        this.basicSaving.set(false);
+        this.basicError.set(error?.error?.message ?? 'Something went wrong. Please try again.');
+      }
+    });
+  }
+
+  saveStatus(): void {
+    const id = this.leadId();
+    if (!id) return;
+    this.statusSaving.set(true);
+    this.leadService.updateStatus(id, this.statusValue()).subscribe({
+      next: (response) => {
+        this.statusSaving.set(false);
+        if (response.success && response.data) this.applyLead(response.data);
+      },
+      error: () => this.statusSaving.set(false)
+    });
+  }
+
+  saveScore(): void {
+    const id = this.leadId();
+    if (!id) return;
+    this.scoreSaving.set(true);
+    this.leadService.updateScore(id, this.scoreValue()).subscribe({
+      next: (response) => {
+        this.scoreSaving.set(false);
+        if (response.success && response.data) this.applyLead(response.data);
+      },
+      error: () => this.scoreSaving.set(false)
+    });
+  }
+
+  saveAssign(): void {
+    const id = this.leadId();
+    if (!id || !this.assignValue()) return;
+    this.assignSaving.set(true);
+    this.leadService.assign(id, this.assignValue()).subscribe({
+      next: (response) => {
+        this.assignSaving.set(false);
+        if (response.success && response.data) this.applyLead(response.data);
+      },
+      error: () => this.assignSaving.set(false)
+    });
+  }
+
+  convertToCustomer(): void {
+    const id = this.leadId();
+    if (!id) return;
+    this.convertSaving.set(true);
+    this.convertError.set(null);
+    this.leadService.convertToCustomer(id).subscribe({
+      next: () => {
+        this.convertSaving.set(false);
+        this.load();
+      },
+      error: (error) => {
+        this.convertSaving.set(false);
+        this.convertError.set(error?.error?.message ?? 'Could not convert this lead. Please try again.');
+      }
+    });
+  }
+
+  scheduleFollowUp(): void {
+    if (this.followUpForm.invalid) {
+      this.followUpForm.markAllAsTouched();
+      return;
+    }
+    const id = this.leadId();
+    if (!id) return;
+
+    this.followUpSaving.set(true);
+    this.followUpError.set(null);
+    const raw = this.followUpForm.getRawValue();
+
+    this.leadService.createFollowUp(id, { scheduledAt: raw.scheduledAt, type: raw.type, notes: raw.notes || null }).subscribe({
+      next: () => {
+        this.followUpSaving.set(false);
+        this.followUpForm.reset({ scheduledAt: '', type: 'Call', notes: '' });
+        this.loadFollowUps();
+      },
+      error: (error) => {
+        this.followUpSaving.set(false);
+        this.followUpError.set(error?.error?.message ?? 'Could not schedule follow-up.');
+      }
+    });
+  }
+
+  markFollowUpStatus(followUp: FollowUp, status: 'Completed' | 'Cancelled'): void {
+    this.followUpService.updateStatus(followUp.id, { status }).subscribe(() => this.loadFollowUps());
+  }
+
+  confirmDelete(): void {
+    this.deleteConfirmOpen.set(true);
+  }
+
+  cancelDelete(): void {
+    this.deleteConfirmOpen.set(false);
+  }
+
+  performDelete(): void {
+    const id = this.leadId();
+    if (!id) return;
+    this.leadService.delete(id).subscribe(() => {
+      this.deleteConfirmOpen.set(false);
+      this.router.navigate(['/admin/leads']);
+    });
+  }
+}

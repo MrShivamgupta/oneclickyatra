@@ -1,0 +1,33 @@
+<div class="page-header">
+  <div>
+    <h1>Quotations</h1>
+    <p class="subtitle">Build multi-option quotations, send them for approval and track decisions.</p>
+  </div>
+  <button type="button" class="primary-button" (click)="createQuotation()">+ New Quotation</button>
+</div>
+
+<app-filter-bar placeholder="Search by quotation #, title or lead…" (searchChange)="onSearchChange($event)">
+  <select (change)="onStatusFilterChange($any($event.target).value)">
+    <option value="">All statuses</option>
+    @for (status of statuses; track status) {
+      <option [value]="status">{{ status }}</option>
+    }
+  </select>
+</app-filter-bar>
+
+<app-data-table [columns]="columns" [rows]="quotations()" [loading]="loading()" emptyMessage="No quotations yet. Click 'New Quotation' to create one.">
+  <ng-template #rowTemplate let-quotation>
+    <tr class="clickable-row" (click)="openQuotation(quotation)">
+      <td>{{ quotation.quotationNumber }}</td>
+      <td>{{ quotation.leadCustomerName ?? '—' }}</td>
+      <td>{{ quotation.title }}</td>
+      <td><span class="badge status" [attr.data-status]="quotation.status">{{ quotation.status }}</span></td>
+      <td>{{ quotation.validUntil ? (quotation.validUntil | date: 'dd MMM yyyy') : '—' }}</td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="$event.stopPropagation(); openQuotation(quotation)">View</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="10" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />

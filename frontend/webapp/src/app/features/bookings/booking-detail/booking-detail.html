@@ -1,0 +1,285 @@
+<div class="page-header">
+  <div>
+    <a routerLink="/admin/bookings" class="back-link">← Back to bookings</a>
+    <h1>{{ isNew() ? 'New Booking' : (booking()?.bookingNumber ?? 'Booking') }}</h1>
+    @if (!isNew() && booking(); as b) {
+      <p class="subtitle">
+        <span class="badge status" [attr.data-status]="b.status">{{ b.status }}</span>
+        <span>{{ b.customerName }}</span>
+      </p>
+    }
+  </div>
+  @if (!isNew() && isDeletable) {
+    <button type="button" class="secondary-button danger" (click)="confirmDelete()">Delete Booking</button>
+  }
+</div>
+
+@if (loading()) {
+  <p>Loading…</p>
+}
+
+<div class="detail-grid">
+  <section class="card">
+    <h2>Booking Details</h2>
+    <form [formGroup]="basicForm" (ngSubmit)="saveBasic()">
+      @if (isNew()) {
+        <label>
+          Customer
+          <select [ngModel]="selectedCustomerId()" (ngModelChange)="selectedCustomerId.set($event)" [ngModelOptions]="{standalone: true}">
+            <option value="">Select a customer</option>
+            @for (customer of customers(); track customer.id) {
+              <option [value]="customer.id">{{ customer.fullName }} ({{ customer.phone }})</option>
+            }
+          </select>
+        </label>
+      } @else if (booking(); as b) {
+        <label>
+          Customer
+          <input type="text" [value]="b.customerName ?? '—'" disabled />
+        </label>
+      }
+
+      <label>
+        Package (optional)
+        <select formControlName="packageId" [disabled]="!isEditable">
+          <option value="">None</option>
+          @for (pkg of packages(); track pkg.id) {
+            <option [value]="pkg.id">{{ pkg.title }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        Destination (optional)
+        <select formControlName="destinationId" [disabled]="!isEditable">
+          <option value="">None</option>
+          @for (destination of destinations(); track destination.id) {
+            <option [value]="destination.id">{{ destination.name }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        Travel date
+        <input type="date" formControlName="travelDate" [readonly]="!isEditable" />
+      </label>
+
+      <label>
+        Return date
+        <input type="date" formControlName="returnDate" [readonly]="!isEditable" />
+      </label>
+
+      <label>
+        Adults
+        <input type="number" min="1" formControlName="numberOfAdults" [readonly]="!isEditable" />
+      </label>
+
+      <label>
+        Children
+        <input type="number" min="0" formControlName="numberOfChildren" [readonly]="!isEditable" />
+      </label>
+
+      <label>
+        Total amount
+        <input type="number" min="0" formControlName="totalAmount" [readonly]="!isEditable" />
+      </label>
+
+      <label>
+        Notes (optional)
+        <textarea rows="2" formControlName="notes" [readonly]="!isEditable"></textarea>
+      </label>
+
+      @if (basicError()) {
+        <div class="form-error">{{ basicError() }}</div>
+      }
+
+      @if (isEditable) {
+        <div class="form-actions">
+          <button type="submit" class="primary-button" [disabled]="basicSaving()">
+            {{ basicSaving() ? 'Saving…' : (isNew() ? 'Create Booking' : 'Save Changes') }}
+          </button>
+        </div>
+      }
+    </form>
+  </section>
+
+  @if (!isNew() && booking(); as b) {
+    <section class="card">
+      <h2>Status &amp; Actions</h2>
+      @if (b.cancellationReason) {
+        <p class="hint">Cancelled: {{ b.cancellationReason }}</p>
+      }
+      @if (transitionError()) {
+        <div class="form-error">{{ transitionError() }}</div>
+      }
+
+      @if (reasonAction(); as action) {
+        <label>
+          Reason (optional)
+          <textarea rows="2" [ngModel]="reasonText()" (ngModelChange)="reasonText.set($event)" [ngModelOptions]="{standalone: true}"></textarea>
+        </label>
+        <div class="form-actions" style="justify-content: flex-start; gap: 12px;">
+          <button type="button" class="secondary-button" (click)="cancelReasonAction()">Back</button>
+          <button type="button" class="primary-button" [disabled]="transitionSaving()" (click)="confirmReasonAction()">
+            {{ transitionSaving() ? 'Submitting…' : (action === 'cancel' ? 'Confirm Cancellation' : 'Confirm Refund') }}
+          </button>
+        </div>
+      } @else {
+        <div class="status-actions">
+          @for (status of allowedNextStatuses; track status) {
+            <button type="button" class="secondary-button" [disabled]="transitionSaving()" (click)="transitionTo(status)">
+              Move to {{ status }}
+            </button>
+          }
+          @if (canCancel) {
+            <button type="button" class="secondary-button danger" [disabled]="transitionSaving()" (click)="startReasonAction('cancel')">
+              Cancel Booking
+            </button>
+          }
+          @if (canRefund) {
+            <button type="button" class="secondary-button" [disabled]="transitionSaving()" (click)="startReasonAction('refund')">
+              Initiate Refund
+            </button>
+          }
+          @if (allowedNextStatuses.length === 0 && !canCancel && !canRefund) {
+            <p class="hint">This booking is in a final state — no further transitions available.</p>
+          }
+        </div>
+      }
+    </section>
+
+    @if (b.status === 'PendingPayment') {
+      <section class="card">
+        <h2>Collect Payment</h2>
+        <p class="hint">
+          Outstanding balance: Rs. {{ (b.totalAmount - b.amountPaid) | number: '1.0-0' }}. Opens the
+          Razorpay checkout widget; the booking is confirmed automatically once the gateway's
+          webhook confirms the payment.
+        </p>
+        @if (paymentError()) {
+          <div class="form-error">{{ paymentError() }}</div>
+        }
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="paymentSaving()" (click)="collectPayment()">
+            {{ paymentSaving() ? 'Starting…' : 'Collect Payment' }}
+          </button>
+        </div>
+      </section>
+    }
+
+    @if (b.status === 'RefundPending') {
+      <section class="card">
+        <h2>Process Refund</h2>
+        <p class="hint">Sends the refund to Razorpay for the captured payment and marks the booking Refunded once confirmed.</p>
+        @if (gatewayRefundError()) {
+          <div class="form-error">{{ gatewayRefundError() }}</div>
+        }
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="gatewayRefundSaving()" (click)="processGatewayRefund()">
+            {{ gatewayRefundSaving() ? 'Processing…' : 'Process Refund via Gateway' }}
+          </button>
+        </div>
+      </section>
+    }
+
+    <section class="card passengers-card">
+      <div class="options-header">
+        <h2>Passengers</h2>
+        @if (isEditable) {
+          <button type="button" class="secondary-button" (click)="addPassenger()">+ Add Passenger</button>
+        }
+      </div>
+
+      @if (passengers().length === 0) {
+        <p class="hint">No passengers added yet.</p>
+      }
+
+      @for (passenger of passengers(); track $index; let i = $index) {
+        <div class="passenger-row">
+          <input type="text" [(ngModel)]="passenger.fullName" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="Full name" />
+          <input type="number" [(ngModel)]="passenger.age" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="Age" />
+          <input type="text" [(ngModel)]="passenger.gender" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="Gender" />
+          <input type="text" [(ngModel)]="passenger.idProofType" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="ID proof type" />
+          <input type="text" [(ngModel)]="passenger.idProofNumber" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="ID proof number" />
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="passenger.isLeadPassenger" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" /> Lead
+          </label>
+          @if (isEditable) {
+            <button type="button" class="link-button danger" (click)="removePassenger(i)">✕</button>
+          }
+        </div>
+      }
+
+      @if (isEditable && passengers().length > 0) {
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="passengersSaving()" (click)="savePassengers()">
+            {{ passengersSaving() ? 'Saving…' : 'Save Passengers' }}
+          </button>
+        </div>
+      }
+    </section>
+
+    <section class="card addons-card">
+      <div class="options-header">
+        <h2>Add-Ons</h2>
+        @if (isEditable) {
+          <button type="button" class="secondary-button" (click)="addAddOn()">+ Add Item</button>
+        }
+      </div>
+
+      @if (addOns().length === 0) {
+        <p class="hint">No add-ons yet.</p>
+      }
+
+      @for (addOn of addOns(); track $index; let i = $index) {
+        <div class="addon-row">
+          <input type="text" [(ngModel)]="addOn.name" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="e.g. Airport Pickup" />
+          <input type="text" [(ngModel)]="addOn.description" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="Description" />
+          <input type="number" [(ngModel)]="addOn.price" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="Price" />
+          <input type="number" min="1" [(ngModel)]="addOn.quantity" [ngModelOptions]="{standalone: true}" [disabled]="!isEditable" placeholder="Qty" />
+          @if (isEditable) {
+            <button type="button" class="link-button danger" (click)="removeAddOn(i)">✕</button>
+          }
+        </div>
+      }
+
+      @if (isEditable && addOns().length > 0) {
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="addOnsSaving()" (click)="saveAddOns()">
+            {{ addOnsSaving() ? 'Saving…' : 'Save Add-Ons' }}
+          </button>
+        </div>
+      }
+    </section>
+
+    <section class="card history-card">
+      <h2>Status History</h2>
+      @if (history().length === 0) {
+        <p class="hint">No history yet.</p>
+      } @else {
+        <ul class="history-list">
+          @for (entry of history(); track entry.id) {
+            <li>
+              <div class="history-main">
+                <span>{{ entry.oldStatus ?? 'Created' }} → <strong>{{ entry.newStatus }}</strong></span>
+                <span class="hint">{{ entry.changedAt | date: 'medium' }} · {{ entry.changedByName ?? 'System' }}</span>
+              </div>
+              @if (entry.reason) {
+                <div class="history-reason">{{ entry.reason }}</div>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>
+
+<app-confirmation-dialog
+  [open]="deleteConfirmOpen()"
+  title="Delete booking?"
+  [message]="'This will permanently remove \'' + (booking()?.bookingNumber ?? '') + '\'.'"
+  confirmLabel="Delete"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

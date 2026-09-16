@@ -1,0 +1,30 @@
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        @for (column of columns(); track column.key) {
+          <th>{{ column.label }}</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @if (loading()) {
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <tr class="skeleton-row">
+            @for (column of columns(); track column.key) {
+              <td><div class="skeleton-cell"></div></td>
+            }
+          </tr>
+        }
+      } @else if (rows().length === 0) {
+        <tr>
+          <td [attr.colspan]="columns().length" class="empty-cell">{{ emptyMessage() }}</td>
+        </tr>
+      } @else {
+        @for (row of rows(); track $index) {
+          <ng-container [ngTemplateOutlet]="rowTemplate!" [ngTemplateOutletContext]="{ $implicit: row }" />
+        }
+      }
+    </tbody>
+  </table>
+</div>

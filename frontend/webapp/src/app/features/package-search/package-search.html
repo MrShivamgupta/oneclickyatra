@@ -1,0 +1,63 @@
+<section class="page-hero">
+  <h1>Explore holiday packages</h1>
+  <p>Browse curated packages across destinations and find the trip that fits you best.</p>
+</section>
+
+<section class="search-section">
+  <app-filter-bar
+    placeholder="Search packages…"
+    variant="public"
+    [initialValue]="searchTerm()"
+    (searchChange)="onSearchChange($event)"
+  >
+    <select [value]="destinationFilter()" (change)="onDestinationFilterChange($any($event.target).value)">
+      <option value="">All destinations</option>
+      @for (destination of destinations(); track destination.id) {
+        <option [value]="destination.id">{{ destination.name }}</option>
+      }
+    </select>
+  </app-filter-bar>
+
+  @if (loading()) {
+    <div class="state-message">Loading packages…</div>
+  } @else if (error()) {
+    <div class="state-message error">{{ error() }}</div>
+  } @else if (packages().length === 0) {
+    <div class="state-message">
+      No packages match your search. Try a different destination or keyword, or
+      <a routerLink="/enquiry" [queryParams]="enquiryQueryParams()">send us an enquiry</a>.
+    </div>
+  } @else {
+    <div class="package-grid">
+      @for (pkg of packages(); track pkg.id) {
+        <a class="package-card" [routerLink]="['/packages', pkg.slug]">
+          <div class="card-image" [style.background-image]="pkg.heroImageUrl ? 'url(' + pkg.heroImageUrl + ')' : null">
+            @if (!pkg.heroImageUrl) {
+              <span class="image-placeholder">✈</span>
+            }
+          </div>
+          <div class="card-body">
+            <h3>{{ pkg.title }}</h3>
+            <p class="destination">{{ pkg.destinationName }}</p>
+            <p class="duration">{{ pkg.durationDays }}D / {{ pkg.durationNights }}N</p>
+            @if (pkg.startingPricePerPerson) {
+              <p class="price">From {{ pkg.priceCurrency ?? 'INR' }} {{ formatPrice(pkg.startingPricePerPerson) }} / person</p>
+            }
+            @if (pkg.shortDescription) {
+              <p class="short-description">{{ pkg.shortDescription }}</p>
+            }
+            <span class="view-link">View details →</span>
+          </div>
+        </a>
+      }
+    </div>
+
+    <app-pagination
+      variant="public"
+      [pageNumber]="pageNumber()"
+      [pageSize]="12"
+      [totalCount]="totalCount()"
+      (pageChange)="onPageChange($event)"
+    />
+  }
+</section>

@@ -1,0 +1,43 @@
+<form class="inline-form" [formGroup]="form" (ngSubmit)="save()">
+  <label class="field">
+    Name
+    <input type="text" formControlName="name" placeholder="e.g. India" />
+  </label>
+  <label class="field">
+    ISO Code
+    <input type="text" formControlName="isoCode" placeholder="e.g. IN" maxlength="3" />
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="primary-button" [disabled]="isSaving()">
+      {{ editingId() ? 'Update' : 'Add' }} Country
+    </button>
+    @if (editingId()) {
+      <button type="button" class="secondary-button" (click)="cancelEdit()">Cancel</button>
+    }
+  </div>
+  @if (formError()) {
+    <div class="form-error">{{ formError() }}</div>
+  }
+</form>
+
+<app-data-table [columns]="columns" [rows]="countries()" [loading]="loading()" emptyMessage="No countries yet.">
+  <ng-template #rowTemplate let-country>
+    <tr>
+      <td>{{ country.name }}</td>
+      <td>{{ country.isoCode }}</td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="edit(country)">Edit</button>
+        <button type="button" class="link-button danger" (click)="confirmDelete(country)">Delete</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-confirmation-dialog
+  [open]="deleteTarget() !== null"
+  title="Delete country?"
+  [message]="'This will remove \'' + (deleteTarget()?.name ?? '') + '\'. Cities and destinations linked to it may be affected.'"
+  confirmLabel="Delete"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

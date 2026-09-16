@@ -1,0 +1,36 @@
+@use '../../shared/styles/index' as tokens;
+
+.page-header {
+  margin-bottom: tokens.$space-4;
+
+  h1 { margin: 0; font-size: tokens.$font-size-xl; }
+  .subtitle { margin: tokens.$space-1 0 0; color: tokens.$color-text-secondary; font-size: tokens.$font-size-sm; }
+}
+
+.tabs {
+  display: flex;
+  gap: tokens.$space-2;
+  border-bottom: 1px solid tokens.$color-border;
+  margin-bottom: tokens.$space-5;
+}
+
+.tabs button {
+  padding: tokens.$space-2 tokens.$space-4;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+
+  &.active {
+    color: tokens.$color-primary;
+    border-bottom-color: tokens.$color-primary;
+    font-weight: tokens.$font-weight-semibold;
+  }
+
+  &:hover:not(.active) {
+    color: tokens.$color-text-primary;
+  }
+}

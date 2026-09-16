@@ -1,0 +1,48 @@
+<form class="inline-form" [formGroup]="form" (ngSubmit)="save()">
+  <label class="field">
+    Name
+    <input type="text" formControlName="name" placeholder="e.g. Honeymoon" />
+  </label>
+  <label class="field">
+    Slug
+    <input type="text" formControlName="slug" placeholder="e.g. honeymoon" />
+  </label>
+  <label class="field">
+    Description
+    <input type="text" formControlName="description" placeholder="Optional" />
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="primary-button" [disabled]="isSaving()">
+      {{ editingId() ? 'Update' : 'Add' }} Category
+    </button>
+    @if (editingId()) {
+      <button type="button" class="secondary-button" (click)="cancelEdit()">Cancel</button>
+    }
+  </div>
+  @if (formError()) {
+    <div class="form-error">{{ formError() }}</div>
+  }
+</form>
+
+<app-data-table [columns]="columns" [rows]="categories()" [loading]="loading()" emptyMessage="No categories yet.">
+  <ng-template #rowTemplate let-category>
+    <tr>
+      <td>{{ category.name }}</td>
+      <td>{{ category.slug }}</td>
+      <td>{{ category.description ?? '—' }}</td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="edit(category)">Edit</button>
+        <button type="button" class="link-button danger" (click)="confirmDelete(category)">Delete</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-confirmation-dialog
+  [open]="deleteTarget() !== null"
+  title="Delete category?"
+  [message]="'This will remove \'' + (deleteTarget()?.name ?? '') + '\'.'"
+  confirmLabel="Delete"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

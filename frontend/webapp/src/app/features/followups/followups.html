@@ -1,0 +1,26 @@
+<div class="page-header">
+  <div>
+    <h1>Today's Follow-Ups</h1>
+    <p class="subtitle">Pending calls, messages and visits scheduled for today across all leads.</p>
+  </div>
+</div>
+
+<app-data-table [columns]="columns" [rows]="followUps()" [loading]="loading()" emptyMessage="No follow-ups scheduled for today.">
+  <ng-template #rowTemplate let-followUp>
+    <tr>
+      <td>
+        <button type="button" class="link-button" (click)="openLead(followUp)">{{ followUp.leadCustomerName ?? 'View lead' }}</button>
+      </td>
+      <td>{{ followUp.scheduledAt | date: 'short' }}</td>
+      <td><span class="badge followup-type">{{ followUp.type }}</span></td>
+      <td>{{ followUp.notes ?? '—' }}</td>
+      <td><span class="badge status" [attr.data-status]="followUp.status">{{ followUp.status }}</span></td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="markStatus(followUp, 'Completed')">Mark Completed</button>
+        <button type="button" class="link-button danger" (click)="markStatus(followUp, 'Cancelled')">Cancel</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="10" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />

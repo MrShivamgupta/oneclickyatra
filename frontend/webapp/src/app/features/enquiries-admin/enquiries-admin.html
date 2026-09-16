@@ -1,0 +1,50 @@
+<div class="page-header">
+  <div>
+    <h1>Enquiries</h1>
+    <p class="subtitle">Public-site enquiry submissions awaiting follow-up.</p>
+  </div>
+</div>
+
+<app-filter-bar placeholder="Search by name, email or phone…" (searchChange)="onSearchChange($event)">
+  <select (change)="onStatusFilterChange($any($event.target).value)">
+    <option value="">All statuses</option>
+    @for (status of statuses; track status) {
+      <option [value]="status">{{ status }}</option>
+    }
+  </select>
+</app-filter-bar>
+
+<app-data-table [columns]="columns" [rows]="enquiries()" [loading]="loading()" emptyMessage="No enquiries yet.">
+  <ng-template #rowTemplate let-enquiry>
+    <tr>
+      <td>
+        <strong>{{ enquiry.fullName }}</strong>
+        <div class="hint">{{ enquiry.email }} · {{ enquiry.phone }}</div>
+      </td>
+      <td>{{ enquiry.destinationName ?? '—' }}</td>
+      <td class="message-cell">{{ enquiry.message }}</td>
+      <td>
+        <select [value]="enquiry.status" (change)="updateStatus(enquiry, $any($event.target).value)">
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ status }}</option>
+          }
+        </select>
+      </td>
+      <td>{{ enquiry.createdAt | date: 'dd MMM yyyy' }}</td>
+      <td class="actions-cell">
+        <button type="button" class="link-button danger" (click)="confirmDelete(enquiry)">Delete</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="10" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />
+
+<app-confirmation-dialog
+  [open]="deleteTarget() !== null"
+  title="Delete enquiry?"
+  [message]="'This will remove the enquiry from \'' + (deleteTarget()?.fullName ?? '') + '\'.'"
+  confirmLabel="Delete"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

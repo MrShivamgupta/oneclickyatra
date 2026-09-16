@@ -1,0 +1,103 @@
+@use '../../shared/styles-public/index' as tokens;
+
+.state-message {
+  max-width: 480px;
+  margin: tokens.$space-12 auto;
+  padding: tokens.$space-6;
+  text-align: center;
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-sm;
+
+  h1 {
+    font-size: tokens.$font-size-xl;
+    color: tokens.$color-text-primary;
+    margin: 0 0 tokens.$space-3;
+  }
+
+  &.error {
+    color: tokens.$color-primary-dark;
+  }
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: tokens.$space-4;
+  color: tokens.$color-primary;
+  font-weight: tokens.$font-weight-semibold;
+  text-decoration: none;
+
+  &:hover {
+    color: tokens.$color-primary-dark;
+  }
+}
+
+.hero {
+  position: relative;
+  min-height: 320px;
+  display: flex;
+  align-items: flex-end;
+  background-color: tokens.$color-bg-alt;
+  background-size: cover;
+  background-position: center;
+
+  @include tokens.respond-below(tokens.$breakpoint-tablet) {
+    min-height: 220px;
+  }
+}
+
+.hero-overlay {
+  position: relative;
+  width: 100%;
+  padding: tokens.$space-8;
+  background: linear-gradient(0deg, rgba(36, 28, 21, 0.7) 0%, rgba(36, 28, 21, 0) 100%);
+  color: tokens.$color-text-inverse;
+
+  h1 {
+    font-size: tokens.$font-size-2xl;
+    margin: tokens.$space-2 0 tokens.$space-1;
+  }
+
+  .location {
+    font-size: tokens.$font-size-sm;
+    margin: 0;
+    opacity: 0.9;
+  }
+}
+
+.badge.featured {
+  display: inline-block;
+  padding: tokens.$space-1 tokens.$space-3;
+  border-radius: tokens.$radius-pill;
+  background: tokens.$color-accent;
+  color: tokens.$color-text-inverse;
+  font-size: tokens.$font-size-xs;
+  font-weight: tokens.$font-weight-semibold;
+}
+
+.content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: tokens.$space-8 tokens.$space-4 tokens.$space-12;
+
+  .description {
+    color: tokens.$color-text-secondary;
+    font-size: tokens.$font-size-base;
+    line-height: 1.7;
+    white-space: pre-line;
+  }
+
+  .packages-link {
+    display: inline-block;
+    margin-top: tokens.$space-6;
+    padding: tokens.$space-3 tokens.$space-6;
+    border-radius: tokens.$radius-pill;
+    background: tokens.$color-primary;
+    color: tokens.$color-text-inverse;
+    font-weight: tokens.$font-weight-semibold;
+    text-decoration: none;
+
+    &:hover {
+      background: tokens.$color-primary-dark;
+    }
+  }
+}

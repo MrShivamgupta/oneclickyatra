@@ -1,0 +1,253 @@
+@use '../../shared/styles/index' as tokens;
+
+:host {
+  display: block;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: tokens.$space-4;
+  margin-bottom: tokens.$space-5;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0;
+    font-size: tokens.$font-size-xl;
+  }
+
+  .subtitle {
+    margin: tokens.$space-1 0 0;
+    color: tokens.$color-text-secondary;
+    font-size: tokens.$font-size-sm;
+  }
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: tokens.$space-3;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.date-filter,
+input[type='date'] {
+  padding: tokens.$space-2 tokens.$space-3;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+  background: tokens.$color-surface;
+}
+
+.range-separator {
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+}
+
+.primary-button {
+  padding: tokens.$space-2 tokens.$space-5;
+  border: none;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-primary;
+  color: tokens.$color-text-inverse;
+  font-weight: tokens.$font-weight-semibold;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover { background: tokens.$color-primary-dark; }
+}
+
+.secondary-button {
+  padding: tokens.$space-2 tokens.$space-4;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-surface;
+  cursor: pointer;
+}
+
+.quick-actions {
+  position: relative;
+}
+
+.quick-actions-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  box-shadow: tokens.$shadow-lg;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  z-index: 20;
+  overflow: hidden;
+
+  button {
+    padding: tokens.$space-3 tokens.$space-4;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: tokens.$font-size-sm;
+    color: tokens.$color-text-primary;
+
+    &:hover { background: tokens.$color-bg; }
+  }
+}
+
+.alerts-banner {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-2;
+  margin-bottom: tokens.$space-5;
+}
+
+.alert-item {
+  display: block;
+  padding: tokens.$space-3 tokens.$space-4;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+  text-decoration: none;
+
+  &[data-severity='warning'] { background: rgba(230, 164, 23, 0.12); color: #a86c00; }
+  &[data-severity='danger'] { background: rgba(224, 69, 63, 0.1); color: tokens.$color-danger; }
+  &[data-severity='info'] { background: rgba(59, 130, 246, 0.1); color: #1d4ed8; }
+
+  &:hover { text-decoration: underline; }
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: tokens.$space-4;
+  margin-bottom: tokens.$space-6;
+}
+
+.kpi-card {
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-4;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: tokens.$shadow-md;
+  }
+}
+
+.kpi-label {
+  font-size: tokens.$font-size-xs;
+  color: tokens.$color-text-secondary;
+  margin-bottom: tokens.$space-2;
+}
+
+.kpi-value {
+  font-size: tokens.$font-size-xl;
+  font-weight: tokens.$font-weight-bold;
+  color: tokens.$color-text-primary;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: tokens.$space-5;
+  margin-bottom: tokens.$space-6;
+}
+
+.chart-card,
+.table-card {
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-5;
+
+  h2 {
+    margin: 0 0 tokens.$space-4;
+    font-size: tokens.$font-size-lg;
+  }
+}
+
+.tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: tokens.$space-5;
+}
+
+.table-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: tokens.$space-4;
+
+  h2 { margin: 0; }
+
+  a {
+    font-size: tokens.$font-size-sm;
+    color: tokens.$color-primary;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.hint {
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+}
+
+.mini-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-3;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: tokens.$space-3;
+    font-size: tokens.$font-size-sm;
+    padding-bottom: tokens.$space-2;
+    border-bottom: 1px solid tokens.$color-border;
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+  }
+
+  a {
+    color: tokens.$color-text-primary;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover { color: tokens.$color-primary; }
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px tokens.$space-2;
+  border-radius: tokens.$radius-pill;
+  font-size: tokens.$font-size-xs;
+  background: tokens.$color-bg;
+  color: tokens.$color-text-secondary;
+  white-space: nowrap;
+}
+
+.badge.status {
+  &[data-status='New'] { background: rgba(59, 130, 246, 0.15); color: #1d4ed8; }
+  &[data-status='Confirmed'] { background: rgba(31, 169, 113, 0.15); color: #157a4f; }
+  &[data-status='Draft'] { background: rgba(107, 114, 128, 0.15); color: tokens.$color-text-secondary; }
+  &[data-status='Cancelled'] { background: rgba(224, 69, 63, 0.12); color: tokens.$color-danger; }
+}
