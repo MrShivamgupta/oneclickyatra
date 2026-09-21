@@ -25,6 +25,10 @@
   }
 </form>
 
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+
 <app-data-table [columns]="columns" [rows]="cities()" [loading]="loading()" emptyMessage="No cities yet.">
   <ng-template #rowTemplate let-city>
     <tr>
@@ -43,6 +47,9 @@
   title="Delete city?"
   [message]="'This will remove \'' + (deleteTarget()?.name ?? '') + '\'.'"
   confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
   (confirmed)="performDelete()"
   (cancelled)="cancelDelete()"
 />

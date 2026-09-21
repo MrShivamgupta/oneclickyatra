@@ -7,6 +7,7 @@ public interface ICustomerRepository
 {
     Task<CustomerModel?> GetByIdAsync(Guid __id, CancellationToken __cancellationToken);
     Task<CustomerModel?> GetByPhoneAsync(string __phone, CancellationToken __cancellationToken);
+    Task<CustomerModel?> GetByUserIdAsync(Guid __userId, CancellationToken __cancellationToken);
     Task<PaginationResponse<CustomerModel>> ListAsync(PaginationRequest __request, CancellationToken __cancellationToken);
     Task<Guid> CreateAsync(CustomerModel __customer, CancellationToken __cancellationToken);
     Task UpdateAsync(CustomerModel __customer, CancellationToken __cancellationToken);

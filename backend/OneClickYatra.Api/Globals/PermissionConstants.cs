@@ -65,6 +65,15 @@ public static class PermissionConstants
 
     public const string CmsView = "cms.view";
     public const string CmsManage = "cms.manage";
+
+    public const string VendorView = "vendor.view";
+    public const string VendorCreate = "vendor.create";
+    public const string VendorUpdate = "vendor.update";
+    public const string VendorDelete = "vendor.delete";
+
+    public const string WhatsAppManage = "whatsapp.manage";
+
+    public const string FeedbackView = "feedback.view";
 }
 
 /// <summary>Seed-time role names. Architecture supports adding further roles without code changes.</summary>
@@ -76,4 +85,5 @@ public static class RoleConstants
     public const string OperationsStaff = "OperationsStaff";
     public const string Finance = "Finance";
     public const string SuperAdmin = "SuperAdmin";
+    public const string Vendor = "Vendor";
 }

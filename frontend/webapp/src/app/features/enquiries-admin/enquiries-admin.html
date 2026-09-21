@@ -14,6 +14,13 @@
   </select>
 </app-filter-bar>
 
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+@if (statusError()) {
+  <p class="form-error">{{ statusError() }}</p>
+}
+
 <app-data-table [columns]="columns" [rows]="enquiries()" [loading]="loading()" emptyMessage="No enquiries yet.">
   <ng-template #rowTemplate let-enquiry>
     <tr>
@@ -24,7 +31,7 @@
       <td>{{ enquiry.destinationName ?? '—' }}</td>
       <td class="message-cell">{{ enquiry.message }}</td>
       <td>
-        <select [value]="enquiry.status" (change)="updateStatus(enquiry, $any($event.target).value)">
+        <select [value]="enquiry.status" [disabled]="statusUpdatingId() === enquiry.id" (change)="updateStatus(enquiry, $any($event.target).value)">
           @for (status of statuses; track status) {
             <option [value]="status">{{ status }}</option>
           }
@@ -45,6 +52,9 @@
   title="Delete enquiry?"
   [message]="'This will remove the enquiry from \'' + (deleteTarget()?.fullName ?? '') + '\'.'"
   confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
   (confirmed)="performDelete()"
   (cancelled)="cancelDelete()"
 />

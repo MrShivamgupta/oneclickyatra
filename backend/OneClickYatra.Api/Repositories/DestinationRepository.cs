@@ -33,6 +33,22 @@ public sealed class DestinationRepository : IDestinationRepository
             new CommandDefinition(sql, new { Id = __id }, cancellationToken: __cancellationToken));
     }
 
+    /// <summary>Batched existence check — returns only the ids from __ids that actually exist and
+    /// aren't soft-deleted, so callers validating a list of foreign keys (e.g. quotation options)
+    /// can do it in one round trip instead of one GetByIdAsync per item.</summary>
+    public async Task<IReadOnlyList<Guid>> GetExistingIdsAsync(IReadOnlyList<Guid> __ids, CancellationToken __cancellationToken)
+    {
+        if (__ids.Count == 0)
+        {
+            return [];
+        }
+
+        const string sql = "SELECT Id FROM Destinations WHERE Id IN @Ids AND IsDeleted = 0";
+        using var connection = _connectionFactory.CreateConnection();
+        var result = await connection.QueryAsync<Guid>(new CommandDefinition(sql, new { Ids = __ids }, cancellationToken: __cancellationToken));
+        return result.ToList();
+    }
+
     public async Task<DestinationModel?> GetBySlugAsync(string __slug, CancellationToken __cancellationToken)
     {
         var sql = $"{SelectColumns} WHERE d.Slug = @Slug AND d.IsDeleted = 0";

@@ -27,10 +27,13 @@ export class CitiesTab {
   readonly cities = signal<City[]>([]);
   readonly countries = signal<Country[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly editingId = signal<string | null>(null);
   readonly formError = signal<string | null>(null);
   readonly isSaving = signal(false);
   readonly deleteTarget = signal<City | null>(null);
+  readonly deleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
 
   readonly form = this.formBuilder.nonNullable.group({
     countryId: ['', Validators.required],
@@ -48,6 +51,7 @@ export class CitiesTab {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.cityService.list({ pageNumber: 1, pageSize: 100 }).subscribe({
       next: (response) => {
         this.loading.set(false);
@@ -55,7 +59,10 @@ export class CitiesTab {
           this.cities.set(response.data.items);
         }
       },
-      error: () => this.loading.set(false)
+      error: (error) => {
+        this.loading.set(false);
+        this.loadError.set(error?.error?.message ?? 'Could not load cities. Please try again.');
+      }
     });
   }
 
@@ -97,6 +104,7 @@ export class CitiesTab {
   }
 
   confirmDelete(city: City): void {
+    this.deleteError.set(null);
     this.deleteTarget.set(city);
   }
 
@@ -109,9 +117,18 @@ export class CitiesTab {
     if (!target) {
       return;
     }
-    this.cityService.delete(target.id).subscribe(() => {
-      this.deleteTarget.set(null);
-      this.load();
+    this.deleting.set(true);
+    this.deleteError.set(null);
+    this.cityService.delete(target.id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleteTarget.set(null);
+        this.load();
+      },
+      error: (error) => {
+        this.deleting.set(false);
+        this.deleteError.set(error?.error?.message ?? 'Could not delete this city. Please try again.');
+      }
     });
   }
 }

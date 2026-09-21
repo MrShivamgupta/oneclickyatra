@@ -24,6 +24,10 @@
   }
 </form>
 
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+
 <app-data-table [columns]="columns" [rows]="categories()" [loading]="loading()" emptyMessage="No categories yet.">
   <ng-template #rowTemplate let-category>
     <tr>
@@ -43,6 +47,9 @@
   title="Delete category?"
   [message]="'This will remove \'' + (deleteTarget()?.name ?? '') + '\'.'"
   confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
   (confirmed)="performDelete()"
   (cancelled)="cancelDelete()"
 />

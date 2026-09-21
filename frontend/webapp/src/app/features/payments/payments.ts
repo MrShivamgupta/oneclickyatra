@@ -33,6 +33,7 @@ export class Payments {
 
   readonly payments = signal<Payment[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly pageNumber = signal(1);
   readonly totalCount = signal(0);
   readonly searchTerm = signal('');
@@ -44,6 +45,7 @@ export class Payments {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.paymentService
       .search({
         pageNumber: this.pageNumber(),
@@ -57,9 +59,16 @@ export class Payments {
           if (response.success && response.data) {
             this.payments.set(response.data.items);
             this.totalCount.set(response.data.totalCount);
+          } else {
+            this.payments.set([]);
+            this.totalCount.set(0);
+            this.loadError.set(response.message || 'Could not load payments. Please try again.');
           }
         },
-        error: () => this.loading.set(false)
+        error: (error) => {
+          this.loading.set(false);
+          this.loadError.set(error?.error?.message ?? 'Could not load payments. Please try again.');
+        }
       });
   }
 

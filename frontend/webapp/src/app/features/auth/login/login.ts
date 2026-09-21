@@ -45,8 +45,10 @@ export class Login {
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
         this.isSubmitting.set(false);
-        const isStaff = this.tokenService.roles().some((role) => STAFF_ROLES.includes(role));
-        const defaultUrl = isStaff ? '/admin/dashboard' : '/';
+        const roles = this.tokenService.roles();
+        const isStaff = roles.some((role) => STAFF_ROLES.includes(role));
+        const isVendor = roles.includes('Vendor');
+        const defaultUrl = isStaff ? '/admin/dashboard' : isVendor ? '/vendor-portal/dashboard' : '/portal/dashboard';
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? defaultUrl;
         this.router.navigateByUrl(returnUrl);
       },

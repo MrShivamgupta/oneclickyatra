@@ -21,6 +21,10 @@
   </select>
 </app-filter-bar>
 
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+
 <app-data-table [columns]="columns" [rows]="leads()" [loading]="loading()" emptyMessage="No leads yet. Click 'Add Lead' to create one.">
   <ng-template #rowTemplate let-lead>
     <tr class="clickable-row" (click)="openLead(lead)">

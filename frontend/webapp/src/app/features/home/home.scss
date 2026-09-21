@@ -98,6 +98,10 @@
   text-align: center;
   color: tokens.$color-text-secondary;
   font-size: tokens.$font-size-sm;
+
+  &.error {
+    color: tokens.$color-primary-dark;
+  }
 }
 
 .card-grid {

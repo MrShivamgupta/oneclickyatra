@@ -1,0 +1,42 @@
+<div class="portal-page">
+  <div class="page-header">
+    <div>
+      <h1>My Profile</h1>
+      <p class="subtitle">Keep your contact details up to date.</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p class="hint">Loading…</p>
+  } @else if (loadError()) {
+    <p class="hint form-error">{{ loadError() }}</p>
+  } @else {
+    <section class="card">
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <label>
+          Full name
+          <input type="text" formControlName="fullName" />
+        </label>
+        <label>
+          Email
+          <input type="text" formControlName="email" />
+        </label>
+        <label>
+          Phone
+          <input type="text" formControlName="phone" />
+        </label>
+
+        @if (error()) {
+          <div class="form-error">{{ error() }}</div>
+        }
+        @if (saved()) {
+          <div class="form-success">Profile updated.</div>
+        }
+
+        <button type="submit" class="primary-button" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : 'Save Changes' }}
+        </button>
+      </form>
+    </section>
+  }
+</div>

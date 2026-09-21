@@ -1,0 +1,33 @@
+<div class="page-header">
+  <div>
+    <h1>Feedback Manager</h1>
+    <p class="subtitle">Review post-trip customer feedback across every completed booking.</p>
+  </div>
+</div>
+
+<app-filter-bar placeholder="Search by booking # or customer…" (searchChange)="onSearchChange($event)">
+  <select (change)="onMinRatingChange($any($event.target).value)">
+    <option value="">Any rating</option>
+    @for (rating of ratingOptions; track rating) {
+      <option [value]="rating">{{ rating }}+ stars</option>
+    }
+  </select>
+</app-filter-bar>
+
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+
+<app-data-table [columns]="columns" [rows]="feedbacks()" [loading]="loading()" emptyMessage="No feedback submitted yet.">
+  <ng-template #rowTemplate let-feedback>
+    <tr>
+      <td>{{ feedback.bookingNumber }}</td>
+      <td>{{ feedback.customerName }}</td>
+      <td class="rating-cell" [title]="feedback.rating + ' / 5'">{{ stars(feedback.rating) }}</td>
+      <td class="comment-cell" [title]="feedback.comment ?? ''">{{ feedback.comment ?? '—' }}</td>
+      <td>{{ feedback.createdAt | date: 'dd MMM yyyy' }}</td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="10" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />

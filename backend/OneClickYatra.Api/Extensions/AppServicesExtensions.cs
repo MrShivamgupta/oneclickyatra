@@ -6,7 +6,10 @@ using OneClickYatra.Api.Security;
 using OneClickYatra.Api.Security.Jwt;
 using OneClickYatra.Api.Security.Password;
 using OneClickYatra.Api.Services;
+using OneClickYatra.Api.Services.Email;
 using OneClickYatra.Api.Services.Payments;
+using OneClickYatra.Api.Services.Storage;
+using OneClickYatra.Api.Services.WhatsApp;
 using StackExchange.Redis;
 
 namespace OneClickYatra.Api.Extensions;
@@ -63,6 +66,21 @@ public static class AppServicesExtensions
         __services.AddScoped<IPaymentRepository, PaymentRepository>();
         __services.AddScoped<IRefundRepository, RefundRepository>();
         __services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+        __services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+
+        // Vendor Management
+        __services.AddScoped<IVendorRepository, VendorRepository>();
+
+        // Reports domain
+        __services.AddScoped<IReportRepository, ReportRepository>();
+
+        __services.AddScoped<IWhatsAppTemplateRepository, WhatsAppTemplateRepository>();
+        __services.AddScoped<INotificationLogRepository, NotificationLogRepository>();
+
+        __services.AddScoped<ICustomerDocumentRepository, CustomerDocumentRepository>();
+        __services.AddScoped<IVendorInvoiceRepository, VendorInvoiceRepository>();
+
+        __services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
 
         // Services
         __services.AddScoped<IAuditLogWriter, AuditLogWriter>();
@@ -70,6 +88,21 @@ public static class AppServicesExtensions
         __services.AddScoped<IInvoicePdfService, InvoicePdfService>();
         __services.Configure<RazorpayOptions>(__configuration.GetSection(RazorpayOptions.SectionName));
         __services.AddHttpClient<IPaymentGateway, RazorpayPaymentGateway>();
+
+        // Reports domain
+        __services.AddScoped<IReportExportService, ReportExportService>();
+
+        __services.Configure<WhatsAppOptions>(__configuration.GetSection(WhatsAppOptions.SectionName));
+        __services.AddHttpClient<IWhatsAppGateway, MetaWhatsAppGateway>();
+
+        __services.Configure<FileStorageOptions>(__configuration.GetSection(FileStorageOptions.SectionName));
+        __services.AddSingleton<IFileStorageService, LocalFileStorageService>();
+        __services.AddScoped<IVoucherPdfService, VoucherPdfService>();
+
+        __services.Configure<EmailOptions>(__configuration.GetSection(EmailOptions.SectionName));
+        __services.AddScoped<IEmailGateway, SmtpEmailGateway>();
+        __services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        __services.AddScoped<IEmailNotificationSender, EmailNotificationSender>();
 
         // AppFunctions
         __services.AddScoped<IAuthAppFunction, AuthAppFunction>();
@@ -90,6 +123,20 @@ public static class AppServicesExtensions
         __services.AddScoped<IDashboardAppFunction, DashboardAppFunction>();
         __services.AddScoped<IPaymentAppFunction, PaymentAppFunction>();
         __services.AddScoped<IInvoiceAppFunction, InvoiceAppFunction>();
+        __services.AddScoped<ICustomerPortalAppFunction, CustomerPortalAppFunction>();
+
+        // Vendor Management
+        __services.AddScoped<IVendorAppFunction, VendorAppFunction>();
+        __services.AddScoped<IVendorPortalAppFunction, VendorPortalAppFunction>();
+
+        // Reports domain
+        __services.AddScoped<IReportAppFunction, ReportAppFunction>();
+
+        __services.AddScoped<IWhatsAppAppFunction, WhatsAppAppFunction>();
+
+        __services.AddScoped<IFeedbackAppFunction, FeedbackAppFunction>();
+
+        __services.AddScoped<IAuditLogAppFunction, AuditLogAppFunction>();
 
         // Validators
         __services.AddValidatorsFromAssemblyContaining<Program>();

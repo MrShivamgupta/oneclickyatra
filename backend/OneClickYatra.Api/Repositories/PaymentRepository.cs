@@ -59,6 +59,7 @@ public sealed class PaymentRepository : IPaymentRepository
             WHERE p.IsDeleted = 0
               AND (@Status IS NULL OR p.Status = @Status)
               AND (@BookingId IS NULL OR p.BookingId = @BookingId)
+              AND (@CustomerId IS NULL OR b.CustomerId = @CustomerId)
               AND (@SearchTerm IS NULL OR b.BookingNumber LIKE '%' + @SearchTerm + '%' OR c.FullName LIKE '%' + @SearchTerm + '%')
             """;
 
@@ -80,6 +81,7 @@ public sealed class PaymentRepository : IPaymentRepository
         {
             __request.Status,
             __request.BookingId,
+            __request.CustomerId,
             __request.SearchTerm,
             __request.Skip,
             __request.PageSize

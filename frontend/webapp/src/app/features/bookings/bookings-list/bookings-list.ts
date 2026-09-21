@@ -33,6 +33,7 @@ export class BookingsList {
 
   readonly bookings = signal<Booking[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly pageNumber = signal(1);
   readonly totalCount = signal(0);
   readonly searchTerm = signal('');
@@ -44,6 +45,7 @@ export class BookingsList {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.bookingService
       .search({
         pageNumber: this.pageNumber(),
@@ -59,7 +61,10 @@ export class BookingsList {
             this.totalCount.set(response.data.totalCount);
           }
         },
-        error: () => this.loading.set(false)
+        error: (error) => {
+          this.loading.set(false);
+          this.loadError.set(error?.error?.message ?? 'Could not load bookings. Please try again.');
+        }
       });
   }
 

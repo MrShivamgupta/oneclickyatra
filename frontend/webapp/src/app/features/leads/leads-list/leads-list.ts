@@ -36,6 +36,7 @@ export class LeadsList {
   readonly leads = signal<Lead[]>([]);
   readonly destinations = signal<Destination[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly pageNumber = signal(1);
   readonly totalCount = signal(0);
   readonly searchTerm = signal('');
@@ -51,6 +52,7 @@ export class LeadsList {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.leadService
       .search({
         pageNumber: this.pageNumber(),
@@ -67,7 +69,10 @@ export class LeadsList {
             this.totalCount.set(response.data.totalCount);
           }
         },
-        error: () => this.loading.set(false)
+        error: (error) => {
+          this.loading.set(false);
+          this.loadError.set(error?.error?.message ?? 'Could not load leads. Please try again.');
+        }
       });
   }
 

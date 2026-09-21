@@ -20,14 +20,18 @@ public sealed class RazorpayPaymentGateway : IPaymentGateway
 {
     private const string BaseUrl = "https://api.razorpay.com/v1/";
 
+    private const int MaxLoggedResponseBodyLength = 500;
+
     private readonly HttpClient _httpClient;
     private readonly RazorpayOptions _options;
+    private readonly ILogger<RazorpayPaymentGateway> _logger;
 
-    public RazorpayPaymentGateway(HttpClient __httpClient, IOptions<RazorpayOptions> __options)
+    public RazorpayPaymentGateway(HttpClient __httpClient, IOptions<RazorpayOptions> __options, ILogger<RazorpayPaymentGateway> __logger)
     {
         _httpClient = __httpClient;
         _httpClient.BaseAddress = new Uri(BaseUrl);
         _options = __options.Value;
+        _logger = __logger;
     }
 
     public string PublicKeyId => _options.KeyId;
@@ -43,6 +47,9 @@ public sealed class RazorpayPaymentGateway : IPaymentGateway
 
         if (!response.IsSuccessStatusCode)
         {
+            _logger.LogWarning(
+                "Razorpay order creation failed. StatusCode: {StatusCode}, ResponseBody: {ResponseBody}",
+                (int)response.StatusCode, Truncate(body));
             throw new PaymentGatewayException($"Razorpay order creation failed ({(int)response.StatusCode}): {body}");
         }
 
@@ -89,6 +96,9 @@ public sealed class RazorpayPaymentGateway : IPaymentGateway
 
         if (!response.IsSuccessStatusCode)
         {
+            _logger.LogWarning(
+                "Razorpay refund failed. StatusCode: {StatusCode}, ResponseBody: {ResponseBody}",
+                (int)response.StatusCode, Truncate(body));
             throw new PaymentGatewayException($"Razorpay refund failed ({(int)response.StatusCode}): {body}");
         }
 
@@ -114,6 +124,9 @@ public sealed class RazorpayPaymentGateway : IPaymentGateway
     }
 
     private static long ToSmallestUnit(decimal __amountInRupees) => (long)Math.Round(__amountInRupees * 100m, MidpointRounding.AwayFromZero);
+
+    private static string Truncate(string __value) =>
+        __value.Length <= MaxLoggedResponseBodyLength ? __value : __value[..MaxLoggedResponseBodyLength];
 
     private static string HmacSha256Hex(string __secret, string __message)
     {

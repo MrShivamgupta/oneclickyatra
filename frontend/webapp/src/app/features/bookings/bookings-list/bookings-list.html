@@ -15,6 +15,10 @@
   </select>
 </app-filter-bar>
 
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+
 <app-data-table [columns]="columns" [rows]="bookings()" [loading]="loading()" emptyMessage="No bookings yet.">
   <ng-template #rowTemplate let-booking>
     <tr class="clickable-row" (click)="openBooking(booking)">

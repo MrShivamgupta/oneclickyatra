@@ -17,9 +17,11 @@ public sealed class PaymentSearchRequest : PaginationRequest
 {
     public string? Status { get; set; }
     public Guid? BookingId { get; set; }
+    public Guid? CustomerId { get; set; }
 }
 
 public sealed class InvoiceSearchRequest : PaginationRequest
 {
     public Guid? BookingId { get; set; }
+    public Guid? CustomerId { get; set; }
 }

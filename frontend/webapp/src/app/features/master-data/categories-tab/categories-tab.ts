@@ -25,10 +25,13 @@ export class CategoriesTab {
 
   readonly categories = signal<Category[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly editingId = signal<string | null>(null);
   readonly formError = signal<string | null>(null);
   readonly isSaving = signal(false);
   readonly deleteTarget = signal<Category | null>(null);
+  readonly deleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
 
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(150)]],
@@ -42,6 +45,7 @@ export class CategoriesTab {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.categoryService.list({ pageNumber: 1, pageSize: 100 }).subscribe({
       next: (response) => {
         this.loading.set(false);
@@ -49,7 +53,10 @@ export class CategoriesTab {
           this.categories.set(response.data.items);
         }
       },
-      error: () => this.loading.set(false)
+      error: (error) => {
+        this.loading.set(false);
+        this.loadError.set(error?.error?.message ?? 'Could not load categories. Please try again.');
+      }
     });
   }
 
@@ -92,6 +99,7 @@ export class CategoriesTab {
   }
 
   confirmDelete(category: Category): void {
+    this.deleteError.set(null);
     this.deleteTarget.set(category);
   }
 
@@ -104,9 +112,18 @@ export class CategoriesTab {
     if (!target) {
       return;
     }
-    this.categoryService.delete(target.id).subscribe(() => {
-      this.deleteTarget.set(null);
-      this.load();
+    this.deleting.set(true);
+    this.deleteError.set(null);
+    this.categoryService.delete(target.id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleteTarget.set(null);
+        this.load();
+      },
+      error: (error) => {
+        this.deleting.set(false);
+        this.deleteError.set(error?.error?.message ?? 'Could not delete this category. Please try again.');
+      }
     });
   }
 }

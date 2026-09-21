@@ -8,6 +8,10 @@
 
 <app-filter-bar placeholder="Search customers…" (searchChange)="onSearchChange($event)" />
 
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+
 <app-data-table [columns]="columns" [rows]="customers()" [loading]="loading()" emptyMessage="No customers yet. Convert a lead or add one manually.">
   <ng-template #rowTemplate let-customer>
     <tr>
@@ -65,6 +69,9 @@
   title="Delete customer?"
   [message]="'This will remove \'' + (deleteTarget()?.fullName ?? '') + '\' from the customer database.'"
   confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
   (confirmed)="performDelete()"
   (cancelled)="cancelDelete()"
 />

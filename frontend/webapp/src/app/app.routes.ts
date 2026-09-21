@@ -19,6 +19,74 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/reset-password/reset-password').then((m) => m.ResetPassword)
   },
   {
+    path: 'portal',
+    loadComponent: () => import('./layouts/portal-layout/portal-layout').then((m) => m.PortalLayout),
+    canActivate: [authGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/portal/portal-dashboard/portal-dashboard').then((m) => m.PortalDashboard)
+      },
+      {
+        path: 'bookings',
+        loadComponent: () => import('./features/portal/my-bookings/my-bookings').then((m) => m.MyBookings)
+      },
+      {
+        path: 'bookings/:id',
+        loadComponent: () => import('./features/portal/my-booking-detail/my-booking-detail').then((m) => m.MyBookingDetail)
+      },
+      {
+        path: 'payments',
+        loadComponent: () => import('./features/portal/my-payments/my-payments').then((m) => m.MyPayments)
+      },
+      {
+        path: 'invoices',
+        loadComponent: () => import('./features/portal/my-invoices/my-invoices').then((m) => m.MyInvoices)
+      },
+      {
+        path: 'quotations',
+        loadComponent: () => import('./features/portal/my-quotations/my-quotations').then((m) => m.MyQuotations)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./features/portal/my-profile/my-profile').then((m) => m.MyProfile)
+      }
+    ]
+  },
+  {
+    path: 'vendor-portal',
+    loadComponent: () => import('./layouts/vendor-portal-layout/vendor-portal-layout').then((m) => m.VendorPortalLayout),
+    canActivate: [authGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/vendor-portal/vendor-portal-dashboard/vendor-portal-dashboard').then((m) => m.VendorPortalDashboard)
+      },
+      {
+        path: 'rates',
+        loadComponent: () => import('./features/vendor-portal/my-rates/my-rates').then((m) => m.MyRates)
+      },
+      {
+        path: 'payments',
+        loadComponent: () => import('./features/vendor-portal/my-payments/my-payments').then((m) => m.MyPayments)
+      },
+      {
+        path: 'booking-requests',
+        loadComponent: () => import('./features/vendor-portal/booking-requests/booking-requests').then((m) => m.BookingRequests)
+      },
+      {
+        path: 'invoices',
+        loadComponent: () => import('./features/vendor-portal/my-invoices/my-invoices').then((m) => m.MyInvoices)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./features/vendor-portal/my-profile/my-profile').then((m) => m.MyProfile)
+      }
+    ]
+  },
+  {
     path: 'admin',
     loadComponent: () => import('./layouts/admin-layout/admin-layout').then((m) => m.AdminLayout),
     canActivate: [authGuard],
@@ -100,43 +168,31 @@ export const routes: Routes = [
       },
       {
         path: 'vendors',
-        loadComponent: () => import('./features/admin-placeholder/admin-placeholder').then((m) => m.AdminPlaceholder),
-        data: {
-          title: 'Vendor Management',
-          icon: '🏬',
-          description: 'Manage hotels, DMCs, transport partners, contract rates and vendor payments.',
-          phase: 'Phase 6'
-        }
+        loadComponent: () => import('./features/vendors/vendors-list/vendors-list').then((m) => m.VendorsList)
+      },
+      {
+        path: 'vendors/:id',
+        loadComponent: () => import('./features/vendors/vendor-detail/vendor-detail').then((m) => m.VendorDetail)
       },
       {
         path: 'whatsapp',
-        loadComponent: () => import('./features/admin-placeholder/admin-placeholder').then((m) => m.AdminPlaceholder),
-        data: {
-          title: 'WhatsApp Center',
-          icon: '💬',
-          description: 'Send quotations, payment links and automated travel alerts via WhatsApp Business API.',
-          phase: 'Phase 6'
-        }
+        loadComponent: () => import('./features/whatsapp/whatsapp-center/whatsapp-center').then((m) => m.WhatsAppCenter)
       },
       {
         path: 'reports',
-        loadComponent: () => import('./features/admin-placeholder/admin-placeholder').then((m) => m.AdminPlaceholder),
-        data: {
-          title: 'Reports & Analytics',
-          icon: '📈',
-          description: 'Sales, revenue, cancellation, commission and productivity reports with CSV/XLSX/PDF export.',
-          phase: 'Phase 6'
-        }
+        loadComponent: () => import('./features/reports/reports-hub/reports-hub').then((m) => m.ReportsHub)
+      },
+      {
+        path: 'reports/:reportName',
+        loadComponent: () => import('./features/reports/report-viewer/report-viewer').then((m) => m.ReportViewer)
       },
       {
         path: 'feedback',
-        loadComponent: () => import('./features/admin-placeholder/admin-placeholder').then((m) => m.AdminPlaceholder),
-        data: {
-          title: 'Feedback Manager',
-          icon: '⭐',
-          description: 'Collect and review post-trip customer feedback to improve retention.',
-          phase: 'Phase 6'
-        }
+        loadComponent: () => import('./features/feedback-manager/feedback-manager').then((m) => m.FeedbackManager)
+      },
+      {
+        path: 'audit-logs',
+        loadComponent: () => import('./features/audit-logs/audit-logs').then((m) => m.AuditLogs)
       },
       {
         path: 'settings',

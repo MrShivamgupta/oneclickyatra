@@ -1,0 +1,248 @@
+@use '../../shared/styles-public/index' as tokens;
+
+.portal-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: tokens.$space-8 tokens.$space-4;
+
+  h1 {
+    margin: 0;
+    font-size: tokens.$font-size-2xl;
+    color: tokens.$color-text-primary;
+  }
+
+  .subtitle {
+    color: tokens.$color-text-secondary;
+    margin: tokens.$space-2 0 tokens.$space-6;
+  }
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: tokens.$space-4;
+  margin-bottom: tokens.$space-6;
+  flex-wrap: wrap;
+
+  h1 { margin: 0; font-size: tokens.$font-size-xl; }
+  .subtitle { color: tokens.$color-text-secondary; margin: tokens.$space-1 0 0; }
+}
+
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: tokens.$space-4;
+  margin-bottom: tokens.$space-6;
+}
+
+.quick-link-card {
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-5;
+  text-decoration: none;
+  color: tokens.$color-text-primary;
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-2;
+  font-weight: tokens.$font-weight-medium;
+  box-shadow: tokens.$shadow-sm;
+  transition: box-shadow 0.15s ease;
+
+  &:hover { box-shadow: tokens.$shadow-md; }
+}
+
+.card {
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-6;
+  margin-bottom: tokens.$space-5;
+  box-shadow: tokens.$shadow-sm;
+
+  h2 {
+    margin: 0 0 tokens.$space-4;
+    font-size: tokens.$font-size-lg;
+  }
+}
+
+.hint {
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-sm;
+}
+
+.mini-list {
+  list-style: none;
+  margin: 0 0 tokens.$space-4;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-3;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: tokens.$space-2;
+    border-bottom: 1px solid tokens.$color-border;
+
+    &:last-child { border-bottom: none; padding-bottom: 0; }
+  }
+}
+
+.view-all {
+  color: tokens.$color-primary;
+  text-decoration: none;
+  font-size: tokens.$font-size-sm;
+  font-weight: tokens.$font-weight-medium;
+
+  &:hover { text-decoration: underline; }
+}
+
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: tokens.$font-size-sm;
+
+  th {
+    text-align: left;
+    padding: tokens.$space-3;
+    color: tokens.$color-text-secondary;
+    font-weight: tokens.$font-weight-semibold;
+    border-bottom: 2px solid tokens.$color-border;
+  }
+
+  td {
+    padding: tokens.$space-3;
+    border-bottom: 1px solid tokens.$color-border;
+  }
+
+  tr:last-child td { border-bottom: none; }
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px tokens.$space-2;
+  border-radius: tokens.$radius-pill;
+  font-size: tokens.$font-size-xs;
+  background: tokens.$color-bg-alt;
+  color: tokens.$color-text-secondary;
+}
+
+// Grouped by shared color rather than one rule per status (see BOOKING_STATUSES /
+// VENDOR_PAYMENT_STATUSES) to keep this stylesheet under the component-style budget.
+.badge.status {
+  &[data-status='Draft'], &[data-status='Refunded'], &[data-status='Inactive'] { background: rgba(107, 114, 128, 0.15); color: tokens.$color-text-secondary; }
+  &[data-status='Quoted'] { background: rgba(139, 92, 246, 0.15); color: #6d28d9; }
+  &[data-status='PendingPayment'], &[data-status='RefundPending'], &[data-status='Pending'] { background: rgba(230, 164, 23, 0.15); color: #a86c00; }
+  &[data-status='Confirmed'], &[data-status='Paid'], &[data-status='Active'] { background: rgba(31, 169, 113, 0.15); color: #157a4f; }
+  &[data-status='InProgress'] { background: rgba(59, 130, 246, 0.15); color: #1d4ed8; }
+  &[data-status='Completed'] { background: rgba(21, 122, 79, 0.18); color: #0f5c3c; }
+  &[data-status='Cancelled'], &[data-status='Overdue'] { background: rgba(224, 69, 63, 0.12); color: #b23b36; }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-4;
+  max-width: 480px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-1;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+}
+
+input,
+textarea,
+select {
+  padding: tokens.$space-2 tokens.$space-3;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+  font-family: inherit;
+}
+
+.primary-button {
+  padding: tokens.$space-2 tokens.$space-5;
+  border: none;
+  border-radius: tokens.$radius-pill;
+  background: tokens.$color-primary;
+  color: tokens.$color-text-inverse;
+  font-weight: tokens.$font-weight-semibold;
+  cursor: pointer;
+  align-self: flex-start;
+
+  &:hover:not(:disabled) { background: tokens.$color-primary-dark; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.link-button {
+  border: none;
+  background: none;
+  color: tokens.$color-primary;
+  cursor: pointer;
+  font-size: tokens.$font-size-sm;
+  font-weight: tokens.$font-weight-medium;
+  padding: 0;
+
+  &:hover { text-decoration: underline; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.form-error {
+  color: #b23b36;
+  background: rgba(217, 83, 79, 0.08);
+  padding: tokens.$space-2 tokens.$space-3;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+}
+
+.form-success {
+  color: tokens.$color-accent;
+  background: rgba(15, 157, 143, 0.1);
+  padding: tokens.$space-2 tokens.$space-3;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: tokens.$space-3;
+  margin-top: tokens.$space-4;
+  font-size: tokens.$font-size-sm;
+
+  button {
+    padding: tokens.$space-1 tokens.$space-3;
+    border: 1px solid tokens.$color-border;
+    border-radius: tokens.$radius-sm;
+    background: tokens.$color-surface;
+    cursor: pointer;
+
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}
+
+.notice {
+  background: rgba(230, 164, 23, 0.1);
+  border: 1px solid rgba(230, 164, 23, 0.3);
+  color: #8a5a00;
+  border-radius: tokens.$radius-sm;
+  padding: tokens.$space-3 tokens.$space-4;
+  font-size: tokens.$font-size-sm;
+  margin-bottom: tokens.$space-5;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-2;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+  margin-bottom: tokens.$space-4;
+}

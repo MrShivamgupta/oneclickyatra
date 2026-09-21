@@ -58,13 +58,18 @@ export class BookingDetail {
   readonly addOns = signal<BookingAddOn[]>([]);
   readonly history = signal<BookingStatusHistoryEntry[]>([]);
 
+  readonly loadError = signal<string | null>(null);
   readonly basicError = signal<string | null>(null);
   readonly basicSaving = signal(false);
   readonly passengersSaving = signal(false);
+  readonly passengersError = signal<string | null>(null);
   readonly addOnsSaving = signal(false);
+  readonly addOnsError = signal<string | null>(null);
   readonly transitionSaving = signal(false);
   readonly transitionError = signal<string | null>(null);
   readonly deleteConfirmOpen = signal(false);
+  readonly deleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
 
   readonly reasonAction = signal<ReasonAction>(null);
   readonly reasonText = signal('');
@@ -135,6 +140,7 @@ export class BookingDetail {
     const id = this.bookingId();
     if (!id) return;
     this.loading.set(true);
+    this.loadError.set(null);
     this.bookingService.getById(id).subscribe({
       next: (response) => {
         this.loading.set(false);
@@ -142,7 +148,10 @@ export class BookingDetail {
           this.applyDetail(response.data.booking, response.data.passengers, response.data.addOns);
         }
       },
-      error: () => this.loading.set(false)
+      error: (error) => {
+        this.loading.set(false);
+        this.loadError.set(error?.error?.message ?? 'Could not load this booking. Please try again.');
+      }
     });
     this.loadHistory();
   }
@@ -362,12 +371,16 @@ export class BookingDetail {
     const id = this.bookingId();
     if (!id) return;
     this.passengersSaving.set(true);
+    this.passengersError.set(null);
     this.bookingService.replacePassengers(id, this.passengers()).subscribe({
       next: (response) => {
         this.passengersSaving.set(false);
         if (response.success && response.data) this.passengers.set(response.data);
       },
-      error: () => this.passengersSaving.set(false)
+      error: (error) => {
+        this.passengersSaving.set(false);
+        this.passengersError.set(error?.error?.message ?? 'Could not save passengers. Please try again.');
+      }
     });
   }
 
@@ -383,16 +396,21 @@ export class BookingDetail {
     const id = this.bookingId();
     if (!id) return;
     this.addOnsSaving.set(true);
+    this.addOnsError.set(null);
     this.bookingService.replaceAddOns(id, this.addOns()).subscribe({
       next: (response) => {
         this.addOnsSaving.set(false);
         if (response.success && response.data) this.addOns.set(response.data);
       },
-      error: () => this.addOnsSaving.set(false)
+      error: (error) => {
+        this.addOnsSaving.set(false);
+        this.addOnsError.set(error?.error?.message ?? 'Could not save add-ons. Please try again.');
+      }
     });
   }
 
   confirmDelete(): void {
+    this.deleteError.set(null);
     this.deleteConfirmOpen.set(true);
   }
 
@@ -403,9 +421,18 @@ export class BookingDetail {
   performDelete(): void {
     const id = this.bookingId();
     if (!id) return;
-    this.bookingService.delete(id).subscribe(() => {
-      this.deleteConfirmOpen.set(false);
-      this.router.navigate(['/admin/bookings']);
+    this.deleting.set(true);
+    this.deleteError.set(null);
+    this.bookingService.delete(id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleteConfirmOpen.set(false);
+        this.router.navigate(['/admin/bookings']);
+      },
+      error: (error) => {
+        this.deleting.set(false);
+        this.deleteError.set(error?.error?.message ?? 'Could not delete this booking. Please try again.');
+      }
     });
   }
 }

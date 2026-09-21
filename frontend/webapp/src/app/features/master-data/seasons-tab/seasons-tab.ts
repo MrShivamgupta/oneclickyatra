@@ -26,10 +26,13 @@ export class SeasonsTab {
 
   readonly seasons = signal<Season[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly editingId = signal<string | null>(null);
   readonly formError = signal<string | null>(null);
   readonly isSaving = signal(false);
   readonly deleteTarget = signal<Season | null>(null);
+  readonly deleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
   readonly months = MONTH_NAMES;
 
   readonly form = this.formBuilder.nonNullable.group({
@@ -48,6 +51,7 @@ export class SeasonsTab {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.seasonService.list({ pageNumber: 1, pageSize: 100 }).subscribe({
       next: (response) => {
         this.loading.set(false);
@@ -55,7 +59,10 @@ export class SeasonsTab {
           this.seasons.set(response.data.items);
         }
       },
-      error: () => this.loading.set(false)
+      error: (error) => {
+        this.loading.set(false);
+        this.loadError.set(error?.error?.message ?? 'Could not load seasons. Please try again.');
+      }
     });
   }
 
@@ -97,6 +104,7 @@ export class SeasonsTab {
   }
 
   confirmDelete(season: Season): void {
+    this.deleteError.set(null);
     this.deleteTarget.set(season);
   }
 
@@ -109,9 +117,18 @@ export class SeasonsTab {
     if (!target) {
       return;
     }
-    this.seasonService.delete(target.id).subscribe(() => {
-      this.deleteTarget.set(null);
-      this.load();
+    this.deleting.set(true);
+    this.deleteError.set(null);
+    this.seasonService.delete(target.id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleteTarget.set(null);
+        this.load();
+      },
+      error: (error) => {
+        this.deleting.set(false);
+        this.deleteError.set(error?.error?.message ?? 'Could not delete this season. Please try again.');
+      }
     });
   }
 }

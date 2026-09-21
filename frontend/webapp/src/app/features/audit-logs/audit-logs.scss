@@ -1,0 +1,44 @@
+@use '../../shared/styles/index' as tokens;
+
+input[type='date'] {
+  padding: tokens.$space-2 tokens.$space-3;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+  font-family: inherit;
+}
+
+.range-separator {
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-sm;
+}
+
+.entity-cell {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.change-cell {
+  display: flex;
+  align-items: center;
+  gap: tokens.$space-2;
+
+  .value-old,
+  .value-new {
+    display: inline-block;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+    font-family: monospace;
+    font-size: tokens.$font-size-xs;
+  }
+
+  .arrow {
+    color: tokens.$color-text-secondary;
+    flex-shrink: 0;
+  }
+}

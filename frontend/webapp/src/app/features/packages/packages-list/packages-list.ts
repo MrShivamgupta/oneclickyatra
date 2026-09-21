@@ -34,12 +34,17 @@ export class PackagesList {
   readonly packages = signal<PackageSummary[]>([]);
   readonly destinations = signal<Destination[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly pageNumber = signal(1);
   readonly totalCount = signal(0);
   readonly searchTerm = signal('');
   readonly destinationFilter = signal('');
   readonly statusFilter = signal('');
   readonly deleteTarget = signal<PackageSummary | null>(null);
+  readonly deleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
+  readonly publishTogglingId = signal<string | null>(null);
+  readonly publishError = signal<string | null>(null);
 
   constructor() {
     this.destinationService.search({ pageNumber: 1, pageSize: 100 }).subscribe((response) => {
@@ -52,6 +57,7 @@ export class PackagesList {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.packageService
       .search({
         pageNumber: this.pageNumber(),
@@ -68,7 +74,10 @@ export class PackagesList {
             this.totalCount.set(response.data.totalCount);
           }
         },
-        error: () => this.loading.set(false)
+        error: (error) => {
+          this.loading.set(false);
+          this.loadError.set(error?.error?.message ?? 'Could not load packages. Please try again.');
+        }
       });
   }
 
@@ -105,10 +114,22 @@ export class PackagesList {
 
   togglePublish(pkg: PackageSummary): void {
     const nextStatus = pkg.status === 'Published' ? 'Draft' : 'Published';
-    this.packageService.updateStatus(pkg.id, nextStatus).subscribe(() => this.load());
+    this.publishTogglingId.set(pkg.id);
+    this.publishError.set(null);
+    this.packageService.updateStatus(pkg.id, nextStatus).subscribe({
+      next: () => {
+        this.publishTogglingId.set(null);
+        this.load();
+      },
+      error: (error) => {
+        this.publishTogglingId.set(null);
+        this.publishError.set(error?.error?.message ?? 'Could not update this package\'s publish status. Please try again.');
+      }
+    });
   }
 
   confirmDelete(pkg: PackageSummary): void {
+    this.deleteError.set(null);
     this.deleteTarget.set(pkg);
   }
 
@@ -121,9 +142,18 @@ export class PackagesList {
     if (!target) {
       return;
     }
-    this.packageService.delete(target.id).subscribe(() => {
-      this.deleteTarget.set(null);
-      this.load();
+    this.deleting.set(true);
+    this.deleteError.set(null);
+    this.packageService.delete(target.id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleteTarget.set(null);
+        this.load();
+      },
+      error: (error) => {
+        this.deleting.set(false);
+        this.deleteError.set(error?.error?.message ?? 'Could not delete this package. Please try again.');
+      }
     });
   }
 }

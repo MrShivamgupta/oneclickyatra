@@ -14,17 +14,20 @@ public sealed class FollowUpAppFunction : IFollowUpAppFunction
     private readonly ILeadRepository _leadRepository;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IAuditLogWriter _auditLogWriter;
+    private readonly ILogger<FollowUpAppFunction> _logger;
 
     public FollowUpAppFunction(
         IFollowUpRepository __followUpRepository,
         ILeadRepository __leadRepository,
         ICurrentUserAccessor __currentUserAccessor,
-        IAuditLogWriter __auditLogWriter)
+        IAuditLogWriter __auditLogWriter,
+        ILogger<FollowUpAppFunction> __logger)
     {
         _followUpRepository = __followUpRepository;
         _leadRepository = __leadRepository;
         _currentUserAccessor = __currentUserAccessor;
         _auditLogWriter = __auditLogWriter;
+        _logger = __logger;
     }
 
     public async Task<IReadOnlyList<FollowUpResponse>> ListByLeadAsync(Guid __leadId, CancellationToken __cancellationToken)
@@ -55,7 +58,17 @@ public sealed class FollowUpAppFunction : IFollowUpAppFunction
         };
 
         await _followUpRepository.CreateAsync(followUp, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "followup.created", "FollowUp", followUp.Id.ToString(), null, __request.Type, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "followup.created", "FollowUp", followUp.Id.ToString(), null, __request.Type, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "followup.created", "FollowUp", followUp.Id);
+        }
+
+        _logger.LogInformation("FollowUp {FollowUpId} created for {LeadId} by {UserId}", followUp.Id, __leadId, _currentUserAccessor.UserId);
 
         var created = await _followUpRepository.GetByIdAsync(followUp.Id, __cancellationToken) ?? followUp;
         return ToResponse(created);
@@ -69,7 +82,17 @@ public sealed class FollowUpAppFunction : IFollowUpAppFunction
         var completedAt = __request.Status == "Completed" ? DateTime.UtcNow : followUp.CompletedAt;
 
         await _followUpRepository.UpdateStatusAsync(__id, __request.Status, __request.Notes, completedAt, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "followup.status.changed", "FollowUp", __id.ToString(), oldStatus, __request.Status, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "followup.status.changed", "FollowUp", __id.ToString(), oldStatus, __request.Status, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "followup.status.changed", "FollowUp", __id);
+        }
+
+        _logger.LogInformation("FollowUp {FollowUpId} status changed {OldStatus} -> {NewStatus} by {UserId}", __id, oldStatus, __request.Status, _currentUserAccessor.UserId);
 
         var updated = await _followUpRepository.GetByIdAsync(__id, __cancellationToken) ?? followUp;
         return ToResponse(updated);
@@ -80,7 +103,17 @@ public sealed class FollowUpAppFunction : IFollowUpAppFunction
         var followUp = await _followUpRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("FollowUp", __id);
 
         await _followUpRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "followup.deleted", "FollowUp", __id.ToString(), followUp.Type, null, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "followup.deleted", "FollowUp", __id.ToString(), followUp.Type, null, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "followup.deleted", "FollowUp", __id);
+        }
+
+        _logger.LogInformation("FollowUp {FollowUpId} deleted by {UserId}", __id, _currentUserAccessor.UserId);
     }
 
     private static FollowUpResponse ToResponse(FollowUpModel followUp) => new()

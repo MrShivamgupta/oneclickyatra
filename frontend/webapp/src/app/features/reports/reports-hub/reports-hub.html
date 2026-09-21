@@ -1,0 +1,15 @@
+<div class="page-header">
+  <div>
+    <h1>Reports &amp; Analytics</h1>
+    <p class="subtitle">Sales, revenue, commission and productivity reports — each exports to CSV, XLSX or PDF.</p>
+  </div>
+</div>
+
+<div class="report-grid">
+  @for (report of reports; track report.name) {
+    <a class="report-card" [routerLink]="['/admin/reports', report.name]">
+      <div class="report-label">{{ report.label }}</div>
+      <p class="report-description">{{ report.description }}</p>
+    </a>
+  }
+</div>

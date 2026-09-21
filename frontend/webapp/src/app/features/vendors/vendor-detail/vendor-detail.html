@@ -1,0 +1,369 @@
+<div class="page-header">
+  <div>
+    <a routerLink="/admin/vendors" class="back-link">← Back to vendors</a>
+    <h1>{{ isNew() ? 'New Vendor' : (vendor()?.name ?? 'Vendor') }}</h1>
+    @if (!isNew() && vendor(); as v) {
+      <p class="subtitle">
+        <span class="badge" [class.published]="v.isActive" [class.draft]="!v.isActive">{{ v.isActive ? 'Active' : 'Inactive' }}</span>
+        <span>{{ v.vendorType }}</span>
+        @if (v.rating != null) {
+          <span>· Rating: {{ v.rating | number: '1.1-1' }} / 5</span>
+        }
+      </p>
+    }
+  </div>
+  @if (!isNew()) {
+    <button type="button" class="secondary-button danger" (click)="confirmDelete()">Delete Vendor</button>
+  }
+</div>
+
+@if (loading()) {
+  <p>Loading…</p>
+}
+
+<div class="detail-grid">
+  <section class="card">
+    <h2>Basic Info</h2>
+    <form [formGroup]="basicForm" (ngSubmit)="saveBasic()">
+      <label>
+        Name
+        <input type="text" formControlName="name" />
+      </label>
+
+      <label>
+        Vendor Type
+        <select formControlName="vendorType">
+          @for (type of vendorTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        Email
+        <input type="email" formControlName="email" />
+      </label>
+
+      <label>
+        Phone
+        <input type="text" formControlName="phone" />
+      </label>
+
+      <label>
+        Address (optional)
+        <input type="text" formControlName="address" />
+      </label>
+
+      <label>
+        City (optional)
+        <input type="text" formControlName="city" />
+      </label>
+
+      <label>
+        Country (optional)
+        <input type="text" formControlName="country" />
+      </label>
+
+      <label class="checkbox-label">
+        <input type="checkbox" formControlName="isActive" /> Active
+      </label>
+
+      @if (basicError()) {
+        <div class="form-error">{{ basicError() }}</div>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="primary-button" [disabled]="basicSaving()">
+          {{ basicSaving() ? 'Saving…' : (isNew() ? 'Create Vendor' : 'Save Changes') }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  @if (!isNew() && vendor(); as v) {
+    <section class="card">
+      <h2>Vendor Portal Access</h2>
+      @if (v.userId) {
+        <p class="hint">Linked to user account <strong>{{ v.userId }}</strong>. This user can sign in to the Vendor Portal.</p>
+      } @else {
+        <p class="hint">No user account linked yet — this vendor cannot sign in to the Vendor Portal until an admin links one.</p>
+      }
+      <label>
+        User ID to link
+        <input type="text" [ngModel]="linkUserId()" (ngModelChange)="linkUserId.set($event)" [ngModelOptions]="{standalone: true}" placeholder="Paste the User's ID (GUID)" />
+      </label>
+      @if (linkUserError()) {
+        <div class="form-error">{{ linkUserError() }}</div>
+      }
+      @if (linkUserSuccess()) {
+        <div class="form-success">User linked successfully.</div>
+      }
+      <div class="form-actions">
+        <button type="button" class="secondary-button" [disabled]="linkUserSaving() || !linkUserId().trim()" (click)="linkUser()">
+          {{ linkUserSaving() ? 'Linking…' : 'Link User' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="card contacts-card">
+      <div class="options-header">
+        <h2>Contacts</h2>
+        <button type="button" class="secondary-button" (click)="addContact()">+ Add Contact</button>
+      </div>
+
+      @if (contacts().length === 0) {
+        <p class="hint">No contacts added yet.</p>
+      }
+
+      @for (contact of contacts(); track $index; let i = $index) {
+        <div class="contact-row">
+          <input type="text" [(ngModel)]="contact.contactName" [ngModelOptions]="{standalone: true}" placeholder="Contact name" />
+          <input type="text" [(ngModel)]="contact.designation" [ngModelOptions]="{standalone: true}" placeholder="Designation" />
+          <input type="text" [(ngModel)]="contact.phone" [ngModelOptions]="{standalone: true}" placeholder="Phone" />
+          <input type="text" [(ngModel)]="contact.email" [ngModelOptions]="{standalone: true}" placeholder="Email" />
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="contact.isPrimary" [ngModelOptions]="{standalone: true}" /> Primary
+          </label>
+          <button type="button" class="link-button danger" (click)="removeContact(i)">✕</button>
+        </div>
+      }
+
+      @if (contactsError()) {
+        <div class="form-error">{{ contactsError() }}</div>
+      }
+
+      @if (contacts().length > 0) {
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="contactsSaving()" (click)="saveContacts()">
+            {{ contactsSaving() ? 'Saving…' : 'Save Contacts' }}
+          </button>
+        </div>
+      }
+    </section>
+
+    <section class="card rates-card">
+      <div class="options-header">
+        <h2>Rates</h2>
+        <button type="button" class="secondary-button" (click)="addRate()">+ Add Rate</button>
+      </div>
+
+      @if (rates().length === 0) {
+        <p class="hint">No rates added yet.</p>
+      }
+
+      @for (rate of rates(); track $index; let i = $index) {
+        <div class="rate-row">
+          <select [(ngModel)]="rate.destinationId" [ngModelOptions]="{standalone: true}">
+            <option [ngValue]="null">Any destination</option>
+            @for (destination of destinations(); track destination.id) {
+              <option [ngValue]="destination.id">{{ destination.name }}</option>
+            }
+          </select>
+          <input type="text" [(ngModel)]="rate.serviceDescription" [ngModelOptions]="{standalone: true}" placeholder="Service description" />
+          <input type="number" min="0" [(ngModel)]="rate.rateAmount" [ngModelOptions]="{standalone: true}" placeholder="Rate" />
+          <input type="text" [(ngModel)]="rate.currency" [ngModelOptions]="{standalone: true}" placeholder="Currency" maxlength="3" />
+          <input type="date" [(ngModel)]="rate.validFrom" [ngModelOptions]="{standalone: true}" />
+          <input type="date" [(ngModel)]="rate.validTo" [ngModelOptions]="{standalone: true}" />
+          <button type="button" class="link-button danger" (click)="removeRate(i)">✕</button>
+        </div>
+      }
+
+      @if (ratesError()) {
+        <div class="form-error">{{ ratesError() }}</div>
+      }
+
+      @if (rates().length > 0) {
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="ratesSaving()" (click)="saveRates()">
+            {{ ratesSaving() ? 'Saving…' : 'Save Rates' }}
+          </button>
+        </div>
+      }
+    </section>
+
+    <section class="card payments-card">
+      <h2>Payments</h2>
+
+      @if (paymentsLoading()) {
+        <p class="hint">Loading…</p>
+      } @else if (payments().length === 0) {
+        <p class="hint">No payments recorded yet.</p>
+      } @else {
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Booking #</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Paid At</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (payment of payments(); track payment.id) {
+              <tr>
+                <td>{{ payment.bookingNumber ?? '—' }}</td>
+                <td>Rs. {{ payment.amount | number: '1.0-0' }}</td>
+                <td><span class="badge status" [attr.data-status]="payment.status">{{ payment.status }}</span></td>
+                <td>{{ payment.paidAt ? (payment.paidAt | date: 'dd MMM yyyy') : '—' }}</td>
+                <td>
+                  <select
+                    [ngModel]="payment.status"
+                    [ngModelOptions]="{standalone: true}"
+                    [disabled]="paymentStatusSavingId() === payment.id"
+                    (ngModelChange)="updatePaymentStatus(payment, $event)"
+                  >
+                    @for (status of paymentStatuses; track status) {
+                      <option [value]="status">{{ status }}</option>
+                    }
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        @if (paymentStatusError()) {
+          <div class="form-error">{{ paymentStatusError() }}</div>
+        }
+
+        <app-pagination
+          [pageNumber]="paymentsPageNumber()"
+          [pageSize]="10"
+          [totalCount]="paymentsTotalCount()"
+          (pageChange)="onPaymentsPageChange($event)"
+        />
+      }
+
+      <h3>Record a Payment</h3>
+      <label>
+        Amount
+        <input type="number" min="0" [ngModel]="newPaymentAmount()" (ngModelChange)="newPaymentAmount.set($event)" [ngModelOptions]="{standalone: true}" />
+      </label>
+      <label>
+        Notes (optional)
+        <input type="text" [ngModel]="newPaymentNotes()" (ngModelChange)="newPaymentNotes.set($event)" [ngModelOptions]="{standalone: true}" />
+      </label>
+      @if (paymentError()) {
+        <div class="form-error">{{ paymentError() }}</div>
+      }
+      <div class="form-actions">
+        <button type="button" class="primary-button" [disabled]="paymentSaving() || newPaymentAmount() <= 0" (click)="createPayment()">
+          {{ paymentSaving() ? 'Saving…' : 'Record Payment' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="card invoices-card">
+      <h2>Invoices</h2>
+      <p class="hint">Invoices the vendor has submitted for review through their own portal.</p>
+
+      @if (invoicesLoading()) {
+        <p class="hint">Loading…</p>
+      } @else if (invoices().length === 0) {
+        <p class="hint">No invoices submitted yet.</p>
+      } @else {
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>File</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (invoice of invoices(); track invoice.id) {
+              <tr>
+                <td>{{ invoice.fileName }}</td>
+                <td>Rs. {{ invoice.amount | number: '1.0-0' }}</td>
+                <td><span class="badge status" [attr.data-status]="invoice.status">{{ invoice.status }}</span></td>
+                <td>{{ invoice.createdAt | date: 'dd MMM yyyy' }}</td>
+                <td class="actions-cell">
+                  <button type="button" class="link-button" [disabled]="downloadingInvoiceId() === invoice.id" (click)="downloadInvoice(invoice)">
+                    {{ downloadingInvoiceId() === invoice.id ? 'Downloading…' : 'Download' }}
+                  </button>
+                  @if (invoice.status !== 'Reviewed') {
+                    <button type="button" class="link-button" [disabled]="invoiceStatusSavingId() === invoice.id" (click)="markInvoiceReviewed(invoice)">
+                      {{ invoiceStatusSavingId() === invoice.id ? 'Saving…' : 'Mark Reviewed' }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        @if (invoiceStatusError()) {
+          <div class="form-error">{{ invoiceStatusError() }}</div>
+        }
+        @if (invoiceDownloadError()) {
+          <div class="form-error">{{ invoiceDownloadError() }}</div>
+        }
+
+        <app-pagination
+          [pageNumber]="invoicesPageNumber()"
+          [pageSize]="10"
+          [totalCount]="invoicesTotalCount()"
+          (pageChange)="onInvoicesPageChange($event)"
+        />
+      }
+    </section>
+
+    <section class="card performance-card">
+      <h2>Performance History</h2>
+
+      @if (performanceLoading()) {
+        <p class="hint">Loading…</p>
+      } @else if (performanceHistory().length === 0) {
+        <p class="hint">No performance ratings recorded yet.</p>
+      } @else {
+        <ul class="history-list">
+          @for (entry of performanceHistory(); track entry.id) {
+            <li>
+              <div class="history-main">
+                <span>{{ entry.rating }} / 5{{ entry.bookingNumber ? ' · Booking ' + entry.bookingNumber : '' }}</span>
+                <span class="hint">{{ entry.createdAt | date: 'medium' }} · {{ entry.recordedByName ?? 'System' }}</span>
+              </div>
+              @if (entry.notes) {
+                <div class="history-reason">{{ entry.notes }}</div>
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      <h3>Record a Rating</h3>
+      <div class="star-rating">
+        @for (value of ratingOptions; track value) {
+          <button type="button" [class.selected]="newRating() >= value" (click)="setNewRating(value)">★</button>
+        }
+      </div>
+      <label>
+        Notes (optional)
+        <textarea rows="2" [ngModel]="newRatingNotes()" (ngModelChange)="newRatingNotes.set($event)" [ngModelOptions]="{standalone: true}"></textarea>
+      </label>
+      @if (performanceError()) {
+        <div class="form-error">{{ performanceError() }}</div>
+      }
+      <div class="form-actions">
+        <button type="button" class="primary-button" [disabled]="performanceSaving()" (click)="recordPerformance()">
+          {{ performanceSaving() ? 'Saving…' : 'Record Rating' }}
+        </button>
+      </div>
+    </section>
+  }
+</div>
+
+<app-confirmation-dialog
+  [open]="deleteConfirmOpen()"
+  title="Delete vendor?"
+  [message]="'This will permanently remove \'' + (vendor()?.name ?? '') + '\'.'"
+  confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

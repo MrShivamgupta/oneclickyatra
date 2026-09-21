@@ -45,6 +45,7 @@ public sealed class InvoiceRepository : IInvoiceRepository
         const string whereClause = """
             WHERE i.IsDeleted = 0
               AND (@BookingId IS NULL OR i.BookingId = @BookingId)
+              AND (@CustomerId IS NULL OR b.CustomerId = @CustomerId)
               AND (@SearchTerm IS NULL OR i.InvoiceNumber LIKE '%' + @SearchTerm + '%' OR b.BookingNumber LIKE '%' + @SearchTerm + '%' OR c.FullName LIKE '%' + @SearchTerm + '%')
             """;
 
@@ -65,6 +66,7 @@ public sealed class InvoiceRepository : IInvoiceRepository
         var command = new CommandDefinition(sql, new
         {
             __request.BookingId,
+            __request.CustomerId,
             __request.SearchTerm,
             __request.Skip,
             __request.PageSize

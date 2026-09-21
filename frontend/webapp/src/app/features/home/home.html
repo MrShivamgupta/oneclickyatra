@@ -27,6 +27,8 @@
 
   @if (loadingDestinations()) {
     <div class="state-message">Loading destinations…</div>
+  } @else if (destinationsError()) {
+    <div class="state-message error">{{ destinationsError() }}</div>
   } @else if (featuredDestinations().length === 0) {
     <div class="state-message">No featured destinations yet — check back soon.</div>
   } @else {
@@ -56,6 +58,8 @@
 
   @if (loadingPackages()) {
     <div class="state-message">Loading packages…</div>
+  } @else if (packagesError()) {
+    <div class="state-message error">{{ packagesError() }}</div>
   } @else if (featuredPackages().length === 0) {
     <div class="state-message">No packages published yet — check back soon.</div>
   } @else {

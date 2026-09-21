@@ -14,6 +14,7 @@ public sealed class QuotationSearchRequest : PaginationRequest
 {
     public string? Status { get; set; }
     public Guid? LeadId { get; set; }
+    public Guid? CustomerId { get; set; }
 }
 
 public sealed class QuotationOptionItemRequest

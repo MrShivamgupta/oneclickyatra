@@ -1,0 +1,59 @@
+@use '../../../shared/styles/index' as tokens;
+
+:host {
+  display: block;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: tokens.$space-4;
+  margin-bottom: tokens.$space-5;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0;
+    font-size: tokens.$font-size-xl;
+  }
+
+  .subtitle {
+    margin: tokens.$space-1 0 0;
+    color: tokens.$color-text-secondary;
+    font-size: tokens.$font-size-sm;
+  }
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: tokens.$space-4;
+}
+
+.report-card {
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-5;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: tokens.$shadow-md;
+  }
+}
+
+.report-label {
+  font-size: tokens.$font-size-lg;
+  font-weight: tokens.$font-weight-semibold;
+  color: tokens.$color-text-primary;
+  margin-bottom: tokens.$space-2;
+}
+
+.report-description {
+  margin: 0;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+}

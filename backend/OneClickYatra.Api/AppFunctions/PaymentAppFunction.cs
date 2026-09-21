@@ -9,39 +9,74 @@ using OneClickYatra.Api.Models.Requests;
 using OneClickYatra.Api.Models.Responses;
 using OneClickYatra.Api.Repositories;
 using OneClickYatra.Api.Services;
+using OneClickYatra.Api.Services.Email;
 using OneClickYatra.Api.Services.Payments;
 
 namespace OneClickYatra.Api.AppFunctions;
 
 public sealed class PaymentAppFunction : IPaymentAppFunction
 {
+    /// <summary>See BookingAppFunction's identical constant for why this is a shared placeholder
+    /// literal rather than sourced from an agency-settings table (no such domain exists yet).</summary>
+    private const string SupportPhonePlaceholder = "+91-11-4567-8900";
+
     private readonly IPaymentRepository _paymentRepository;
     private readonly IRefundRepository _refundRepository;
     private readonly IBookingRepository _bookingRepository;
+    private readonly ICustomerRepository _customerRepository;
     private readonly IBookingAppFunction _bookingAppFunction;
     private readonly IPaymentGateway _paymentGateway;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IAuditLogWriter _auditLogWriter;
+    private readonly IEmailNotificationSender _emailNotificationSender;
+    private readonly ILogger<PaymentAppFunction> _logger;
 
     public PaymentAppFunction(
         IPaymentRepository __paymentRepository,
         IRefundRepository __refundRepository,
         IBookingRepository __bookingRepository,
+        ICustomerRepository __customerRepository,
         IBookingAppFunction __bookingAppFunction,
         IPaymentGateway __paymentGateway,
         IBackgroundJobClient __backgroundJobClient,
         ICurrentUserAccessor __currentUserAccessor,
-        IAuditLogWriter __auditLogWriter)
+        IAuditLogWriter __auditLogWriter,
+        IEmailNotificationSender __emailNotificationSender,
+        ILogger<PaymentAppFunction> __logger)
     {
         _paymentRepository = __paymentRepository;
         _refundRepository = __refundRepository;
         _bookingRepository = __bookingRepository;
+        _customerRepository = __customerRepository;
         _bookingAppFunction = __bookingAppFunction;
         _paymentGateway = __paymentGateway;
         _backgroundJobClient = __backgroundJobClient;
         _currentUserAccessor = __currentUserAccessor;
         _auditLogWriter = __auditLogWriter;
+        _emailNotificationSender = __emailNotificationSender;
+        _logger = __logger;
+    }
+
+    /// <summary>Best-effort — the caller's own operation (payment captured / refund confirmed) has
+    /// already committed by the time this runs, so a failed email must never mask that.</summary>
+    private async Task SendPaymentEmailAsync(Guid __customerId, string __templateName, Dictionary<string, string> __placeholders, Guid __contextEntityId, CancellationToken __cancellationToken)
+    {
+        try
+        {
+            var customer = await _customerRepository.GetByIdAsync(__customerId, __cancellationToken);
+            if (string.IsNullOrWhiteSpace(customer?.Email))
+            {
+                _logger.LogWarning("Skipped {TemplateName} email for {EntityId}: no email address on file for Customer {CustomerId}", __templateName, __contextEntityId, __customerId);
+                return;
+            }
+
+            await _emailNotificationSender.SendAsync(__templateName, customer.Email, __placeholders, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to send {TemplateName} email for {EntityId}", __templateName, __contextEntityId);
+        }
     }
 
     public async Task<PaymentInitiateResponse> InitiateAsync(PaymentInitiateRequest __request, CancellationToken __cancellationToken)
@@ -82,7 +117,19 @@ public sealed class PaymentAppFunction : IPaymentAppFunction
             PaymentId = payment.Id,
             EventType = "OrderCreated"
         }, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "payment.initiated", "Payment", payment.Id.ToString(), null, orderResult.GatewayOrderId, __cancellationToken);
+
+        _logger.LogInformation(
+            "Payment initiated. PaymentId: {PaymentId}, BookingId: {BookingId}, Amount: {Amount}, GatewayOrderId: {GatewayOrderId}, UserId: {UserId}",
+            payment.Id, booking.Id, remainingAmount, orderResult.GatewayOrderId, _currentUserAccessor.UserId);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "payment.initiated", "Payment", payment.Id.ToString(), null, orderResult.GatewayOrderId, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "payment.initiated", "Payment", payment.Id);
+        }
 
         return new PaymentInitiateResponse
         {
@@ -105,6 +152,7 @@ public sealed class PaymentAppFunction : IPaymentAppFunction
         if (string.IsNullOrEmpty(verification.GatewayOrderId))
         {
             // Not a payment-order event we track (e.g. a different event type) — acknowledge and ignore.
+            _logger.LogWarning("Received webhook with an untracked event type and no GatewayOrderId. EventType: {EventType}", verification.EventType);
             return;
         }
 
@@ -112,6 +160,7 @@ public sealed class PaymentAppFunction : IPaymentAppFunction
         if (payment is null)
         {
             // Unknown order id — nothing on our side references it; acknowledge without processing.
+            _logger.LogWarning("Received webhook for an unknown GatewayOrderId {GatewayOrderId}. EventType: {EventType}", verification.GatewayOrderId, verification.EventType);
             return;
         }
 
@@ -128,12 +177,27 @@ public sealed class PaymentAppFunction : IPaymentAppFunction
         if (!isNewEvent)
         {
             // Already processed this exact gateway event — idempotent no-op, do not reprocess.
+            _logger.LogWarning(
+                "Duplicate webhook event received and skipped. PaymentId: {PaymentId}, GatewayOrderId: {GatewayOrderId}, GatewayEventId: {GatewayEventId}",
+                payment.Id, verification.GatewayOrderId, idempotencyKey);
             return;
         }
 
         if (verification.AmountInRupees.HasValue && verification.AmountInRupees.Value != payment.Amount)
         {
-            await _auditLogWriter.LogAsync(null, "payment.amount_mismatch", "Payment", payment.Id.ToString(), payment.Amount.ToString(), verification.AmountInRupees.Value.ToString(), __cancellationToken);
+            _logger.LogWarning(
+                "Webhook amount mismatch for {PaymentId}. ExpectedAmount: {ExpectedAmount}, ActualAmount: {ActualAmount}",
+                payment.Id, payment.Amount, verification.AmountInRupees.Value);
+
+            try
+            {
+                await _auditLogWriter.LogAsync(null, "payment.amount_mismatch", "Payment", payment.Id.ToString(), payment.Amount.ToString(), verification.AmountInRupees.Value.ToString(), __cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "payment.amount_mismatch", "Payment", payment.Id);
+            }
+
             throw new BusinessException("Webhook amount did not match the expected payment amount.");
         }
 
@@ -149,12 +213,50 @@ public sealed class PaymentAppFunction : IPaymentAppFunction
                 _backgroundJobClient.Enqueue<GenerateInvoiceJob>(job => job.RunAsync(booking.Id, CancellationToken.None));
             }
 
-            await _auditLogWriter.LogAsync(null, "payment.captured", "Payment", payment.Id.ToString(), "Pending", "Paid", __cancellationToken);
+            _logger.LogInformation(
+                "Payment captured. PaymentId: {PaymentId}, BookingId: {BookingId}, OldStatus: {OldStatus}, NewStatus: {NewStatus}, Amount: {Amount}",
+                payment.Id, payment.BookingId, "Pending", "Paid", payment.Amount);
+
+            try
+            {
+                await _auditLogWriter.LogAsync(null, "payment.captured", "Payment", payment.Id.ToString(), "Pending", "Paid", __cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "payment.captured", "Payment", payment.Id);
+            }
+
+            if (booking is not null)
+            {
+                var balanceDue = Math.Max(0, booking.TotalAmount - booking.AmountPaid);
+                await SendPaymentEmailAsync(booking.CustomerId, "PaymentReceipt", new Dictionary<string, string>
+                {
+                    ["BookingReference"] = booking.BookingNumber,
+                    ["CustomerName"] = booking.CustomerName ?? "Customer",
+                    ["ReceiptNumber"] = payment.Id.ToString("N")[..12].ToUpperInvariant(),
+                    ["AmountPaid"] = "Rs. " + payment.Amount.ToString("N2"),
+                    ["PaymentDate"] = DateTime.UtcNow.ToString("dd MMM yyyy"),
+                    ["PaymentMethod"] = payment.GatewayProvider,
+                    ["BalanceDue"] = "Rs. " + balanceDue.ToString("N2")
+                }, payment.Id, __cancellationToken);
+            }
         }
         else if (verification.EventType == "payment.failed")
         {
             await _paymentRepository.UpdateStatusAsync(payment.Id, "Failed", verification.GatewayPaymentId, __cancellationToken);
-            await _auditLogWriter.LogAsync(null, "payment.failed", "Payment", payment.Id.ToString(), "Pending", "Failed", __cancellationToken);
+
+            _logger.LogInformation(
+                "Payment failed. PaymentId: {PaymentId}, BookingId: {BookingId}, OldStatus: {OldStatus}, NewStatus: {NewStatus}, Amount: {Amount}",
+                payment.Id, payment.BookingId, "Pending", "Failed", payment.Amount);
+
+            try
+            {
+                await _auditLogWriter.LogAsync(null, "payment.failed", "Payment", payment.Id.ToString(), "Pending", "Failed", __cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "payment.failed", "Payment", payment.Id);
+            }
         }
     }
 
@@ -186,6 +288,10 @@ public sealed class PaymentAppFunction : IPaymentAppFunction
         };
         await _refundRepository.CreateAsync(refund, __cancellationToken);
 
+        _logger.LogInformation(
+            "Refund initiated. PaymentId: {PaymentId}, BookingId: {BookingId}, RefundAmount: {RefundAmount}, Reason: {Reason}, UserId: {UserId}",
+            paidPayment.Id, booking.Id, refund.Amount, __request.Reason, _currentUserAccessor.UserId);
+
         var gatewayResult = await _paymentGateway.CreateRefundAsync(paidPayment.GatewayPaymentId, refund.Amount, __request.Reason, __cancellationToken);
 
         // Razorpay refunds for card/UPI are typically instant ("processed"); netbanking refunds can
@@ -203,7 +309,30 @@ public sealed class PaymentAppFunction : IPaymentAppFunction
             await _bookingAppFunction.UpdateStatusAsync(booking.Id, new BookingStatusRequest { Status = "Refunded", Reason = __request.Reason }, __cancellationToken);
         }
 
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "payment.refund_initiated", "Booking", booking.Id.ToString(), "RefundPending", refundStatus, __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "payment.refund_initiated", "Booking", booking.Id.ToString(), "RefundPending", refundStatus, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "payment.refund_initiated", "Booking", booking.Id);
+        }
+
+        // Only send the confirmation once the refund is actually confirmed (Razorpay's instant
+        // card/UPI path) — a "Processing" netbanking refund isn't confirmed yet, so no email here;
+        // an admin later completing it via the booking-status endpoint is out of this method's scope.
+        if (isInstantlyProcessed)
+        {
+            await SendPaymentEmailAsync(booking.CustomerId, "RefundConfirmation", new Dictionary<string, string>
+            {
+                ["BookingReference"] = booking.BookingNumber,
+                ["CustomerName"] = booking.CustomerName ?? "Customer",
+                ["RefundAmount"] = "Rs. " + refund.Amount.ToString("N2"),
+                ["RefundDate"] = DateTime.UtcNow.ToString("dd MMM yyyy"),
+                ["RefundMode"] = "your original payment method",
+                ["SupportPhone"] = SupportPhonePlaceholder
+            }, refund.Id, __cancellationToken);
+        }
 
         return new RefundResponse
         {

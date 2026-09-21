@@ -17,6 +17,9 @@
 @if (loading()) {
   <p>Loading…</p>
 }
+@if (loadError()) {
+  <div class="form-error">{{ loadError() }}</div>
+}
 
 <div class="detail-grid">
   <section class="card">
@@ -85,6 +88,9 @@
           }
         </select>
       </label>
+      @if (statusError()) {
+        <div class="form-error">{{ statusError() }}</div>
+      }
       <div class="form-actions">
         <button type="button" class="primary-button" [disabled]="statusSaving()" (click)="saveStatus()">
           {{ statusSaving() ? 'Updating…' : 'Update Status' }}
@@ -98,6 +104,9 @@
         Score (0–100)
         <input type="number" min="0" max="100" [ngModel]="scoreValue()" (ngModelChange)="scoreValue.set($event)" [ngModelOptions]="{standalone: true}" />
       </label>
+      @if (scoreError()) {
+        <div class="form-error">{{ scoreError() }}</div>
+      }
       <div class="form-actions">
         <button type="button" class="primary-button" [disabled]="scoreSaving()" (click)="saveScore()">
           {{ scoreSaving() ? 'Updating…' : 'Update Score' }}
@@ -116,6 +125,9 @@
           }
         </select>
       </label>
+      @if (assignError()) {
+        <div class="form-error">{{ assignError() }}</div>
+      }
       <div class="form-actions">
         <button type="button" class="primary-button" [disabled]="assignSaving() || !assignValue()" (click)="saveAssign()">
           {{ assignSaving() ? 'Assigning…' : 'Assign' }}
@@ -152,6 +164,10 @@
     <section class="card followups-card">
       <h2>Follow-Ups</h2>
 
+      @if (followUpStatusError()) {
+        <div class="form-error">{{ followUpStatusError() }}</div>
+      }
+
       @if (followUps().length === 0) {
         <p class="hint">No follow-ups scheduled yet.</p>
       } @else {
@@ -168,8 +184,10 @@
               }
               @if (followUp.status === 'Pending') {
                 <div class="followup-actions">
-                  <button type="button" class="link-button" (click)="markFollowUpStatus(followUp, 'Completed')">Mark Completed</button>
-                  <button type="button" class="link-button danger" (click)="markFollowUpStatus(followUp, 'Cancelled')">Cancel</button>
+                  <button type="button" class="link-button" [disabled]="followUpStatusUpdatingId() === followUp.id" (click)="markFollowUpStatus(followUp, 'Completed')">
+                    {{ followUpStatusUpdatingId() === followUp.id ? 'Updating…' : 'Mark Completed' }}
+                  </button>
+                  <button type="button" class="link-button danger" [disabled]="followUpStatusUpdatingId() === followUp.id" (click)="markFollowUpStatus(followUp, 'Cancelled')">Cancel</button>
                 </div>
               }
             </li>
@@ -214,6 +232,9 @@
   title="Delete lead?"
   [message]="'This will permanently remove \'' + (lead()?.customerName ?? '') + '\' from the lead list.'"
   confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
   (confirmed)="performDelete()"
   (cancelled)="cancelDelete()"
 />

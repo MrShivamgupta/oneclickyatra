@@ -35,6 +35,7 @@ export class QuotationDetailPage {
   readonly isNew = signal(false);
   readonly quotation = signal<Quotation | null>(null);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
 
   readonly leads = signal<Lead[]>([]);
   readonly destinations = signal<Destination[]>([]);
@@ -49,8 +50,12 @@ export class QuotationDetailPage {
   readonly sendError = signal<string | null>(null);
   readonly sendSaving = signal(false);
   readonly linkSaving = signal(false);
+  readonly linkError = signal<string | null>(null);
   readonly pdfDownloading = signal(false);
+  readonly pdfError = signal<string | null>(null);
   readonly deleteConfirmOpen = signal(false);
+  readonly deleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
   readonly convertSaving = signal(false);
   readonly convertError = signal<string | null>(null);
 
@@ -87,6 +92,7 @@ export class QuotationDetailPage {
     const id = this.quotationId();
     if (!id) return;
     this.loading.set(true);
+    this.loadError.set(null);
     this.quotationService.getById(id).subscribe({
       next: (response) => {
         this.loading.set(false);
@@ -100,7 +106,10 @@ export class QuotationDetailPage {
           this.options.set(response.data.options.map((option) => ({ ...option, items: [...option.items] })));
         }
       },
-      error: () => this.loading.set(false)
+      error: (error) => {
+        this.loading.set(false);
+        this.loadError.set(error?.error?.message ?? 'Could not load this quotation. Please try again.');
+      }
     });
   }
 
@@ -267,6 +276,7 @@ export class QuotationDetailPage {
     const id = this.quotationId();
     if (!id) return;
     this.linkSaving.set(true);
+    this.linkError.set(null);
     this.quotationService.regenerateLink(id).subscribe({
       next: (response) => {
         this.linkSaving.set(false);
@@ -274,7 +284,10 @@ export class QuotationDetailPage {
           this.lastKnownPublicToken.set(response.data.publicToken);
         }
       },
-      error: () => this.linkSaving.set(false)
+      error: (error) => {
+        this.linkSaving.set(false);
+        this.linkError.set(error?.error?.message ?? 'Could not generate a share link. Please try again.');
+      }
     });
   }
 
@@ -300,12 +313,16 @@ export class QuotationDetailPage {
     const id = this.quotationId();
     if (!id) return;
     this.pdfDownloading.set(true);
+    this.pdfError.set(null);
     this.quotationService.downloadPdf(id).subscribe({
       next: (blob) => {
         this.pdfDownloading.set(false);
         this.triggerDownload(blob, `${this.quotation()?.quotationNumber ?? 'Quotation'}.pdf`);
       },
-      error: () => this.pdfDownloading.set(false)
+      error: (error) => {
+        this.pdfDownloading.set(false);
+        this.pdfError.set(error?.error?.message ?? 'Could not download the PDF. Please try again.');
+      }
     });
   }
 
@@ -338,6 +355,7 @@ export class QuotationDetailPage {
   }
 
   confirmDelete(): void {
+    this.deleteError.set(null);
     this.deleteConfirmOpen.set(true);
   }
 
@@ -348,9 +366,18 @@ export class QuotationDetailPage {
   performDelete(): void {
     const id = this.quotationId();
     if (!id) return;
-    this.quotationService.delete(id).subscribe(() => {
-      this.deleteConfirmOpen.set(false);
-      this.router.navigate(['/admin/quotations']);
+    this.deleting.set(true);
+    this.deleteError.set(null);
+    this.quotationService.delete(id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleteConfirmOpen.set(false);
+        this.router.navigate(['/admin/quotations']);
+      },
+      error: (error) => {
+        this.deleting.set(false);
+        this.deleteError.set(error?.error?.message ?? 'Could not delete this quotation. Please try again.');
+      }
     });
   }
 }

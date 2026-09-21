@@ -1,0 +1,54 @@
+<div class="portal-page">
+  <div class="page-header">
+    <div>
+      <h1>My Profile</h1>
+      <p class="subtitle">Keep your contact details up to date. Your vendor type and active status are managed by your agency admin.</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p class="hint">Loading…</p>
+  } @else if (loadError()) {
+    <p class="hint form-error">{{ loadError() }}</p>
+  } @else {
+    <section class="card">
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <label>
+          Business name
+          <input type="text" formControlName="name" />
+        </label>
+        <label>
+          Email
+          <input type="email" formControlName="email" />
+        </label>
+        <label>
+          Phone
+          <input type="text" formControlName="phone" />
+        </label>
+        <label>
+          Address (optional)
+          <input type="text" formControlName="address" />
+        </label>
+        <label>
+          City (optional)
+          <input type="text" formControlName="city" />
+        </label>
+        <label>
+          Country (optional)
+          <input type="text" formControlName="country" />
+        </label>
+
+        @if (error()) {
+          <div class="form-error">{{ error() }}</div>
+        }
+        @if (saved()) {
+          <div class="form-success">Profile updated.</div>
+        }
+
+        <button type="submit" class="primary-button" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : 'Save Changes' }}
+        </button>
+      </form>
+    </section>
+  }
+</div>

@@ -13,12 +13,18 @@ public sealed class CountryAppFunction : ICountryAppFunction
     private readonly ICountryRepository _countryRepository;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IAuditLogWriter _auditLogWriter;
+    private readonly ILogger<CountryAppFunction> _logger;
 
-    public CountryAppFunction(ICountryRepository __countryRepository, ICurrentUserAccessor __currentUserAccessor, IAuditLogWriter __auditLogWriter)
+    public CountryAppFunction(
+        ICountryRepository __countryRepository,
+        ICurrentUserAccessor __currentUserAccessor,
+        IAuditLogWriter __auditLogWriter,
+        ILogger<CountryAppFunction> __logger)
     {
         _countryRepository = __countryRepository;
         _currentUserAccessor = __currentUserAccessor;
         _auditLogWriter = __auditLogWriter;
+        _logger = __logger;
     }
 
     public async Task<PaginationResponse<CountryResponse>> ListAsync(PaginationRequest __request, CancellationToken __cancellationToken)
@@ -51,7 +57,17 @@ public sealed class CountryAppFunction : ICountryAppFunction
         };
 
         await _countryRepository.CreateAsync(country, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "country.created", "Country", country.Id.ToString(), null, country.Name, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "country.created", "Country", country.Id.ToString(), null, country.Name, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "country.created", "Country", country.Id);
+        }
+
+        _logger.LogInformation("Country {CountryId} {CountryName} created by {UserId}", country.Id, country.Name, _currentUserAccessor.UserId);
 
         return ToResponse(country);
     }
@@ -67,7 +83,17 @@ public sealed class CountryAppFunction : ICountryAppFunction
         country.UpdatedBy = _currentUserAccessor.UserId;
 
         await _countryRepository.UpdateAsync(country, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "country.updated", "Country", country.Id.ToString(), oldName, country.Name, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "country.updated", "Country", country.Id.ToString(), oldName, country.Name, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "country.updated", "Country", country.Id);
+        }
+
+        _logger.LogInformation("Country {CountryId} updated {OldName} -> {NewName} by {UserId}", country.Id, oldName, country.Name, _currentUserAccessor.UserId);
 
         return ToResponse(country);
     }
@@ -78,7 +104,17 @@ public sealed class CountryAppFunction : ICountryAppFunction
             ?? throw new EntityNotFoundException("Country", __id);
 
         await _countryRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "country.deleted", "Country", __id.ToString(), country.Name, null, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "country.deleted", "Country", __id.ToString(), country.Name, null, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "country.deleted", "Country", __id);
+        }
+
+        _logger.LogInformation("Country {CountryId} {CountryName} deleted by {UserId}", __id, country.Name, _currentUserAccessor.UserId);
     }
 
     private static CountryResponse ToResponse(CountryModel country) => new()

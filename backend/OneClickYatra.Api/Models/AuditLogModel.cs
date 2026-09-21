@@ -13,4 +13,10 @@ public sealed class AuditLogModel
     public string? UserAgent { get; set; }
     public string TrackingId { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>Populated only by AuditLogRepository.SearchAsync's LEFT JOIN to Users (null for
+    /// system actions with no acting user, or when UserId's account was hard-deleted). Ignored by
+    /// CreateAsync's INSERT — Dapper only binds parameters actually referenced by that SQL text.</summary>
+    public string? ActorName { get; set; }
+    public string? ActorEmail { get; set; }
 }

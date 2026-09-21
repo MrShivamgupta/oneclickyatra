@@ -1,0 +1,56 @@
+<div class="portal-page">
+  <div class="page-header">
+    <div>
+      <h1>Booking Requests</h1>
+      <p class="subtitle">Trips your agency may need your services for.</p>
+    </div>
+  </div>
+
+  <div class="notice">
+    This list is matched by destination, not by a direct assignment to you — it shows every
+    booking to that destination for which your agency has one of your rates on file, not
+    necessarily bookings assigned specifically to you. Please confirm with your agency contact
+    before acting on any of these.
+  </div>
+
+  @if (loading()) {
+    <p class="hint">Loading…</p>
+  } @else if (loadError()) {
+    <p class="hint form-error">{{ loadError() }}</p>
+  } @else if (requests().length === 0) {
+    <p class="hint">No matching booking requests right now.</p>
+  } @else {
+    <div class="card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Booking #</th>
+            <th>Destination</th>
+            <th>Travel Date</th>
+            <th>Travelers</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (request of requests(); track request.bookingId) {
+            <tr>
+              <td>{{ request.bookingNumber }}</td>
+              <td>{{ request.destinationName ?? '—' }}</td>
+              <td>{{ request.travelDate ? (request.travelDate | date: 'dd MMM yyyy') : '—' }}</td>
+              <td>{{ request.numberOfAdults }} adult(s){{ request.numberOfChildren > 0 ? ', ' + request.numberOfChildren + ' child(ren)' : '' }}</td>
+              <td><span class="badge status" [attr.data-status]="request.status">{{ request.status }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (totalPages > 1) {
+        <div class="pagination">
+          <button type="button" [disabled]="pageNumber() === 1" (click)="onPageChange(pageNumber() - 1)">← Prev</button>
+          <span>Page {{ pageNumber() }} of {{ totalPages }}</span>
+          <button type="button" [disabled]="pageNumber() >= totalPages" (click)="onPageChange(pageNumber() + 1)">Next →</button>
+        </div>
+      }
+    </div>
+  }
+</div>

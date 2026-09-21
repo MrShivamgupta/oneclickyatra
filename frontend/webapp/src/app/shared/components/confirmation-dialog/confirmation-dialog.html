@@ -1,11 +1,16 @@
 @if (open()) {
-  <div class="overlay" (click)="cancelled.emit()">
+  <div class="overlay" (click)="!confirming() && cancelled.emit()">
     <div class="dialog" (click)="$event.stopPropagation()">
       <h2>{{ title() }}</h2>
       <p>{{ message() }}</p>
+      @if (errorMessage()) {
+        <p class="dialog-error">{{ errorMessage() }}</p>
+      }
       <div class="actions">
-        <button type="button" class="secondary" (click)="cancelled.emit()">Cancel</button>
-        <button type="button" [class.danger]="danger()" (click)="confirmed.emit()">{{ confirmLabel() }}</button>
+        <button type="button" class="secondary" [disabled]="confirming()" (click)="cancelled.emit()">Cancel</button>
+        <button type="button" [class.danger]="danger()" [disabled]="confirming()" (click)="confirmed.emit()">
+          {{ confirming() ? confirmingLabel() : confirmLabel() }}
+        </button>
       </div>
     </div>
   </div>

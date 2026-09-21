@@ -32,6 +32,10 @@
   }
 </form>
 
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+
 <app-data-table [columns]="columns" [rows]="seasons()" [loading]="loading()" emptyMessage="No seasons yet.">
   <ng-template #rowTemplate let-season>
     <tr>
@@ -50,6 +54,9 @@
   title="Delete season?"
   [message]="'This will remove \'' + (deleteTarget()?.name ?? '') + '\'.'"
   confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
   (confirmed)="performDelete()"
   (cancelled)="cancelDelete()"
 />

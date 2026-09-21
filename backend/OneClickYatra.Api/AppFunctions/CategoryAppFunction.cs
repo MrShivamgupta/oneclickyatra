@@ -13,12 +13,18 @@ public sealed class CategoryAppFunction : ICategoryAppFunction
     private readonly ICategoryRepository _categoryRepository;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IAuditLogWriter _auditLogWriter;
+    private readonly ILogger<CategoryAppFunction> _logger;
 
-    public CategoryAppFunction(ICategoryRepository __categoryRepository, ICurrentUserAccessor __currentUserAccessor, IAuditLogWriter __auditLogWriter)
+    public CategoryAppFunction(
+        ICategoryRepository __categoryRepository,
+        ICurrentUserAccessor __currentUserAccessor,
+        IAuditLogWriter __auditLogWriter,
+        ILogger<CategoryAppFunction> __logger)
     {
         _categoryRepository = __categoryRepository;
         _currentUserAccessor = __currentUserAccessor;
         _auditLogWriter = __auditLogWriter;
+        _logger = __logger;
     }
 
     public async Task<PaginationResponse<CategoryResponse>> ListAsync(PaginationRequest __request, CancellationToken __cancellationToken)
@@ -51,7 +57,17 @@ public sealed class CategoryAppFunction : ICategoryAppFunction
         };
 
         await _categoryRepository.CreateAsync(category, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "category.created", "Category", category.Id.ToString(), null, category.Name, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "category.created", "Category", category.Id.ToString(), null, category.Name, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "category.created", "Category", category.Id);
+        }
+
+        _logger.LogInformation("Category {CategoryId} {CategoryName} created by {UserId}", category.Id, category.Name, _currentUserAccessor.UserId);
 
         return ToResponse(category);
     }
@@ -67,7 +83,17 @@ public sealed class CategoryAppFunction : ICategoryAppFunction
         category.UpdatedBy = _currentUserAccessor.UserId;
 
         await _categoryRepository.UpdateAsync(category, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "category.updated", "Category", category.Id.ToString(), oldName, category.Name, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "category.updated", "Category", category.Id.ToString(), oldName, category.Name, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "category.updated", "Category", category.Id);
+        }
+
+        _logger.LogInformation("Category {CategoryId} updated {OldName} -> {NewName} by {UserId}", category.Id, oldName, category.Name, _currentUserAccessor.UserId);
 
         return ToResponse(category);
     }
@@ -77,7 +103,17 @@ public sealed class CategoryAppFunction : ICategoryAppFunction
         var category = await _categoryRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Category", __id);
 
         await _categoryRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "category.deleted", "Category", __id.ToString(), category.Name, null, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "category.deleted", "Category", __id.ToString(), category.Name, null, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "category.deleted", "Category", __id);
+        }
+
+        _logger.LogInformation("Category {CategoryId} {CategoryName} deleted by {UserId}", __id, category.Name, _currentUserAccessor.UserId);
     }
 
     private static CategoryResponse ToResponse(CategoryModel category) => new()

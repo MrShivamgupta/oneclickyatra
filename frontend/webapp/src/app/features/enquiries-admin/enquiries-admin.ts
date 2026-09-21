@@ -32,11 +32,16 @@ export class EnquiriesAdmin {
 
   readonly enquiries = signal<EnquiryResponse[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly pageNumber = signal(1);
   readonly totalCount = signal(0);
   readonly searchTerm = signal('');
   readonly statusFilter = signal('');
   readonly deleteTarget = signal<EnquiryResponse | null>(null);
+  readonly deleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
+  readonly statusUpdatingId = signal<string | null>(null);
+  readonly statusError = signal<string | null>(null);
 
   constructor() {
     this.load();
@@ -44,6 +49,7 @@ export class EnquiriesAdmin {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.enquiryService
       .search({
         pageNumber: this.pageNumber(),
@@ -59,7 +65,10 @@ export class EnquiriesAdmin {
             this.totalCount.set(response.data.totalCount);
           }
         },
-        error: () => this.loading.set(false)
+        error: (error) => {
+          this.loading.set(false);
+          this.loadError.set(error?.error?.message ?? 'Could not load enquiries. Please try again.');
+        }
       });
   }
 
@@ -81,10 +90,22 @@ export class EnquiriesAdmin {
   }
 
   updateStatus(enquiry: EnquiryResponse, status: string): void {
-    this.enquiryService.updateStatus(enquiry.id, status).subscribe(() => this.load());
+    this.statusUpdatingId.set(enquiry.id);
+    this.statusError.set(null);
+    this.enquiryService.updateStatus(enquiry.id, status).subscribe({
+      next: () => {
+        this.statusUpdatingId.set(null);
+        this.load();
+      },
+      error: (error) => {
+        this.statusUpdatingId.set(null);
+        this.statusError.set(error?.error?.message ?? 'Could not update this enquiry\'s status. Please try again.');
+      }
+    });
   }
 
   confirmDelete(enquiry: EnquiryResponse): void {
+    this.deleteError.set(null);
     this.deleteTarget.set(enquiry);
   }
 
@@ -95,9 +116,18 @@ export class EnquiriesAdmin {
   performDelete(): void {
     const target = this.deleteTarget();
     if (!target) return;
-    this.enquiryService.delete(target.id).subscribe(() => {
-      this.deleteTarget.set(null);
-      this.load();
+    this.deleting.set(true);
+    this.deleteError.set(null);
+    this.enquiryService.delete(target.id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleteTarget.set(null);
+        this.load();
+      },
+      error: (error) => {
+        this.deleting.set(false);
+        this.deleteError.set(error?.error?.message ?? 'Could not delete this enquiry. Please try again.');
+      }
     });
   }
 }

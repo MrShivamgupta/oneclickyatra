@@ -5,6 +5,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { FollowUpService } from '../../core/services/followup.service';
 import { ChartCanvas } from '../../shared/components/chart-canvas/chart-canvas';
+import { Spinner } from '../../shared/components/spinner/spinner';
 import {
   DATE_PRESETS,
   DATE_PRESET_LABELS,
@@ -38,7 +39,7 @@ function toIsoDate(date: Date): string {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, DatePipe, DecimalPipe, ChartCanvas],
+  imports: [RouterLink, DatePipe, DecimalPipe, ChartCanvas, Spinner],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
@@ -57,6 +58,7 @@ export class Dashboard {
   readonly quickActionsOpen = signal(false);
 
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly kpis = signal<DashboardKpis | null>(null);
   readonly alerts = signal<DashboardAlert[]>([]);
   readonly revenueTrend = signal<RevenueTrendPoint[]>([]);
@@ -193,27 +195,69 @@ export class Dashboard {
 
   loadAll(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     const range = this.range();
 
-    this.dashboardService.getStats(range).subscribe((r) => r.success && r.data && this.kpis.set(r.data));
-    this.dashboardService.getAlerts().subscribe((r) => r.success && r.data && this.alerts.set(r.data));
-    this.dashboardService.getRevenueChart(range).subscribe((r) => r.success && r.data && this.revenueTrend.set(r.data));
-    this.dashboardService.getLeadFunnel(range).subscribe((r) => r.success && r.data && this.leadFunnel.set(r.data));
-    this.dashboardService.getDestinationPerformance(range).subscribe((r) => r.success && r.data && this.destinationPerformance.set(r.data));
-    this.dashboardService.getSalesPerformance(range).subscribe((r) => r.success && r.data && this.salesPerformance.set(r.data));
-
-    this.dashboardService.getRecentLeads().subscribe((r) => r.success && r.data && this.recentLeads.set(r.data));
-    this.dashboardService.getRecentBookings().subscribe((r) => r.success && r.data && this.recentBookings.set(r.data));
-    this.dashboardService.getPendingEnquiries().subscribe((r) => r.success && r.data && this.pendingEnquiries.set(r.data));
-    this.dashboardService.getRefundRequests().subscribe((r) => r.success && r.data && this.refundRequests.set(r.data));
-    this.dashboardService.getUpcomingDepartures().subscribe((r) => r.success && r.data && this.upcomingDepartures.set(r.data));
-
-    this.followUpService.today({ pageNumber: 1, pageSize: 8 }).subscribe((r) => {
-      if (r.success && r.data) {
-        this.todayFollowUpCount.set(r.data.totalCount);
-        this.todayFollowUps.set(r.data.items);
-      }
+    const onLoadError = (error: { error?: { message?: string } }) => {
       this.loading.set(false);
+      this.loadError.set(error?.error?.message ?? 'Could not load the dashboard. Please try again.');
+    };
+
+    this.dashboardService.getStats(range).subscribe({
+      next: (r) => r.success && r.data && this.kpis.set(r.data),
+      error: onLoadError
+    });
+    this.dashboardService.getAlerts().subscribe({
+      next: (r) => r.success && r.data && this.alerts.set(r.data),
+      error: onLoadError
+    });
+    this.dashboardService.getRevenueChart(range).subscribe({
+      next: (r) => r.success && r.data && this.revenueTrend.set(r.data),
+      error: onLoadError
+    });
+    this.dashboardService.getLeadFunnel(range).subscribe({
+      next: (r) => r.success && r.data && this.leadFunnel.set(r.data),
+      error: onLoadError
+    });
+    this.dashboardService.getDestinationPerformance(range).subscribe({
+      next: (r) => r.success && r.data && this.destinationPerformance.set(r.data),
+      error: onLoadError
+    });
+    this.dashboardService.getSalesPerformance(range).subscribe({
+      next: (r) => r.success && r.data && this.salesPerformance.set(r.data),
+      error: onLoadError
+    });
+
+    this.dashboardService.getRecentLeads().subscribe({
+      next: (r) => r.success && r.data && this.recentLeads.set(r.data),
+      error: onLoadError
+    });
+    this.dashboardService.getRecentBookings().subscribe({
+      next: (r) => r.success && r.data && this.recentBookings.set(r.data),
+      error: onLoadError
+    });
+    this.dashboardService.getPendingEnquiries().subscribe({
+      next: (r) => r.success && r.data && this.pendingEnquiries.set(r.data),
+      error: onLoadError
+    });
+    this.dashboardService.getRefundRequests().subscribe({
+      next: (r) => r.success && r.data && this.refundRequests.set(r.data),
+      error: onLoadError
+    });
+    this.dashboardService.getUpcomingDepartures().subscribe({
+      next: (r) => r.success && r.data && this.upcomingDepartures.set(r.data),
+      error: onLoadError
+    });
+
+    this.followUpService.today({ pageNumber: 1, pageSize: 8 }).subscribe({
+      next: (r) => {
+        if (r.success && r.data) {
+          this.todayFollowUpCount.set(r.data.totalCount);
+          this.todayFollowUps.set(r.data.items);
+        }
+        this.loading.set(false);
+      },
+      error: onLoadError
     });
   }
 }

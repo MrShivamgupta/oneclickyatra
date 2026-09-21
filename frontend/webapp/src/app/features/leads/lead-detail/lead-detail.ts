@@ -33,6 +33,7 @@ export class LeadDetail {
   readonly isNew = signal(false);
   readonly lead = signal<Lead | null>(null);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
 
   readonly destinations = signal<Destination[]>([]);
   readonly staff = signal<UserSummary[]>([]);
@@ -43,20 +44,27 @@ export class LeadDetail {
 
   readonly statusValue = signal('New');
   readonly statusSaving = signal(false);
+  readonly statusError = signal<string | null>(null);
 
   readonly scoreValue = signal(0);
   readonly scoreSaving = signal(false);
+  readonly scoreError = signal<string | null>(null);
 
   readonly assignValue = signal('');
   readonly assignSaving = signal(false);
+  readonly assignError = signal<string | null>(null);
 
   readonly convertSaving = signal(false);
   readonly convertError = signal<string | null>(null);
 
   readonly followUpError = signal<string | null>(null);
   readonly followUpSaving = signal(false);
+  readonly followUpStatusUpdatingId = signal<string | null>(null);
+  readonly followUpStatusError = signal<string | null>(null);
 
   readonly deleteConfirmOpen = signal(false);
+  readonly deleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
 
   readonly basicForm = this.formBuilder.nonNullable.group({
     customerName: ['', [Validators.required, Validators.maxLength(150)]],
@@ -96,12 +104,16 @@ export class LeadDetail {
     const id = this.leadId();
     if (!id) return;
     this.loading.set(true);
+    this.loadError.set(null);
     this.leadService.getById(id).subscribe({
       next: (response) => {
         this.loading.set(false);
         if (response.success && response.data) this.applyLead(response.data);
       },
-      error: () => this.loading.set(false)
+      error: (error) => {
+        this.loading.set(false);
+        this.loadError.set(error?.error?.message ?? 'Could not load this lead. Please try again.');
+      }
     });
     this.loadFollowUps();
   }
@@ -187,12 +199,16 @@ export class LeadDetail {
     const id = this.leadId();
     if (!id) return;
     this.statusSaving.set(true);
+    this.statusError.set(null);
     this.leadService.updateStatus(id, this.statusValue()).subscribe({
       next: (response) => {
         this.statusSaving.set(false);
         if (response.success && response.data) this.applyLead(response.data);
       },
-      error: () => this.statusSaving.set(false)
+      error: (error) => {
+        this.statusSaving.set(false);
+        this.statusError.set(error?.error?.message ?? 'Could not update the status. Please try again.');
+      }
     });
   }
 
@@ -200,12 +216,16 @@ export class LeadDetail {
     const id = this.leadId();
     if (!id) return;
     this.scoreSaving.set(true);
+    this.scoreError.set(null);
     this.leadService.updateScore(id, this.scoreValue()).subscribe({
       next: (response) => {
         this.scoreSaving.set(false);
         if (response.success && response.data) this.applyLead(response.data);
       },
-      error: () => this.scoreSaving.set(false)
+      error: (error) => {
+        this.scoreSaving.set(false);
+        this.scoreError.set(error?.error?.message ?? 'Could not update the score. Please try again.');
+      }
     });
   }
 
@@ -213,12 +233,16 @@ export class LeadDetail {
     const id = this.leadId();
     if (!id || !this.assignValue()) return;
     this.assignSaving.set(true);
+    this.assignError.set(null);
     this.leadService.assign(id, this.assignValue()).subscribe({
       next: (response) => {
         this.assignSaving.set(false);
         if (response.success && response.data) this.applyLead(response.data);
       },
-      error: () => this.assignSaving.set(false)
+      error: (error) => {
+        this.assignSaving.set(false);
+        this.assignError.set(error?.error?.message ?? 'Could not assign this lead. Please try again.');
+      }
     });
   }
 
@@ -265,10 +289,22 @@ export class LeadDetail {
   }
 
   markFollowUpStatus(followUp: FollowUp, status: 'Completed' | 'Cancelled'): void {
-    this.followUpService.updateStatus(followUp.id, { status }).subscribe(() => this.loadFollowUps());
+    this.followUpStatusUpdatingId.set(followUp.id);
+    this.followUpStatusError.set(null);
+    this.followUpService.updateStatus(followUp.id, { status }).subscribe({
+      next: () => {
+        this.followUpStatusUpdatingId.set(null);
+        this.loadFollowUps();
+      },
+      error: (error) => {
+        this.followUpStatusUpdatingId.set(null);
+        this.followUpStatusError.set(error?.error?.message ?? 'Could not update this follow-up. Please try again.');
+      }
+    });
   }
 
   confirmDelete(): void {
+    this.deleteError.set(null);
     this.deleteConfirmOpen.set(true);
   }
 
@@ -279,9 +315,18 @@ export class LeadDetail {
   performDelete(): void {
     const id = this.leadId();
     if (!id) return;
-    this.leadService.delete(id).subscribe(() => {
-      this.deleteConfirmOpen.set(false);
-      this.router.navigate(['/admin/leads']);
+    this.deleting.set(true);
+    this.deleteError.set(null);
+    this.leadService.delete(id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleteConfirmOpen.set(false);
+        this.router.navigate(['/admin/leads']);
+      },
+      error: (error) => {
+        this.deleting.set(false);
+        this.deleteError.set(error?.error?.message ?? 'Could not delete this lead. Please try again.');
+      }
     });
   }
 }

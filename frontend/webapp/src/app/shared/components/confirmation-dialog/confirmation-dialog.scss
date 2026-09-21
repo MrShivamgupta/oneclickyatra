@@ -30,6 +30,15 @@ p {
   font-size: tokens.$font-size-sm;
 }
 
+.dialog-error {
+  margin: 0 0 tokens.$space-5;
+  padding: tokens.$space-2 tokens.$space-3;
+  border-radius: tokens.$radius-sm;
+  background: rgba(224, 69, 63, 0.1);
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-sm;
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;
@@ -54,5 +63,10 @@ button {
     background: tokens.$color-bg;
     color: tokens.$color-text-primary;
     border: 1px solid tokens.$color-border;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 }

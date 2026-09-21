@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Moq;
 using OneClickYatra.Api.AppFunctions;
 using OneClickYatra.Api.Globals;
@@ -6,6 +7,7 @@ using OneClickYatra.Api.Models;
 using OneClickYatra.Api.Models.Requests;
 using OneClickYatra.Api.Repositories;
 using OneClickYatra.Api.Services;
+using OneClickYatra.Api.Services.Email;
 
 namespace OneClickYatra.UnitTests.AppFunctions;
 
@@ -15,12 +17,15 @@ public class EnquiryAppFunctionTests
     private readonly Mock<IDestinationRepository> _destinationRepository = new();
     private readonly Mock<ICurrentUserAccessor> _currentUserAccessor = new();
     private readonly Mock<IAuditLogWriter> _auditLogWriter = new();
+    private readonly Mock<IEmailNotificationSender> _emailNotificationSender = new();
 
     private EnquiryAppFunction CreateSut() => new(
         _enquiryRepository.Object,
         _destinationRepository.Object,
         _currentUserAccessor.Object,
-        _auditLogWriter.Object);
+        _auditLogWriter.Object,
+        _emailNotificationSender.Object,
+        Mock.Of<ILogger<EnquiryAppFunction>>());
 
     private static EnquiryModel CreateEnquiry(string status = "New") => new()
     {

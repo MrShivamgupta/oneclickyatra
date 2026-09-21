@@ -98,6 +98,15 @@ input[type='date'] {
   }
 }
 
+.load-error-banner {
+  color: tokens.$color-danger;
+  background: rgba(224, 69, 63, 0.08);
+  padding: tokens.$space-3 tokens.$space-4;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+  margin-bottom: tokens.$space-5;
+}
+
 .alerts-banner {
   display: flex;
   flex-direction: column;

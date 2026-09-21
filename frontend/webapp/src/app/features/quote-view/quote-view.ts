@@ -22,6 +22,7 @@ export class QuoteView {
   readonly quotation = signal<QuotationPublic | null>(null);
   readonly loading = signal(true);
   readonly notFound = signal(false);
+  readonly loadError = signal<string | null>(null);
 
   readonly selectedOptionId = signal<string | null>(null);
   readonly decisionMode = signal<DecisionMode>('none');
@@ -34,6 +35,7 @@ export class QuoteView {
   readonly submitError = signal<string | null>(null);
   readonly decisionMade = signal<'approved' | 'rejected' | null>(null);
   readonly pdfDownloading = signal(false);
+  readonly downloadError = signal<string | null>(null);
 
   constructor() {
     const token = this.route.snapshot.paramMap.get('token') ?? '';
@@ -43,6 +45,8 @@ export class QuoteView {
 
   load(): void {
     this.loading.set(true);
+    this.notFound.set(false);
+    this.loadError.set(null);
     this.quotationService.getPublic(this.token()).subscribe({
       next: (response) => {
         this.loading.set(false);
@@ -55,9 +59,13 @@ export class QuoteView {
           this.notFound.set(true);
         }
       },
-      error: () => {
+      error: (error) => {
         this.loading.set(false);
-        this.notFound.set(true);
+        if (error?.status === 404) {
+          this.notFound.set(true);
+        } else {
+          this.loadError.set(error?.error?.message ?? 'Could not load this quotation. Please try again.');
+        }
       }
     });
   }
@@ -128,6 +136,7 @@ export class QuoteView {
 
   downloadPdf(): void {
     this.pdfDownloading.set(true);
+    this.downloadError.set(null);
     this.quotationService.downloadPublicPdf(this.token()).subscribe({
       next: (blob) => {
         this.pdfDownloading.set(false);
@@ -138,7 +147,10 @@ export class QuoteView {
         link.click();
         URL.revokeObjectURL(url);
       },
-      error: () => this.pdfDownloading.set(false)
+      error: (error) => {
+        this.pdfDownloading.set(false);
+        this.downloadError.set(error?.error?.message ?? 'Could not download the PDF. Please try again.');
+      }
     });
   }
 }

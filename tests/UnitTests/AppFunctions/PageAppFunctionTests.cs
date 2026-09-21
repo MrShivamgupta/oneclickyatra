@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Moq;
 using OneClickYatra.Api.AppFunctions;
 using OneClickYatra.Api.Globals;
@@ -15,7 +16,7 @@ public class PageAppFunctionTests
     private readonly Mock<ICurrentUserAccessor> _currentUserAccessor = new();
     private readonly Mock<IAuditLogWriter> _auditLogWriter = new();
 
-    private PageAppFunction CreateSut() => new(_pageRepository.Object, _currentUserAccessor.Object, _auditLogWriter.Object);
+    private PageAppFunction CreateSut() => new(_pageRepository.Object, _currentUserAccessor.Object, _auditLogWriter.Object, Mock.Of<ILogger<PageAppFunction>>());
 
     private static PageModel CreatePage(string slug = "about", bool isPublished = true) => new()
     {

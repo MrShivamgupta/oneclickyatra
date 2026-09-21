@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OneClickYatra.Api.Globals;
 
 namespace OneClickYatra.Api.Security.Jwt;
 
@@ -20,8 +21,7 @@ public sealed class JwtTokenService : IJwtTokenService
     {
         if (string.IsNullOrWhiteSpace(_options.Key))
         {
-            throw new InvalidOperationException(
-                "Jwt:Key is not configured. Set it via environment variable Jwt__Key or dotnet user-secrets, never in appsettings.json.");
+            throw new ConfigurationException("Authentication is not fully configured on this environment. Please try again shortly.");
         }
 
         var expiresAt = DateTime.UtcNow.AddMinutes(_options.AccessTokenMinutes);

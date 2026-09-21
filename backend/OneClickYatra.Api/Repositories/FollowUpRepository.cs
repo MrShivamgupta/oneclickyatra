@@ -69,6 +69,19 @@ public sealed class FollowUpRepository : IFollowUpRepository
         return PaginationResponse<FollowUpModel>.Create(items, __request.PageNumber, __request.PageSize, total);
     }
 
+    public async Task<IReadOnlyList<FollowUpModel>> ListOverdueAsync(CancellationToken __cancellationToken)
+    {
+        var sql = $"""
+            {SelectColumns}
+            WHERE f.IsDeleted = 0 AND f.Status = 'Pending' AND f.ScheduledAt < SYSUTCDATETIME()
+            ORDER BY f.ScheduledAt
+            """;
+        using var connection = _connectionFactory.CreateConnection();
+        var result = await connection.QueryAsync<FollowUpModel>(
+            new CommandDefinition(sql, cancellationToken: __cancellationToken));
+        return result.ToList();
+    }
+
     public async Task<Guid> CreateAsync(FollowUpModel __followUp, CancellationToken __cancellationToken)
     {
         const string sql = """

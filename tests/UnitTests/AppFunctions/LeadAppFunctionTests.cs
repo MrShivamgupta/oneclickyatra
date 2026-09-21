@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Moq;
 using OneClickYatra.Api.AppFunctions;
 using OneClickYatra.Api.Globals;
@@ -24,7 +25,8 @@ public class LeadAppFunctionTests
         _destinationRepository.Object,
         _userRepository.Object,
         _currentUserAccessor.Object,
-        _auditLogWriter.Object);
+        _auditLogWriter.Object,
+        Mock.Of<ILogger<LeadAppFunction>>());
 
     private static LeadModel CreateLead(Guid? customerId = null) => new()
     {

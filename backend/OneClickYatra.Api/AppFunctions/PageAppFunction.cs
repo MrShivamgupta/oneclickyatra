@@ -13,12 +13,18 @@ public sealed class PageAppFunction : IPageAppFunction
     private readonly IPageRepository _pageRepository;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IAuditLogWriter _auditLogWriter;
+    private readonly ILogger<PageAppFunction> _logger;
 
-    public PageAppFunction(IPageRepository __pageRepository, ICurrentUserAccessor __currentUserAccessor, IAuditLogWriter __auditLogWriter)
+    public PageAppFunction(
+        IPageRepository __pageRepository,
+        ICurrentUserAccessor __currentUserAccessor,
+        IAuditLogWriter __auditLogWriter,
+        ILogger<PageAppFunction> __logger)
     {
         _pageRepository = __pageRepository;
         _currentUserAccessor = __currentUserAccessor;
         _auditLogWriter = __auditLogWriter;
+        _logger = __logger;
     }
 
     /// <summary>Public lookup used by the anonymous site renderer. Never leaks unpublished pages.</summary>
@@ -64,7 +70,14 @@ public sealed class PageAppFunction : IPageAppFunction
         };
 
         await _pageRepository.CreateAsync(page, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "cms.page.created", "Page", page.Id.ToString(), null, page.Title, __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "cms.page.created", "Page", page.Id.ToString(), null, page.Title, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "cms.page.created", "Page", page.Id);
+        }
 
         return ToResponse(page);
     }
@@ -80,6 +93,7 @@ public sealed class PageAppFunction : IPageAppFunction
         }
 
         var oldTitle = page.Title;
+        var oldIsPublished = page.IsPublished;
         page.Slug = __request.Slug;
         page.Title = __request.Title;
         page.Content = __request.Content;
@@ -87,7 +101,20 @@ public sealed class PageAppFunction : IPageAppFunction
         page.UpdatedBy = _currentUserAccessor.UserId;
 
         await _pageRepository.UpdateAsync(page, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "cms.page.updated", "Page", page.Id.ToString(), oldTitle, page.Title, __cancellationToken);
+
+        if (oldIsPublished != page.IsPublished)
+        {
+            _logger.LogInformation("Page {PageId} publish status changed {From} -> {To} by {UserId}", page.Id, oldIsPublished, page.IsPublished, _currentUserAccessor.UserId);
+        }
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "cms.page.updated", "Page", page.Id.ToString(), oldTitle, page.Title, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "cms.page.updated", "Page", page.Id);
+        }
 
         return ToResponse(page);
     }
@@ -97,7 +124,14 @@ public sealed class PageAppFunction : IPageAppFunction
         var page = await _pageRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Page", __id);
 
         await _pageRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "cms.page.deleted", "Page", __id.ToString(), page.Title, null, __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "cms.page.deleted", "Page", __id.ToString(), page.Title, null, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "cms.page.deleted", "Page", __id);
+        }
     }
 
     private static PageResponse ToResponse(PageModel page) => new()

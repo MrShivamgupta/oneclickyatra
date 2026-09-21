@@ -26,6 +26,8 @@ export class Home {
   readonly featuredPackages = signal<PackageSummary[]>([]);
   readonly loadingDestinations = signal(true);
   readonly loadingPackages = signal(true);
+  readonly destinationsError = signal<string | null>(null);
+  readonly packagesError = signal<string | null>(null);
 
   constructor() {
     this.destinationService
@@ -37,7 +39,10 @@ export class Home {
             this.featuredDestinations.set(response.data.items);
           }
         },
-        error: () => this.loadingDestinations.set(false)
+        error: (error) => {
+          this.loadingDestinations.set(false);
+          this.destinationsError.set(error?.error?.message ?? 'Could not load featured destinations right now.');
+        }
       });
 
     this.packageService.search({ pageNumber: 1, pageSize: 6, status: 'Published' }).subscribe({
@@ -47,7 +52,10 @@ export class Home {
           this.featuredPackages.set(response.data.items);
         }
       },
-      error: () => this.loadingPackages.set(false)
+      error: (error) => {
+        this.loadingPackages.set(false);
+        this.packagesError.set(error?.error?.message ?? 'Could not load featured packages right now.');
+      }
     });
   }
 

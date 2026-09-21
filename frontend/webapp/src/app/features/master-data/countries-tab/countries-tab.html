@@ -20,6 +20,10 @@
   }
 </form>
 
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+
 <app-data-table [columns]="columns" [rows]="countries()" [loading]="loading()" emptyMessage="No countries yet.">
   <ng-template #rowTemplate let-country>
     <tr>
@@ -38,6 +42,9 @@
   title="Delete country?"
   [message]="'This will remove \'' + (deleteTarget()?.name ?? '') + '\'. Cities and destinations linked to it may be affected.'"
   confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
   (confirmed)="performDelete()"
   (cancelled)="cancelDelete()"
 />

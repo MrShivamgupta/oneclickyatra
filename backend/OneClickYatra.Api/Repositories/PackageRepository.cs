@@ -36,6 +36,21 @@ public sealed class PackageRepository : IPackageRepository
             new CommandDefinition(sql, new { Id = __id }, cancellationToken: __cancellationToken));
     }
 
+    /// <summary>Batched existence check — see IDestinationRepository.GetExistingIdsAsync for the
+    /// same rationale (one round trip instead of one GetByIdAsync per item in a validation loop).</summary>
+    public async Task<IReadOnlyList<Guid>> GetExistingIdsAsync(IReadOnlyList<Guid> __ids, CancellationToken __cancellationToken)
+    {
+        if (__ids.Count == 0)
+        {
+            return [];
+        }
+
+        const string sql = "SELECT Id FROM Packages WHERE Id IN @Ids AND IsDeleted = 0";
+        using var connection = _connectionFactory.CreateConnection();
+        var result = await connection.QueryAsync<Guid>(new CommandDefinition(sql, new { Ids = __ids }, cancellationToken: __cancellationToken));
+        return result.ToList();
+    }
+
     public async Task<PackageModel?> GetBySlugAsync(string __slug, CancellationToken __cancellationToken)
     {
         var sql = $"{SelectColumns} WHERE p.Slug = @Slug AND p.IsDeleted = 0";

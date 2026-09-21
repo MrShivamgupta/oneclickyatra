@@ -1,0 +1,38 @@
+<div class="page-header">
+  <div>
+    <h1>Audit Logs</h1>
+    <p class="subtitle">Review every recorded system and admin action for security and compliance.</p>
+  </div>
+</div>
+
+<app-filter-bar placeholder="Search by action…" (searchChange)="onActionFilterChange($event)">
+  <input type="text" placeholder="Entity name" (change)="onEntityNameFilterChange($any($event.target).value)" />
+  <input type="date" [value]="fromDate()" (change)="onFromDateChange($any($event.target).value)" />
+  <span class="range-separator">to</span>
+  <input type="date" [value]="toDate()" (change)="onToDateChange($any($event.target).value)" />
+</app-filter-bar>
+
+@if (loadError()) {
+  <p class="form-error">
+    {{ loadError() }}
+    <button type="button" class="link-button" (click)="load()">Retry</button>
+  </p>
+}
+
+<app-data-table [columns]="columns" [rows]="logs()" [loading]="loading()" emptyMessage="No audit log entries found.">
+  <ng-template #rowTemplate let-log>
+    <tr>
+      <td>{{ log.actorName ?? 'System' }}</td>
+      <td>{{ log.action }}</td>
+      <td class="entity-cell" [title]="entityLabel(log)">{{ entityLabel(log) }}</td>
+      <td class="change-cell">
+        <span class="value-old" [title]="log.oldValue ?? ''">{{ log.oldValue ?? '—' }}</span>
+        <span class="arrow">→</span>
+        <span class="value-new" [title]="log.newValue ?? ''">{{ log.newValue ?? '—' }}</span>
+      </td>
+      <td>{{ log.createdAt | date: 'dd MMM yyyy, HH:mm' }}</td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="20" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />

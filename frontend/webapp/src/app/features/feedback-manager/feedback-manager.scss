@@ -1,0 +1,12 @@
+.rating-cell {
+  color: #e6a417;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.comment-cell {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

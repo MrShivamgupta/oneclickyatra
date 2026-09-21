@@ -1,0 +1,127 @@
+<div class="portal-page">
+  <a routerLink="/portal/bookings" class="view-all">← Back to my bookings</a>
+
+  @if (loading()) {
+    <p class="hint">Loading…</p>
+  } @else if (notFound()) {
+    <h1>Booking not found</h1>
+  } @else if (booking(); as b) {
+    <div class="page-header">
+      <div>
+        <h1>{{ b.bookingNumber }}</h1>
+        <p class="subtitle"><span class="badge status" [attr.data-status]="b.status">{{ b.status }}</span></p>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2>Trip Details</h2>
+      <p>Travel date: {{ b.travelDate ? (b.travelDate | date: 'dd MMM yyyy') : 'Not yet scheduled' }}</p>
+      @if (b.returnDate) {
+        <p>Return date: {{ b.returnDate | date: 'dd MMM yyyy' }}</p>
+      }
+      <p>Travelers: {{ b.numberOfAdults }} adult(s), {{ b.numberOfChildren }} child(ren)</p>
+      @if (b.notes) {
+        <p>{{ b.notes }}</p>
+      }
+      <p>Total: Rs. {{ b.totalAmount | number: '1.0-0' }} &middot; Paid so far: Rs. {{ b.amountPaid | number: '1.0-0' }}</p>
+    </section>
+
+    @if (passengers().length > 0) {
+      <section class="card">
+        <h2>Passengers</h2>
+        <ul class="mini-list">
+          @for (passenger of passengers(); track $index) {
+            <li>
+              <span>{{ passenger.fullName }}{{ passenger.isLeadPassenger ? ' (Lead)' : '' }}</span>
+              <span class="hint">{{ passenger.age ? passenger.age + ' yrs' : '' }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (addOns().length > 0) {
+      <section class="card">
+        <h2>Add-Ons</h2>
+        <ul class="mini-list">
+          @for (addOn of addOns(); track $index) {
+            <li>
+              <span>{{ addOn.name }} × {{ addOn.quantity }}</span>
+              <span>Rs. {{ addOn.price | number: '1.0-0' }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <section class="card">
+      <h2>Travel Voucher</h2>
+      @if (canDownloadVoucher) {
+        @if (voucherError()) {
+          <div class="form-error">{{ voucherError() }}</div>
+        }
+        <button type="button" class="primary-button" [disabled]="downloadingVoucher()" (click)="downloadVoucher()">
+          {{ downloadingVoucher() ? 'Preparing…' : 'Download Voucher' }}
+        </button>
+      } @else {
+        <p class="hint">Your voucher will be available here once the booking is confirmed.</p>
+      }
+    </section>
+
+    <section class="card">
+      <h2>Documents</h2>
+      @if (documentsLoadError()) {
+        <div class="form-error">{{ documentsLoadError() }}</div>
+      }
+      @if (documents().length > 0) {
+        <ul class="mini-list">
+          @for (document of documents(); track document.id) {
+            <li>
+              <span>{{ document.fileName }}</span>
+              <button type="button" class="link-button" [disabled]="downloadingDocumentId() === document.id" (click)="downloadDocument(document)">
+                {{ downloadingDocumentId() === document.id ? 'Downloading…' : 'Download' }}
+              </button>
+            </li>
+          }
+        </ul>
+      } @else if (!documentsLoadError()) {
+        <p class="hint">No documents uploaded yet.</p>
+      }
+      @if (uploadError()) {
+        <div class="form-error">{{ uploadError() }}</div>
+      }
+      <label class="upload-label">
+        Upload a document (PDF, JPG, PNG or DOCX, up to 10 MB)
+        <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.docx" [disabled]="uploading()" (change)="onFileSelected($event)" />
+      </label>
+      @if (uploading()) {
+        <p class="hint">Uploading…</p>
+      }
+    </section>
+
+    @if (b.status === 'Completed') {
+      <section class="card">
+        <h2>Share Your Feedback</h2>
+        @if (feedbackSubmitted()) {
+          <div class="form-success">Thank you! Your feedback has been recorded.</div>
+        } @else {
+          <div class="star-rating">
+            @for (value of ratingOptions; track value) {
+              <button type="button" [class.selected]="feedbackRating() >= value" (click)="setRating(value)">★</button>
+            }
+          </div>
+          <label>
+            Comments (optional)
+            <textarea rows="3" [ngModel]="feedbackComment()" (ngModelChange)="feedbackComment.set($event)" placeholder="Tell us about your trip…"></textarea>
+          </label>
+          @if (feedbackError()) {
+            <div class="form-error">{{ feedbackError() }}</div>
+          }
+          <button type="button" class="primary-button" [disabled]="feedbackSubmitting()" (click)="submitFeedback()">
+            {{ feedbackSubmitting() ? 'Submitting…' : 'Submit Feedback' }}
+          </button>
+        }
+      </section>
+    }
+  }
+</div>

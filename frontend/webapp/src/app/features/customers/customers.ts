@@ -29,6 +29,7 @@ export class Customers {
 
   readonly customers = signal<Customer[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly pageNumber = signal(1);
   readonly totalCount = signal(0);
   readonly searchTerm = signal('');
@@ -39,6 +40,8 @@ export class Customers {
   readonly isSaving = signal(false);
 
   readonly deleteTarget = signal<Customer | null>(null);
+  readonly deleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
 
   readonly form = this.formBuilder.nonNullable.group({
     fullName: ['', [Validators.required, Validators.maxLength(150)]],
@@ -52,6 +55,7 @@ export class Customers {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.customerService
       .list({ pageNumber: this.pageNumber(), pageSize: PAGE_SIZE, searchTerm: this.searchTerm() || undefined })
       .subscribe({
@@ -62,7 +66,10 @@ export class Customers {
             this.totalCount.set(response.data.totalCount);
           }
         },
-        error: () => this.loading.set(false)
+        error: (error) => {
+          this.loading.set(false);
+          this.loadError.set(error?.error?.message ?? 'Could not load customers. Please try again.');
+        }
       });
   }
 
@@ -131,6 +138,7 @@ export class Customers {
   }
 
   confirmDelete(customer: Customer): void {
+    this.deleteError.set(null);
     this.deleteTarget.set(customer);
   }
 
@@ -143,9 +151,18 @@ export class Customers {
     if (!target) {
       return;
     }
-    this.customerService.delete(target.id).subscribe(() => {
-      this.deleteTarget.set(null);
-      this.load();
+    this.deleting.set(true);
+    this.deleteError.set(null);
+    this.customerService.delete(target.id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleteTarget.set(null);
+        this.load();
+      },
+      error: (error) => {
+        this.deleting.set(false);
+        this.deleteError.set(error?.error?.message ?? 'Could not delete this customer. Please try again.');
+      }
     });
   }
 }

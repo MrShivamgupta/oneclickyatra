@@ -5,6 +5,7 @@ using OneClickYatra.Api.Models.Requests;
 using OneClickYatra.Api.Models.Responses;
 using OneClickYatra.Api.Repositories;
 using OneClickYatra.Api.Services;
+using OneClickYatra.Api.Services.Email;
 
 namespace OneClickYatra.Api.AppFunctions;
 
@@ -32,6 +33,11 @@ public sealed class BookingAppFunction : IBookingAppFunction
 
     private static readonly string[] EditableStatuses = ["Draft", "Quoted", "PendingPayment", "Confirmed", "InProgress"];
 
+    /// <summary>No agency-settings domain exists yet in this codebase (Settings is still a
+    /// deferred Phase 7 placeholder) to source a real support contact number from, so every email
+    /// trigger uses this one shared, clearly-a-placeholder value for the {{SupportPhone}} token.</summary>
+    private const string SupportPhonePlaceholder = "+91-11-4567-8900";
+
     private readonly IBookingRepository _bookingRepository;
     private readonly ICustomerRepository _customerRepository;
     private readonly ILeadRepository _leadRepository;
@@ -42,6 +48,8 @@ public sealed class BookingAppFunction : IBookingAppFunction
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly ITrackingIdAccessor _trackingIdAccessor;
     private readonly IAuditLogWriter _auditLogWriter;
+    private readonly IEmailNotificationSender _emailNotificationSender;
+    private readonly ILogger<BookingAppFunction> _logger;
 
     public BookingAppFunction(
         IBookingRepository __bookingRepository,
@@ -53,7 +61,9 @@ public sealed class BookingAppFunction : IBookingAppFunction
         ILeadAppFunction __leadAppFunction,
         ICurrentUserAccessor __currentUserAccessor,
         ITrackingIdAccessor __trackingIdAccessor,
-        IAuditLogWriter __auditLogWriter)
+        IAuditLogWriter __auditLogWriter,
+        IEmailNotificationSender __emailNotificationSender,
+        ILogger<BookingAppFunction> __logger)
     {
         _bookingRepository = __bookingRepository;
         _customerRepository = __customerRepository;
@@ -65,6 +75,8 @@ public sealed class BookingAppFunction : IBookingAppFunction
         _currentUserAccessor = __currentUserAccessor;
         _trackingIdAccessor = __trackingIdAccessor;
         _auditLogWriter = __auditLogWriter;
+        _emailNotificationSender = __emailNotificationSender;
+        _logger = __logger;
     }
 
     public async Task<PaginationResponse<BookingResponse>> SearchAsync(BookingSearchRequest __request, CancellationToken __cancellationToken)
@@ -119,7 +131,17 @@ public sealed class BookingAppFunction : IBookingAppFunction
 
         await _bookingRepository.CreateAsync(booking, __cancellationToken);
         await WriteHistoryAsync(booking.Id, null, "Draft", "Booking created.", __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.created", "Booking", booking.Id.ToString(), null, booking.BookingNumber, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.created", "Booking", booking.Id.ToString(), null, booking.BookingNumber, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "booking.created", "Booking", booking.Id);
+        }
+
+        _logger.LogInformation("Booking {BookingId} {BookingNumber} created by {UserId}", booking.Id, booking.BookingNumber, _currentUserAccessor.UserId);
 
         var saved = await _bookingRepository.GetByIdAsync(booking.Id, __cancellationToken) ?? booking;
         return ToResponse(saved);
@@ -142,7 +164,15 @@ public sealed class BookingAppFunction : IBookingAppFunction
         booking.UpdatedBy = _currentUserAccessor.UserId;
 
         await _bookingRepository.UpdateAsync(booking, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.updated", "Booking", booking.Id.ToString(), null, booking.BookingNumber, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.updated", "Booking", booking.Id.ToString(), null, booking.BookingNumber, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "booking.updated", "Booking", booking.Id);
+        }
 
         return ToResponse(booking);
     }
@@ -177,7 +207,17 @@ public sealed class BookingAppFunction : IBookingAppFunction
         }
 
         await _bookingRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.deleted", "Booking", __id.ToString(), booking.BookingNumber, null, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.deleted", "Booking", __id.ToString(), booking.BookingNumber, null, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "booking.deleted", "Booking", __id);
+        }
+
+        _logger.LogInformation("Booking {BookingId} {BookingNumber} deleted by {UserId}", __id, booking.BookingNumber, _currentUserAccessor.UserId);
     }
 
     public async Task<List<BookingPassengerResponse>> ReplacePassengersAsync(Guid __id, List<BookingPassengerRequest> __passengers, CancellationToken __cancellationToken)
@@ -198,7 +238,15 @@ public sealed class BookingAppFunction : IBookingAppFunction
         }).ToList();
 
         await _bookingRepository.ReplacePassengersAsync(__id, models, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.passengers_updated", "Booking", __id.ToString(), null, $"{models.Count} passenger(s)", __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.passengers_updated", "Booking", __id.ToString(), null, $"{models.Count} passenger(s)", __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "booking.passengers_updated", "Booking", __id);
+        }
 
         return models.Select(ToPassengerResponse).ToList();
     }
@@ -219,7 +267,15 @@ public sealed class BookingAppFunction : IBookingAppFunction
         }).ToList();
 
         await _bookingRepository.ReplaceAddOnsAsync(__id, models, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.addons_updated", "Booking", __id.ToString(), null, $"{models.Count} add-on(s)", __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.addons_updated", "Booking", __id.ToString(), null, $"{models.Count} add-on(s)", __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "booking.addons_updated", "Booking", __id);
+        }
 
         return models.Select(ToAddOnResponse).ToList();
     }
@@ -283,7 +339,17 @@ public sealed class BookingAppFunction : IBookingAppFunction
 
         await _bookingRepository.CreateAsync(booking, __cancellationToken);
         await WriteHistoryAsync(booking.Id, null, "Quoted", $"Converted from quotation {quotation.QuotationNumber}.", __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.created_from_quotation", "Booking", booking.Id.ToString(), quotation.QuotationNumber, booking.BookingNumber, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.created_from_quotation", "Booking", booking.Id.ToString(), quotation.QuotationNumber, booking.BookingNumber, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "booking.created_from_quotation", "Booking", booking.Id);
+        }
+
+        _logger.LogInformation("Booking {BookingId} {BookingNumber} created from quotation {QuotationId} by {UserId}", booking.Id, booking.BookingNumber, quotation.Id, _currentUserAccessor.UserId);
 
         await _quotationRepository.UpdateStatusAsync(quotation.Id, "Converted", _currentUserAccessor.UserId, __cancellationToken);
 
@@ -301,6 +367,8 @@ public sealed class BookingAppFunction : IBookingAppFunction
         var oldStatus = __booking.Status;
         await _bookingRepository.UpdateStatusAsync(__booking.Id, __newStatus, _currentUserAccessor.UserId, __cancellationToken);
 
+        _logger.LogInformation("Booking {BookingId} transitioned {OldStatus} -> {NewStatus} by {UserId}", __booking.Id, oldStatus, __newStatus, _currentUserAccessor.UserId);
+
         if (__newStatus == "Cancelled")
         {
             await _bookingRepository.SetCancellationReasonAsync(__booking.Id, __reason, __cancellationToken);
@@ -308,9 +376,74 @@ public sealed class BookingAppFunction : IBookingAppFunction
         }
 
         await WriteHistoryAsync(__booking.Id, oldStatus, __newStatus, __reason, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.status.changed", "Booking", __booking.Id.ToString(), oldStatus, __newStatus, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "booking.status.changed", "Booking", __booking.Id.ToString(), oldStatus, __newStatus, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "booking.status.changed", "Booking", __booking.Id);
+        }
+
+        if (__newStatus is "Confirmed" or "Cancelled")
+        {
+            await SendTransitionEmailAsync(__booking, __newStatus, __reason, __cancellationToken);
+        }
 
         __booking.Status = __newStatus;
+    }
+
+    /// <summary>Best-effort — the status transition above has already committed, so a failed email
+    /// (no customer email on file, SMTP not configured, gateway error) must never mask that.</summary>
+    private async Task SendTransitionEmailAsync(BookingModel __booking, string __newStatus, string? __reason, CancellationToken __cancellationToken)
+    {
+        try
+        {
+            var customer = await _customerRepository.GetByIdAsync(__booking.CustomerId, __cancellationToken);
+            if (string.IsNullOrWhiteSpace(customer?.Email))
+            {
+                _logger.LogWarning("Skipped booking transition email for Booking {BookingId}: no email address on file for Customer {CustomerId}", __booking.Id, __booking.CustomerId);
+                return;
+            }
+
+            var packageName = __booking.PackageId.HasValue
+                ? (await _packageRepository.GetByIdAsync(__booking.PackageId.Value, __cancellationToken))?.Title
+                : null;
+
+            if (__newStatus == "Confirmed")
+            {
+                var placeholders = new Dictionary<string, string>
+                {
+                    ["BookingReference"] = __booking.BookingNumber,
+                    ["CustomerName"] = customer.FullName,
+                    ["PackageName"] = packageName ?? "your travel package",
+                    ["TravelStartDate"] = __booking.TravelDate?.ToString("dd MMM yyyy") ?? "to be confirmed",
+                    ["TravelEndDate"] = __booking.ReturnDate?.ToString("dd MMM yyyy") ?? "to be confirmed",
+                    ["TravelerCount"] = (__booking.NumberOfAdults + __booking.NumberOfChildren).ToString(),
+                    ["TotalAmount"] = "Rs. " + __booking.TotalAmount.ToString("N2"),
+                    ["SupportPhone"] = SupportPhonePlaceholder
+                };
+                await _emailNotificationSender.SendAsync("BookingConfirmation", customer.Email, placeholders, __cancellationToken);
+            }
+            else
+            {
+                var placeholders = new Dictionary<string, string>
+                {
+                    ["BookingReference"] = __booking.BookingNumber,
+                    ["CustomerName"] = customer.FullName,
+                    ["PackageName"] = packageName ?? "your travel package",
+                    ["CancellationReason"] = __reason ?? "Not specified",
+                    ["RefundAmount"] = "Rs. " + __booking.AmountPaid.ToString("N2"),
+                    ["SupportPhone"] = SupportPhonePlaceholder
+                };
+                await _emailNotificationSender.SendAsync("BookingCancellation", customer.Email, placeholders, __cancellationToken);
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to send {NewStatus} email for Booking {BookingId}", __newStatus, __booking.Id);
+        }
     }
 
     private async Task WriteHistoryAsync(Guid __bookingId, string? __oldStatus, string __newStatus, string? __reason, CancellationToken __cancellationToken)

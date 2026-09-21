@@ -1,0 +1,241 @@
+<div class="page-header">
+  <div>
+    <h1>WhatsApp Center</h1>
+    <p class="subtitle">Manage message templates and review every WhatsApp notification sent or received.</p>
+  </div>
+</div>
+
+<section class="send-test-card">
+  <h2>Send Test Message</h2>
+  <p class="hint">
+    Sends a real template message through the configured WhatsApp Business gateway. There are no Meta
+    credentials set up on this environment, so a send here is expected to fail with a
+    "gateway not configured" error — that confirms the request reached the backend correctly, it is
+    not a broken feature. Configure real Meta credentials on the backend to send for real.
+  </p>
+
+  <form [formGroup]="sendForm" (ngSubmit)="sendTestMessage()" class="inline-form">
+    <label class="field">
+      Phone number
+      <input type="text" formControlName="phoneNumber" placeholder="e.g. +919812300001" />
+    </label>
+
+    <label class="field">
+      Template
+      <select formControlName="templateName">
+        <option value="" disabled>Select a template…</option>
+        @for (template of activeTemplates(); track template.id) {
+          <option [value]="template.name">{{ template.name }} ({{ template.category }})</option>
+        }
+      </select>
+    </label>
+
+    <label class="field">
+      Parameters (comma-separated)
+      <input type="text" formControlName="parametersCsv" placeholder="e.g. Rahul, Manali Package" />
+    </label>
+
+    <div class="form-actions">
+      <button type="submit" class="primary-button" [disabled]="isSending()">
+        {{ isSending() ? 'Sending…' : 'Send Test Message' }}
+      </button>
+    </div>
+  </form>
+
+  @if (sendResult(); as result) {
+    <div class="send-outcome success">
+      Log created — status <span class="badge status" [attr.data-status]="result.status">{{ result.status }}</span>
+      @if (result.errorMessage) {
+        <span class="detail">({{ result.errorMessage }})</span>
+      }
+    </div>
+  }
+
+  @if (sendError()) {
+    <div class="send-outcome error">{{ sendError() }}</div>
+  }
+</section>
+
+<div class="tabs">
+  @for (tab of tabs; track tab.key) {
+    <button type="button" [class.active]="activeTab() === tab.key" (click)="selectTab(tab.key)">
+      {{ tab.label }}
+    </button>
+  }
+</div>
+
+@if (activeTab() === 'templates') {
+  <div class="page-header">
+    <div></div>
+    <button type="button" class="primary-button" (click)="openCreateTemplateModal()">+ Add Template</button>
+  </div>
+
+  <app-filter-bar placeholder="Search templates…" (searchChange)="onTemplateSearchChange($event)">
+    <select (change)="onTemplateCategoryFilterChange($any($event.target).value)">
+      <option value="">All categories</option>
+      @for (category of categories; track category) {
+        <option [value]="category">{{ category }}</option>
+      }
+    </select>
+  </app-filter-bar>
+
+  @if (templatesLoadError()) {
+    <p class="form-error">
+      {{ templatesLoadError() }}
+      <button type="button" class="link-button" (click)="loadTemplates()">Retry</button>
+    </p>
+  }
+
+  <app-data-table
+    [columns]="templateColumns"
+    [rows]="templates()"
+    [loading]="templatesLoading()"
+    emptyMessage="No WhatsApp templates yet."
+  >
+    <ng-template #rowTemplate let-template>
+      <tr>
+        <td><strong>{{ template.name }}</strong></td>
+        <td>{{ template.category }}</td>
+        <td class="body-preview">{{ template.bodyText }}</td>
+        <td>
+          <span class="badge" [class.active]="template.isActive" [class.draft]="!template.isActive">
+            {{ template.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+        <td class="actions-cell">
+          <button type="button" class="link-button" (click)="openEditTemplateModal(template)">Edit</button>
+          <button type="button" class="link-button danger" (click)="confirmDeleteTemplate(template)">Delete</button>
+        </td>
+      </tr>
+    </ng-template>
+  </app-data-table>
+
+  <app-pagination
+    [pageNumber]="templatesPageNumber()"
+    [pageSize]="10"
+    [totalCount]="templatesTotalCount()"
+    (pageChange)="onTemplatesPageChange($event)"
+  />
+}
+
+@if (activeTab() === 'logs') {
+  <app-filter-bar placeholder="Search by phone, email or template…" (searchChange)="onLogsSearchChange($event)">
+    <select (change)="onLogsChannelFilterChange($any($event.target).value)">
+      <option value="">All channels</option>
+      @for (channel of channels; track channel) {
+        <option [value]="channel">{{ channel }}</option>
+      }
+    </select>
+    <select (change)="onLogsStatusFilterChange($any($event.target).value)">
+      <option value="">All statuses</option>
+      @for (status of statuses; track status) {
+        <option [value]="status">{{ status }}</option>
+      }
+    </select>
+  </app-filter-bar>
+
+  @if (logsLoadError()) {
+    <p class="form-error">
+      {{ logsLoadError() }}
+      <button type="button" class="link-button" (click)="loadLogs()">Retry</button>
+    </p>
+  }
+
+  <app-data-table
+    [columns]="logColumns"
+    [rows]="logs()"
+    [loading]="logsLoading()"
+    emptyMessage="No notifications logged yet."
+  >
+    <ng-template #rowTemplate let-log>
+      <tr>
+        <td><span class="badge channel" [attr.data-channel]="log.channel">{{ log.channel }}</span></td>
+        <td>{{ log.recipientPhone ?? log.recipientEmail ?? '—' }}</td>
+        <td class="body-preview">
+          @if (log.templateName) {
+            <div>
+              <strong>{{ log.templateName }}</strong>
+              @if (log.subject && log.subject !== log.templateName) {
+                <span> — {{ log.subject }}</span>
+              }
+            </div>
+          }
+          <span class="hint">{{ log.body ?? '—' }}</span>
+          @if (log.errorMessage) {
+            <div class="hint error">{{ log.errorMessage }}</div>
+          }
+        </td>
+        <td><span class="badge status" [attr.data-status]="log.status">{{ log.status }}</span></td>
+        <td>{{ (log.sentAt ?? log.createdAt) | date: 'dd MMM yyyy, HH:mm' }}</td>
+      </tr>
+    </ng-template>
+  </app-data-table>
+
+  <app-pagination
+    [pageNumber]="logsPageNumber()"
+    [pageSize]="10"
+    [totalCount]="logsTotalCount()"
+    (pageChange)="onLogsPageChange($event)"
+  />
+}
+
+@if (isTemplateModalOpen()) {
+  <div class="overlay" (click)="closeTemplateModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>{{ editingTemplateId() ? 'Edit Template' : 'Add Template' }}</h2>
+
+      <form [formGroup]="templateForm" (ngSubmit)="saveTemplate()">
+        <label>
+          Name
+          <input type="text" formControlName="name" placeholder="e.g. welcome_greeting" />
+        </label>
+
+        <label>
+          Category
+          <select formControlName="category">
+            @for (category of categories; track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          Body text
+          <textarea formControlName="bodyText" rows="4" placeholder="e.g. Hi &#123;&#123;1&#125;&#125;, thanks for booking &#123;&#123;2&#125;&#125;!"></textarea>
+          <span class="hint">
+            Use &#123;&#123;1&#125;&#125;, &#123;&#123;2&#125;&#125;, … as placeholders, filled in
+            positionally by the parameter values given when sending.
+          </span>
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="isActive" />
+          Active
+        </label>
+
+        @if (templateFormError()) {
+          <div class="form-error">{{ templateFormError() }}</div>
+        }
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-button" (click)="closeTemplateModal()">Cancel</button>
+          <button type="submit" class="primary-button" [disabled]="isSavingTemplate()">
+            {{ isSavingTemplate() ? 'Saving…' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<app-confirmation-dialog
+  [open]="deleteTemplateTarget() !== null"
+  title="Delete template?"
+  [message]="'This will remove \'' + (deleteTemplateTarget()?.name ?? '') + '\' from the template library.'"
+  confirmLabel="Delete"
+  [confirming]="deletingTemplate()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteTemplateError()"
+  (confirmed)="performDeleteTemplate()"
+  (cancelled)="cancelDeleteTemplate()"
+/>

@@ -36,6 +36,17 @@ public sealed class CustomerRepository : ICustomerRepository
             new CommandDefinition(sql, new { Phone = __phone }, cancellationToken: __cancellationToken));
     }
 
+    public async Task<CustomerModel?> GetByUserIdAsync(Guid __userId, CancellationToken __cancellationToken)
+    {
+        const string sql = """
+            SELECT Id, FullName, Email, Phone, UserId, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy, IsDeleted
+            FROM Customers WHERE UserId = @UserId AND IsDeleted = 0
+            """;
+        using var connection = _connectionFactory.CreateConnection();
+        return await connection.QuerySingleOrDefaultAsync<CustomerModel>(
+            new CommandDefinition(sql, new { UserId = __userId }, cancellationToken: __cancellationToken));
+    }
+
     public async Task<PaginationResponse<CustomerModel>> ListAsync(PaginationRequest __request, CancellationToken __cancellationToken)
     {
         const string sql = """

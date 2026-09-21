@@ -1,0 +1,210 @@
+@use '../../../shared/styles/index' as tokens;
+@use '../../../shared/styles/admin-crud' as crud;
+
+.page-header {
+  @include crud.page-header;
+
+  h1 { margin: 0; font-size: tokens.$font-size-xl; }
+  .subtitle { margin: tokens.$space-1 0 0; color: tokens.$color-text-secondary; font-size: tokens.$font-size-sm; }
+}
+
+.primary-button { @include crud.primary-button; }
+.secondary-button { @include crud.secondary-button; }
+
+// ---------- Send test message ----------
+.send-test-card {
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-4;
+  margin-bottom: tokens.$space-5;
+
+  h2 {
+    margin: 0 0 tokens.$space-2;
+    font-size: tokens.$font-size-lg;
+  }
+}
+
+.inline-form {
+  display: flex;
+  align-items: flex-end;
+  gap: tokens.$space-3;
+  flex-wrap: wrap;
+  margin-top: tokens.$space-3;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-1;
+  font-size: tokens.$font-size-xs;
+  color: tokens.$color-text-secondary;
+
+  input, select {
+    @include crud.field-input;
+    min-width: 200px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: tokens.$space-2;
+}
+
+.send-outcome {
+  margin-top: tokens.$space-3;
+  padding: tokens.$space-2 tokens.$space-3;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+
+  &.success { background: rgba(31, 169, 113, 0.1); color: #157a4f; }
+  &.error { background: rgba(224, 69, 63, 0.08); color: tokens.$color-danger; }
+
+  .detail { color: inherit; opacity: 0.85; }
+}
+
+// ---------- Tabs ----------
+.tabs {
+  display: flex;
+  gap: tokens.$space-2;
+  border-bottom: 1px solid tokens.$color-border;
+  margin-bottom: tokens.$space-5;
+}
+
+.tabs button {
+  padding: tokens.$space-2 tokens.$space-4;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+
+  &.active {
+    color: tokens.$color-primary;
+    border-bottom-color: tokens.$color-primary;
+    font-weight: tokens.$font-weight-semibold;
+  }
+
+  &:hover:not(.active) {
+    color: tokens.$color-text-primary;
+  }
+}
+
+// ---------- Table cells ----------
+.body-preview {
+  max-width: 320px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.hint {
+  font-size: tokens.$font-size-xs;
+  color: tokens.$color-text-secondary;
+
+  &.error { color: tokens.$color-danger; }
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px tokens.$space-2;
+  border-radius: tokens.$radius-pill;
+  font-size: tokens.$font-size-xs;
+  background: tokens.$color-bg;
+  color: tokens.$color-text-secondary;
+
+  &.active { background: rgba(31, 169, 113, 0.15); color: #157a4f; }
+  &.draft { background: rgba(107, 114, 128, 0.15); color: tokens.$color-text-secondary; }
+
+  &.channel {
+    &[data-channel='WhatsApp'] { background: rgba(31, 169, 113, 0.15); color: #157a4f; }
+    &[data-channel='Email'] { background: rgba(59, 130, 246, 0.15); color: #1d4ed8; }
+  }
+
+  &.status {
+    &[data-status='Queued'] { background: rgba(107, 114, 128, 0.15); color: tokens.$color-text-secondary; }
+    &[data-status='Sent'] { background: rgba(31, 169, 113, 0.15); color: #157a4f; }
+    &[data-status='Failed'] { background: rgba(224, 69, 63, 0.12); color: tokens.$color-danger; }
+    &[data-status='Received'] { background: rgba(139, 92, 246, 0.15); color: #6d28d9; }
+  }
+}
+
+.actions-cell {
+  display: flex;
+  gap: tokens.$space-3;
+  white-space: nowrap;
+}
+
+.link-button {
+  @include crud.link-button;
+  &.danger { color: tokens.$color-danger; }
+}
+
+// ---------- Modal (add/edit template) ----------
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: tokens.$space-8 tokens.$space-4;
+  z-index: 900;
+}
+
+.modal {
+  background: tokens.$color-surface;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-6;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: tokens.$shadow-lg;
+
+  h2 {
+    margin: 0 0 tokens.$space-4;
+    font-size: tokens.$font-size-lg;
+  }
+}
+
+.modal form {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-4;
+}
+
+.modal label {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-1;
+  font-size: tokens.$font-size-sm;
+  color: tokens.$color-text-secondary;
+}
+
+.modal input[type="text"],
+.modal select,
+.modal textarea {
+  @include crud.field-input;
+  font-family: inherit;
+}
+
+.checkbox-label {
+  flex-direction: row !important;
+  align-items: center;
+  gap: tokens.$space-2;
+}
+
+.form-error {
+  color: tokens.$color-danger;
+  background: rgba(224, 69, 63, 0.08);
+  padding: tokens.$space-2 tokens.$space-3;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: tokens.$space-3;
+}

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -18,9 +19,12 @@ public class AuthAppFunctionTests
     private readonly Mock<IUserRepository> _userRepository = new();
     private readonly Mock<IRefreshTokenRepository> _refreshTokenRepository = new();
     private readonly Mock<IPasswordResetTokenRepository> _passwordResetTokenRepository = new();
+    private readonly Mock<ICustomerRepository> _customerRepository = new();
     private readonly Mock<IPasswordHasher> _passwordHasher = new();
     private readonly Mock<IJwtTokenService> _jwtTokenService = new();
     private readonly Mock<IAuditLogWriter> _auditLogWriter = new();
+    private readonly Mock<ILogger<AuthAppFunction>> _logger = new();
+    private readonly Mock<IHostEnvironment> _hostEnvironment = new();
 
     private AuthAppFunction CreateSut(int maxFailedAttempts = 5, int lockoutMinutes = 15)
     {
@@ -35,13 +39,18 @@ public class AuthAppFunctionTests
             _userRepository.Object,
             _refreshTokenRepository.Object,
             _passwordResetTokenRepository.Object,
+            _customerRepository.Object,
             _passwordHasher.Object,
             _jwtTokenService.Object,
             _auditLogWriter.Object,
             Options.Create(new JwtOptions { Issuer = "test", Audience = "test", Key = "test-key", RefreshTokenDays = 7 }),
             Options.Create(new SecurityOptions { MaxFailedLoginAttempts = maxFailedAttempts, LockoutDurationMinutes = lockoutMinutes }),
-            Mock.Of<ILogger<AuthAppFunction>>());
+            _logger.Object,
+            _hostEnvironment.Object);
     }
+
+    private static bool LogAtLevelWasCalled(Mock<ILogger<AuthAppFunction>> logger, LogLevel level) => logger.Invocations.Any(invocation =>
+        invocation.Method.Name == nameof(ILogger.Log) && (LogLevel)invocation.Arguments[0]! == level);
 
     private static UserModel CreateUser(bool isActive = true, DateTime? lockedOutUntilUtc = null) => new()
     {
@@ -141,5 +150,37 @@ public class AuthAppFunctionTests
         Assert.Equal("new@example.com", result.Email);
         _userRepository.Verify(r => r.CreateAsync(It.Is<UserModel>(u => u.Email == "new@example.com"), It.IsAny<CancellationToken>()), Times.Once);
         _userRepository.Verify(r => r.AssignRoleAsync(It.IsAny<Guid>(), RoleConstants.Customer, It.IsAny<CancellationToken>()), Times.Once);
+        _customerRepository.Verify(r => r.CreateAsync(
+            It.Is<CustomerModel>(c => c.Email == "new@example.com" && c.Phone == "+911234567890" && c.UserId != null),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ForgotPasswordAsync_NotDevelopment_NeverLogsTheRawResetToken()
+    {
+        _hostEnvironment.SetupGet(e => e.EnvironmentName).Returns("Production");
+        _userRepository
+            .Setup(r => r.GetByEmailAsync("user@example.com", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UserModel { Id = Guid.NewGuid(), Email = "user@example.com" });
+
+        var sut = CreateSut();
+        await sut.ForgotPasswordAsync(new ForgotPasswordRequest { Email = "user@example.com" }, CancellationToken.None);
+
+        Assert.False(LogAtLevelWasCalled(_logger, LogLevel.Debug));
+        Assert.True(LogAtLevelWasCalled(_logger, LogLevel.Information));
+    }
+
+    [Fact]
+    public async Task ForgotPasswordAsync_Development_LogsTheRawResetTokenAtDebugLevelOnly()
+    {
+        _hostEnvironment.SetupGet(e => e.EnvironmentName).Returns("Development");
+        _userRepository
+            .Setup(r => r.GetByEmailAsync("user@example.com", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UserModel { Id = Guid.NewGuid(), Email = "user@example.com" });
+
+        var sut = CreateSut();
+        await sut.ForgotPasswordAsync(new ForgotPasswordRequest { Email = "user@example.com" }, CancellationToken.None);
+
+        Assert.True(LogAtLevelWasCalled(_logger, LogLevel.Debug));
     }
 }

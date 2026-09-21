@@ -17,6 +17,9 @@
 @if (loading()) {
   <p>Loading…</p>
 }
+@if (loadError()) {
+  <div class="form-error">{{ loadError() }}</div>
+}
 
 <div class="detail-grid">
   <section class="card">
@@ -111,6 +114,12 @@
         </div>
       } @else {
         <p class="hint">Regenerate a secure link any time to (re)share this quotation with the customer.</p>
+        @if (linkError()) {
+          <div class="form-error">{{ linkError() }}</div>
+        }
+        @if (pdfError()) {
+          <div class="form-error">{{ pdfError() }}</div>
+        }
         <div class="form-actions" style="justify-content: flex-start; gap: 12px; flex-wrap: wrap;">
           <button type="button" class="secondary-button" [disabled]="linkSaving()" (click)="regenerateLink()">
             {{ linkSaving() ? 'Generating…' : (lastKnownPublicToken() ? 'Regenerate Link' : 'Generate Share Link') }}
@@ -234,6 +243,9 @@
   title="Delete quotation?"
   [message]="'This will permanently remove \'' + (quotation()?.quotationNumber ?? '') + '\'.'"
   confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
   (confirmed)="performDelete()"
   (cancelled)="cancelDelete()"
 />

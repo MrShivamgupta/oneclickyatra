@@ -1,0 +1,44 @@
+<div class="portal-page">
+  @if (authService.currentUser(); as user) {
+    <h1>Welcome, {{ user.fullName }}</h1>
+  }
+  <p class="subtitle">Here's a quick look at your vendor account.</p>
+
+  @if (!loading() && vendor(); as v) {
+    @if (!v.isActive) {
+      <div class="notice">
+        Your vendor profile isn't active yet. Complete your details below and an agency admin will
+        review and activate your account.
+      </div>
+    }
+  }
+
+  <div class="quick-links">
+    <a routerLink="/vendor-portal/rates" class="quick-link-card">My Rates</a>
+    <a routerLink="/vendor-portal/payments" class="quick-link-card">Payments</a>
+    <a routerLink="/vendor-portal/booking-requests" class="quick-link-card">Booking Requests</a>
+    <a routerLink="/vendor-portal/invoices" class="quick-link-card">Invoices</a>
+    <a routerLink="/vendor-portal/profile" class="quick-link-card">My Profile</a>
+  </div>
+
+  <section class="card">
+    <h2>Your Profile</h2>
+    @if (loading()) {
+      <app-spinner label="Loading your profile…" />
+    } @else if (loadError()) {
+      <p class="hint form-error">{{ loadError() }}</p>
+    } @else if (vendor(); as v) {
+      <ul class="mini-list">
+        <li><span>Name</span><span>{{ v.name }}</span></li>
+        <li><span>Vendor Type</span><span>{{ v.vendorType }}</span></li>
+        <li><span>Email</span><span>{{ v.email }}</span></li>
+        <li><span>Phone</span><span>{{ v.phone }}</span></li>
+        <li><span>Status</span><span class="badge status" [attr.data-status]="v.isActive ? 'Active' : 'Inactive'">{{ v.isActive ? 'Active' : 'Pending Review' }}</span></li>
+        @if (v.rating != null) {
+          <li><span>Rating</span><span>{{ v.rating }} / 5</span></li>
+        }
+      </ul>
+      <a routerLink="/vendor-portal/profile" class="view-all">Edit my profile →</a>
+    }
+  </section>
+</div>

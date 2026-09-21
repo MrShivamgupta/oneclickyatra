@@ -55,6 +55,7 @@ public sealed class QuotationRepository : IQuotationRepository
             WHERE q.IsDeleted = 0
               AND (@Status IS NULL OR q.Status = @Status)
               AND (@LeadId IS NULL OR q.LeadId = @LeadId)
+              AND (@CustomerId IS NULL OR q.CustomerId = @CustomerId)
               AND (@SearchTerm IS NULL OR q.QuotationNumber LIKE '%' + @SearchTerm + '%' OR q.Title LIKE '%' + @SearchTerm + '%' OR l.CustomerName LIKE '%' + @SearchTerm + '%')
             """;
 
@@ -75,6 +76,7 @@ public sealed class QuotationRepository : IQuotationRepository
         {
             __request.Status,
             __request.LeadId,
+            __request.CustomerId,
             __request.SearchTerm,
             __request.Skip,
             __request.PageSize

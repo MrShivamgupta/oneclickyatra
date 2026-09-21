@@ -19,6 +19,7 @@ public sealed class DestinationAppFunction : IDestinationAppFunction
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IAuditLogWriter _auditLogWriter;
     private readonly ICacheService _cacheService;
+    private readonly ILogger<DestinationAppFunction> _logger;
 
     public DestinationAppFunction(
         IDestinationRepository __destinationRepository,
@@ -26,7 +27,8 @@ public sealed class DestinationAppFunction : IDestinationAppFunction
         ICityRepository __cityRepository,
         ICurrentUserAccessor __currentUserAccessor,
         IAuditLogWriter __auditLogWriter,
-        ICacheService __cacheService)
+        ICacheService __cacheService,
+        ILogger<DestinationAppFunction> __logger)
     {
         _destinationRepository = __destinationRepository;
         _countryRepository = __countryRepository;
@@ -34,6 +36,7 @@ public sealed class DestinationAppFunction : IDestinationAppFunction
         _currentUserAccessor = __currentUserAccessor;
         _auditLogWriter = __auditLogWriter;
         _cacheService = __cacheService;
+        _logger = __logger;
     }
 
     public async Task<PaginationResponse<DestinationResponse>> SearchAsync(DestinationSearchRequest __request, CancellationToken __cancellationToken)
@@ -106,7 +109,14 @@ public sealed class DestinationAppFunction : IDestinationAppFunction
         };
 
         await _destinationRepository.CreateAsync(destination, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "destination.created", "Destination", destination.Id.ToString(), null, destination.Name, __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "destination.created", "Destination", destination.Id.ToString(), null, destination.Name, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "destination.created", "Destination", destination.Id);
+        }
         await _cacheService.RemoveByPrefixAsync(CacheKeyPrefix, __cancellationToken);
 
         return await GetByIdAsync(destination.Id, __cancellationToken);
@@ -119,6 +129,7 @@ public sealed class DestinationAppFunction : IDestinationAppFunction
         await ValidateReferencesAsync(__request, __cancellationToken);
 
         var oldName = destination.Name;
+        var oldIsPublished = destination.IsPublished;
         destination.CountryId = __request.CountryId;
         destination.CityId = __request.CityId;
         destination.Name = __request.Name;
@@ -131,7 +142,20 @@ public sealed class DestinationAppFunction : IDestinationAppFunction
         destination.UpdatedBy = _currentUserAccessor.UserId;
 
         await _destinationRepository.UpdateAsync(destination, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "destination.updated", "Destination", destination.Id.ToString(), oldName, destination.Name, __cancellationToken);
+
+        if (oldIsPublished != destination.IsPublished)
+        {
+            _logger.LogInformation("Destination {DestinationId} publish status changed {From} -> {To} by {UserId}", destination.Id, oldIsPublished, destination.IsPublished, _currentUserAccessor.UserId);
+        }
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "destination.updated", "Destination", destination.Id.ToString(), oldName, destination.Name, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "destination.updated", "Destination", destination.Id);
+        }
         await _cacheService.RemoveByPrefixAsync(CacheKeyPrefix, __cancellationToken);
 
         return await GetByIdAsync(__id, __cancellationToken);
@@ -143,7 +167,14 @@ public sealed class DestinationAppFunction : IDestinationAppFunction
             ?? throw new EntityNotFoundException("Destination", __id);
 
         await _destinationRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "destination.deleted", "Destination", __id.ToString(), destination.Name, null, __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "destination.deleted", "Destination", __id.ToString(), destination.Name, null, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "destination.deleted", "Destination", __id);
+        }
         await _cacheService.RemoveByPrefixAsync(CacheKeyPrefix, __cancellationToken);
     }
 

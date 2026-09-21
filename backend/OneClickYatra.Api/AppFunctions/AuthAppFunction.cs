@@ -16,32 +16,38 @@ public sealed class AuthAppFunction : IAuthAppFunction
     private readonly IUserRepository _userRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
+    private readonly ICustomerRepository _customerRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IAuditLogWriter _auditLogWriter;
     private readonly JwtOptions _jwtOptions;
     private readonly SecurityOptions _securityOptions;
     private readonly ILogger<AuthAppFunction> _logger;
+    private readonly IHostEnvironment _hostEnvironment;
 
     public AuthAppFunction(
         IUserRepository __userRepository,
         IRefreshTokenRepository __refreshTokenRepository,
         IPasswordResetTokenRepository __passwordResetTokenRepository,
+        ICustomerRepository __customerRepository,
         IPasswordHasher __passwordHasher,
         IJwtTokenService __jwtTokenService,
         IAuditLogWriter __auditLogWriter,
         IOptions<JwtOptions> __jwtOptions,
         IOptions<SecurityOptions> __securityOptions,
-        ILogger<AuthAppFunction> __logger)
+        ILogger<AuthAppFunction> __logger,
+        IHostEnvironment __hostEnvironment)
     {
         _userRepository = __userRepository;
         _refreshTokenRepository = __refreshTokenRepository;
         _passwordResetTokenRepository = __passwordResetTokenRepository;
+        _customerRepository = __customerRepository;
         _passwordHasher = __passwordHasher;
         _jwtTokenService = __jwtTokenService;
         _auditLogWriter = __auditLogWriter;
         _jwtOptions = __jwtOptions.Value;
         _securityOptions = __securityOptions.Value;
+        _hostEnvironment = __hostEnvironment;
         _logger = __logger;
     }
 
@@ -96,6 +102,20 @@ public sealed class AuthAppFunction : IAuthAppFunction
 
         await _userRepository.CreateAsync(user, __cancellationToken);
         await _userRepository.AssignRoleAsync(user.Id, RoleConstants.Customer, __cancellationToken);
+
+        // Every self-registered account is a CRM Customer too — link a Customer record up front
+        // so the customer portal (bookings/payments/invoices/quotations) always has one to resolve,
+        // rather than every portal endpoint needing to lazily create it on first access.
+        await _customerRepository.CreateAsync(new CustomerModel
+        {
+            Id = Guid.NewGuid(),
+            FullName = user.FullName,
+            Email = user.Email,
+            Phone = __request.Phone,
+            UserId = user.Id,
+            CreatedBy = user.Id
+        }, __cancellationToken);
+
         await _auditLogWriter.LogAsync(user.Id, "user.registered", "User", user.Id.ToString(), null, user.Email, __cancellationToken);
 
         return await IssueTokensAsync(user, __ipAddress, __cancellationToken);
@@ -150,10 +170,18 @@ public sealed class AuthAppFunction : IAuthAppFunction
 
         await _passwordResetTokenRepository.CreateAsync(resetToken, __cancellationToken);
 
-        // Email delivery is wired up in the notifications phase; logged here so the flow is testable end-to-end today.
-        _logger.LogInformation(
-            "Password reset requested for {Email}. Reset token (dev-only visibility): {ResetToken}",
-            user.Email, rawResetToken);
+        // Email delivery is wired up in the notifications phase. The raw token is never logged at
+        // Information level (it would let anyone with log-sink read access take over any account,
+        // bypassing email delivery entirely) — only its token Id, which is safe to correlate but
+        // useless without the corresponding raw value. In Development ONLY, where there is no email
+        // provider configured at all, the raw token is logged at Debug level (off by default even
+        // locally unless the environment explicitly raises the minimum level) so the reset flow
+        // remains testable end-to-end without ever risking a production log sink.
+        _logger.LogInformation("Password reset requested for {Email}. Reset token id: {ResetTokenId}", user.Email, resetToken.Id);
+        if (_hostEnvironment.IsDevelopment())
+        {
+            _logger.LogDebug("Development-only: raw reset token for {Email} is {ResetToken}", user.Email, rawResetToken);
+        }
     }
 
     public async Task ResetPasswordAsync(ResetPasswordRequest __request, CancellationToken __cancellationToken)

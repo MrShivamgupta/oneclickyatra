@@ -10,6 +10,9 @@ namespace OneClickYatra.Api.AppFunctions;
 
 public sealed class PackageAppFunction : IPackageAppFunction
 {
+    private const string CacheKeyPrefix = "package:";
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(10);
+
     private readonly IPackageRepository _packageRepository;
     private readonly IPackageContentRepository _packageContentRepository;
     private readonly IDestinationRepository _destinationRepository;
@@ -17,6 +20,8 @@ public sealed class PackageAppFunction : IPackageAppFunction
     private readonly ISeasonRepository _seasonRepository;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IAuditLogWriter _auditLogWriter;
+    private readonly ICacheService _cacheService;
+    private readonly ILogger<PackageAppFunction> _logger;
 
     public PackageAppFunction(
         IPackageRepository __packageRepository,
@@ -25,7 +30,9 @@ public sealed class PackageAppFunction : IPackageAppFunction
         ICategoryRepository __categoryRepository,
         ISeasonRepository __seasonRepository,
         ICurrentUserAccessor __currentUserAccessor,
-        IAuditLogWriter __auditLogWriter)
+        IAuditLogWriter __auditLogWriter,
+        ICacheService __cacheService,
+        ILogger<PackageAppFunction> __logger)
     {
         _packageRepository = __packageRepository;
         _packageContentRepository = __packageContentRepository;
@@ -34,6 +41,8 @@ public sealed class PackageAppFunction : IPackageAppFunction
         _seasonRepository = __seasonRepository;
         _currentUserAccessor = __currentUserAccessor;
         _auditLogWriter = __auditLogWriter;
+        _cacheService = __cacheService;
+        _logger = __logger;
     }
 
     public async Task<PaginationResponse<PackageResponse>> SearchAsync(PackageSearchRequest __request, CancellationToken __cancellationToken)
@@ -44,6 +53,13 @@ public sealed class PackageAppFunction : IPackageAppFunction
 
     public async Task<PackageDetailResponse> GetByIdAsync(Guid __id, CancellationToken __cancellationToken)
     {
+        var cacheKey = $"{CacheKeyPrefix}id:{__id}";
+        var cached = await _cacheService.GetAsync<PackageDetailResponse>(cacheKey, __cancellationToken);
+        if (cached is not null)
+        {
+            return cached;
+        }
+
         var package = await _packageRepository.GetByIdAsync(__id, __cancellationToken)
             ?? throw new EntityNotFoundException("Package", __id);
 
@@ -53,7 +69,7 @@ public sealed class PackageAppFunction : IPackageAppFunction
         var inventory = await _packageContentRepository.GetInventoryAsync(__id, __cancellationToken);
         var media = await _packageContentRepository.GetMediaAsync(__id, __cancellationToken);
 
-        return new PackageDetailResponse
+        var response = new PackageDetailResponse
         {
             Package = ToResponse(package),
             Itinerary = itinerary.Select(ToResponse).ToList(),
@@ -62,11 +78,21 @@ public sealed class PackageAppFunction : IPackageAppFunction
             Inventory = inventory.Select(ToResponse).ToList(),
             Media = media.Select(ToResponse).ToList()
         };
+
+        await _cacheService.SetAsync(cacheKey, response, CacheTtl, __cancellationToken);
+        return response;
     }
 
     /// <summary>Public: used for pretty public-site URLs like /packages/goa-family-getaway. Never exposes non-Published packages.</summary>
     public async Task<PackageDetailResponse> GetBySlugAsync(string __slug, CancellationToken __cancellationToken)
     {
+        var cacheKey = $"{CacheKeyPrefix}slug:{__slug}";
+        var cached = await _cacheService.GetAsync<PackageDetailResponse>(cacheKey, __cancellationToken);
+        if (cached is not null)
+        {
+            return cached;
+        }
+
         var package = await _packageRepository.GetBySlugAsync(__slug, __cancellationToken);
         if (package is null || package.Status != "Published")
         {
@@ -79,7 +105,7 @@ public sealed class PackageAppFunction : IPackageAppFunction
         var inventory = await _packageContentRepository.GetInventoryAsync(package.Id, __cancellationToken);
         var media = await _packageContentRepository.GetMediaAsync(package.Id, __cancellationToken);
 
-        return new PackageDetailResponse
+        var response = new PackageDetailResponse
         {
             Package = ToResponse(package),
             Itinerary = itinerary.Select(ToResponse).ToList(),
@@ -88,6 +114,9 @@ public sealed class PackageAppFunction : IPackageAppFunction
             Inventory = inventory.Select(ToResponse).ToList(),
             Media = media.Select(ToResponse).ToList()
         };
+
+        await _cacheService.SetAsync(cacheKey, response, CacheTtl, __cancellationToken);
+        return response;
     }
 
     public async Task<PackageResponse> CreateAsync(PackageRequest __request, CancellationToken __cancellationToken)
@@ -118,7 +147,15 @@ public sealed class PackageAppFunction : IPackageAppFunction
         };
 
         await _packageRepository.CreateAsync(package, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.created", "Package", package.Id.ToString(), null, package.Title, __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.created", "Package", package.Id.ToString(), null, package.Title, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "package.created", "Package", package.Id);
+        }
+        await _cacheService.RemoveByPrefixAsync(CacheKeyPrefix, __cancellationToken);
 
         var created = await _packageRepository.GetByIdAsync(package.Id, __cancellationToken) ?? package;
         return ToResponse(created);
@@ -144,7 +181,15 @@ public sealed class PackageAppFunction : IPackageAppFunction
         package.UpdatedBy = _currentUserAccessor.UserId;
 
         await _packageRepository.UpdateAsync(package, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.updated", "Package", package.Id.ToString(), oldTitle, package.Title, __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.updated", "Package", package.Id.ToString(), oldTitle, package.Title, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "package.updated", "Package", package.Id);
+        }
+        await _cacheService.RemoveByPrefixAsync(CacheKeyPrefix, __cancellationToken);
 
         var updated = await _packageRepository.GetByIdAsync(__id, __cancellationToken) ?? package;
         return ToResponse(updated);
@@ -157,7 +202,16 @@ public sealed class PackageAppFunction : IPackageAppFunction
 
         var oldStatus = package.Status;
         await _packageRepository.UpdateStatusAsync(__id, __request.Status, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.status.changed", "Package", __id.ToString(), oldStatus, __request.Status, __cancellationToken);
+        _logger.LogInformation("Package {PackageId} status changed {From} -> {To} by {UserId}", __id, oldStatus, __request.Status, _currentUserAccessor.UserId);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.status.changed", "Package", __id.ToString(), oldStatus, __request.Status, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "package.status.changed", "Package", __id);
+        }
+        await _cacheService.RemoveByPrefixAsync(CacheKeyPrefix, __cancellationToken);
 
         var updated = await _packageRepository.GetByIdAsync(__id, __cancellationToken) ?? package;
         return ToResponse(updated);
@@ -169,7 +223,15 @@ public sealed class PackageAppFunction : IPackageAppFunction
             ?? throw new EntityNotFoundException("Package", __id);
 
         await _packageRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.deleted", "Package", __id.ToString(), package.Title, null, __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.deleted", "Package", __id.ToString(), package.Title, null, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "package.deleted", "Package", __id);
+        }
+        await _cacheService.RemoveByPrefixAsync(CacheKeyPrefix, __cancellationToken);
     }
 
     public async Task<IReadOnlyList<PackageItineraryDayResponse>> ReplaceItineraryAsync(Guid __packageId, IReadOnlyList<PackageItineraryDayRequest> __days, CancellationToken __cancellationToken)
@@ -186,7 +248,14 @@ public sealed class PackageAppFunction : IPackageAppFunction
         }).ToList();
 
         await _packageContentRepository.ReplaceItineraryAsync(__packageId, models, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.itinerary.replaced", "Package", __packageId.ToString(), null, $"{models.Count} day(s)", __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.itinerary.replaced", "Package", __packageId.ToString(), null, $"{models.Count} day(s)", __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "package.itinerary.replaced", "Package", __packageId);
+        }
 
         var saved = await _packageContentRepository.GetItineraryAsync(__packageId, __cancellationToken);
         return saved.Select(ToResponse).ToList();
@@ -205,7 +274,14 @@ public sealed class PackageAppFunction : IPackageAppFunction
         }).ToList();
 
         await _packageContentRepository.ReplaceInclusionsAsync(__packageId, models, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.inclusions.replaced", "Package", __packageId.ToString(), null, $"{models.Count} item(s)", __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.inclusions.replaced", "Package", __packageId.ToString(), null, $"{models.Count} item(s)", __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "package.inclusions.replaced", "Package", __packageId);
+        }
 
         var saved = await _packageContentRepository.GetInclusionsAsync(__packageId, __cancellationToken);
         return saved.Select(ToResponse).ToList();
@@ -228,7 +304,14 @@ public sealed class PackageAppFunction : IPackageAppFunction
         }).ToList();
 
         await _packageContentRepository.ReplacePricingAsync(__packageId, models, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.pricing.replaced", "Package", __packageId.ToString(), null, $"{models.Count} tier(s)", __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.pricing.replaced", "Package", __packageId.ToString(), null, $"{models.Count} tier(s)", __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "package.pricing.replaced", "Package", __packageId);
+        }
 
         var saved = await _packageContentRepository.GetPricingAsync(__packageId, __cancellationToken);
         return saved.Select(ToResponse).ToList();
@@ -249,7 +332,14 @@ public sealed class PackageAppFunction : IPackageAppFunction
         }).ToList();
 
         await _packageContentRepository.ReplaceInventoryAsync(__packageId, models, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.inventory.replaced", "Package", __packageId.ToString(), null, $"{models.Count} departure(s)", __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.inventory.replaced", "Package", __packageId.ToString(), null, $"{models.Count} departure(s)", __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "package.inventory.replaced", "Package", __packageId);
+        }
 
         var saved = await _packageContentRepository.GetInventoryAsync(__packageId, __cancellationToken);
         return saved.Select(ToResponse).ToList();
@@ -269,7 +359,14 @@ public sealed class PackageAppFunction : IPackageAppFunction
         }).ToList();
 
         await _packageContentRepository.ReplaceMediaAsync(__packageId, models, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.media.replaced", "Package", __packageId.ToString(), null, $"{models.Count} item(s)", __cancellationToken);
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "package.media.replaced", "Package", __packageId.ToString(), null, $"{models.Count} item(s)", __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "package.media.replaced", "Package", __packageId);
+        }
 
         var saved = await _packageContentRepository.GetMediaAsync(__packageId, __cancellationToken);
         return saved.Select(ToResponse).ToList();

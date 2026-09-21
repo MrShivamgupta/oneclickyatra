@@ -58,3 +58,15 @@ public sealed class InvalidWebhookSignatureException : Exception
     {
     }
 }
+
+/// <summary>Thrown when a required environment setting (a connection string, the JWT signing key,
+/// etc.) is missing or malformed — a deployment/configuration problem, not a client error or a bug
+/// in a single request. Maps to 503 (same tier as PaymentGatewayNotConfiguredException/
+/// WhatsAppNotConfiguredException) so it's visibly distinct from the generic 500 fallback and never
+/// leaks the missing setting's name or value to the client.</summary>
+public sealed class ConfigurationException : Exception
+{
+    public ConfigurationException(string __message) : base(__message)
+    {
+    }
+}

@@ -36,6 +36,7 @@ export class Destinations {
   readonly countries = signal<Country[]>([]);
   readonly formCities = signal<City[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly pageNumber = signal(1);
   readonly totalCount = signal(0);
   readonly searchTerm = signal('');
@@ -47,6 +48,8 @@ export class Destinations {
   readonly isSaving = signal(false);
 
   readonly deleteTarget = signal<Destination | null>(null);
+  readonly deleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
 
   readonly form = this.formBuilder.nonNullable.group({
     countryId: ['', Validators.required],
@@ -82,6 +85,7 @@ export class Destinations {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.destinationService
       .search({
         pageNumber: this.pageNumber(),
@@ -97,7 +101,10 @@ export class Destinations {
             this.totalCount.set(response.data.totalCount);
           }
         },
-        error: () => this.loading.set(false)
+        error: (error) => {
+          this.loading.set(false);
+          this.loadError.set(error?.error?.message ?? 'Could not load destinations. Please try again.');
+        }
       });
   }
 
@@ -180,6 +187,7 @@ export class Destinations {
   }
 
   confirmDelete(destination: Destination): void {
+    this.deleteError.set(null);
     this.deleteTarget.set(destination);
   }
 
@@ -192,9 +200,18 @@ export class Destinations {
     if (!target) {
       return;
     }
-    this.destinationService.delete(target.id).subscribe(() => {
-      this.deleteTarget.set(null);
-      this.load();
+    this.deleting.set(true);
+    this.deleteError.set(null);
+    this.destinationService.delete(target.id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleteTarget.set(null);
+        this.load();
+      },
+      error: (error) => {
+        this.deleting.set(false);
+        this.deleteError.set(error?.error?.message ?? 'Could not delete this destination. Please try again.');
+      }
     });
   }
 }

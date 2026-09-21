@@ -1,0 +1,69 @@
+// Deliberately self-contained (no shared/styles or shared/styles-public import) — this is mounted
+// once at the app root and must look right regardless of which theme (admin/public) the current
+// route uses.
+.toast-stack {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: min(360px, calc(100vw - 2rem));
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #ffffff;
+  animation: app-toast-in 0.15s ease-out;
+
+  &.error {
+    background: #c0392b;
+  }
+
+  &.success {
+    background: #1fa971;
+  }
+
+  &.info {
+    background: #2f6fed;
+  }
+}
+
+.toast-text {
+  flex: 1;
+}
+
+.toast-dismiss {
+  flex: none;
+  background: transparent;
+  border: none;
+  color: inherit;
+  opacity: 0.8;
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.125rem;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+@keyframes app-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

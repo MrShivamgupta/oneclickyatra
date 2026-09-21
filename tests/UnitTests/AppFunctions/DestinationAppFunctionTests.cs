@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Moq;
 using OneClickYatra.Api.AppFunctions;
 using OneClickYatra.Api.Globals;
@@ -30,7 +31,8 @@ public class DestinationAppFunctionTests
             _cityRepository.Object,
             _currentUserAccessor.Object,
             _auditLogWriter.Object,
-            _cacheService.Object);
+            _cacheService.Object,
+            Mock.Of<ILogger<DestinationAppFunction>>());
     }
 
     private static DestinationModel CreatePublishedDestination(string slug = "goa-india") => new()

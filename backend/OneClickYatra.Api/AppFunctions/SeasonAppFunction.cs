@@ -13,12 +13,18 @@ public sealed class SeasonAppFunction : ISeasonAppFunction
     private readonly ISeasonRepository _seasonRepository;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IAuditLogWriter _auditLogWriter;
+    private readonly ILogger<SeasonAppFunction> _logger;
 
-    public SeasonAppFunction(ISeasonRepository __seasonRepository, ICurrentUserAccessor __currentUserAccessor, IAuditLogWriter __auditLogWriter)
+    public SeasonAppFunction(
+        ISeasonRepository __seasonRepository,
+        ICurrentUserAccessor __currentUserAccessor,
+        IAuditLogWriter __auditLogWriter,
+        ILogger<SeasonAppFunction> __logger)
     {
         _seasonRepository = __seasonRepository;
         _currentUserAccessor = __currentUserAccessor;
         _auditLogWriter = __auditLogWriter;
+        _logger = __logger;
     }
 
     public async Task<PaginationResponse<SeasonResponse>> ListAsync(PaginationRequest __request, CancellationToken __cancellationToken)
@@ -51,7 +57,17 @@ public sealed class SeasonAppFunction : ISeasonAppFunction
         };
 
         await _seasonRepository.CreateAsync(season, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "season.created", "Season", season.Id.ToString(), null, season.Name, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "season.created", "Season", season.Id.ToString(), null, season.Name, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "season.created", "Season", season.Id);
+        }
+
+        _logger.LogInformation("Season {SeasonId} {SeasonName} created by {UserId}", season.Id, season.Name, _currentUserAccessor.UserId);
 
         return ToResponse(season);
     }
@@ -67,7 +83,17 @@ public sealed class SeasonAppFunction : ISeasonAppFunction
         season.UpdatedBy = _currentUserAccessor.UserId;
 
         await _seasonRepository.UpdateAsync(season, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "season.updated", "Season", season.Id.ToString(), oldName, season.Name, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "season.updated", "Season", season.Id.ToString(), oldName, season.Name, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "season.updated", "Season", season.Id);
+        }
+
+        _logger.LogInformation("Season {SeasonId} updated {OldName} -> {NewName} by {UserId}", season.Id, oldName, season.Name, _currentUserAccessor.UserId);
 
         return ToResponse(season);
     }
@@ -77,7 +103,17 @@ public sealed class SeasonAppFunction : ISeasonAppFunction
         var season = await _seasonRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Season", __id);
 
         await _seasonRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "season.deleted", "Season", __id.ToString(), season.Name, null, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "season.deleted", "Season", __id.ToString(), season.Name, null, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "season.deleted", "Season", __id);
+        }
+
+        _logger.LogInformation("Season {SeasonId} {SeasonName} deleted by {UserId}", __id, season.Name, _currentUserAccessor.UserId);
     }
 
     private static SeasonResponse ToResponse(SeasonModel season) => new()

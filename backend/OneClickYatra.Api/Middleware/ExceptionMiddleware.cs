@@ -4,7 +4,9 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.Data.SqlClient;
 using OneClickYatra.Api.Globals;
+using OneClickYatra.Api.Services.Email;
 using OneClickYatra.Api.Services.Payments;
+using OneClickYatra.Api.Services.WhatsApp;
 using ValidationException = FluentValidation.ValidationException;
 
 namespace OneClickYatra.Api.Middleware;
@@ -62,8 +64,13 @@ public sealed class ExceptionMiddleware
         InvalidCredentialsException invalidCredentialsException => ((int)HttpStatusCode.Unauthorized, invalidCredentialsException.Message, null),
         AccountLockedException accountLockedException => ((int)HttpStatusCode.Locked, accountLockedException.Message, null),
         InvalidWebhookSignatureException invalidWebhookSignatureException => ((int)HttpStatusCode.BadRequest, invalidWebhookSignatureException.Message, null),
+        ConfigurationException configurationException => ((int)HttpStatusCode.ServiceUnavailable, configurationException.Message, null),
         PaymentGatewayNotConfiguredException notConfiguredException => ((int)HttpStatusCode.ServiceUnavailable, notConfiguredException.Message, null),
         PaymentGatewayException => ((int)HttpStatusCode.BadGateway, "The payment gateway is currently unavailable. Please try again shortly.", null),
+        WhatsAppNotConfiguredException whatsAppNotConfiguredException => ((int)HttpStatusCode.ServiceUnavailable, whatsAppNotConfiguredException.Message, null),
+        WhatsAppGatewayException => ((int)HttpStatusCode.BadGateway, "The WhatsApp gateway is currently unavailable. Please try again shortly.", null),
+        EmailNotConfiguredException emailNotConfiguredException => ((int)HttpStatusCode.ServiceUnavailable, emailNotConfiguredException.Message, null),
+        EmailGatewayException => ((int)HttpStatusCode.BadGateway, "The email gateway is currently unavailable. Please try again shortly.", null),
         UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", null),
         BusinessException businessException => ((int)HttpStatusCode.Conflict, businessException.Message, null),
         SqlException => ((int)HttpStatusCode.InternalServerError, "A database error occurred. Please try again later.", null),

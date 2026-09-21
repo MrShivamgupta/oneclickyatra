@@ -1,0 +1,47 @@
+<div class="portal-page">
+  <div class="page-header">
+    <div>
+      <h1>Quotations</h1>
+      <p class="subtitle">Quotations your travel agent has prepared for you. Check your email or WhatsApp for the link to review and approve one.</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p class="hint">Loading…</p>
+  } @else if (loadError()) {
+    <p class="hint form-error">{{ loadError() }}</p>
+  } @else if (quotations().length === 0) {
+    <p class="hint">No quotations yet.</p>
+  } @else {
+    <div class="card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Quotation #</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Valid Until</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (quotation of quotations(); track quotation.id) {
+            <tr>
+              <td>{{ quotation.quotationNumber }}</td>
+              <td>{{ quotation.title }}</td>
+              <td><span class="badge status" [attr.data-status]="quotation.status">{{ quotation.status }}</span></td>
+              <td>{{ quotation.validUntil ? (quotation.validUntil | date: 'dd MMM yyyy') : '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (totalPages > 1) {
+        <div class="pagination">
+          <button type="button" [disabled]="pageNumber() === 1" (click)="onPageChange(pageNumber() - 1)">← Prev</button>
+          <span>Page {{ pageNumber() }} of {{ totalPages }}</span>
+          <button type="button" [disabled]="pageNumber() >= totalPages" (click)="onPageChange(pageNumber() + 1)">Next →</button>
+        </div>
+      }
+    </div>
+  }
+</div>

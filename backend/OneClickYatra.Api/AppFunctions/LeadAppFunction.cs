@@ -16,6 +16,7 @@ public sealed class LeadAppFunction : ILeadAppFunction
     private readonly IUserRepository _userRepository;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IAuditLogWriter _auditLogWriter;
+    private readonly ILogger<LeadAppFunction> _logger;
 
     public LeadAppFunction(
         ILeadRepository __leadRepository,
@@ -23,7 +24,8 @@ public sealed class LeadAppFunction : ILeadAppFunction
         IDestinationRepository __destinationRepository,
         IUserRepository __userRepository,
         ICurrentUserAccessor __currentUserAccessor,
-        IAuditLogWriter __auditLogWriter)
+        IAuditLogWriter __auditLogWriter,
+        ILogger<LeadAppFunction> __logger)
     {
         _leadRepository = __leadRepository;
         _customerRepository = __customerRepository;
@@ -31,6 +33,7 @@ public sealed class LeadAppFunction : ILeadAppFunction
         _userRepository = __userRepository;
         _currentUserAccessor = __currentUserAccessor;
         _auditLogWriter = __auditLogWriter;
+        _logger = __logger;
     }
 
     public async Task<PaginationResponse<LeadResponse>> SearchAsync(LeadSearchRequest __request, CancellationToken __cancellationToken)
@@ -66,7 +69,15 @@ public sealed class LeadAppFunction : ILeadAppFunction
         };
 
         await _leadRepository.CreateAsync(lead, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.created", "Lead", lead.Id.ToString(), null, lead.CustomerName, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.created", "Lead", lead.Id.ToString(), null, lead.CustomerName, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "lead.created", "Lead", lead.Id);
+        }
 
         return await GetByIdAsync(lead.Id, __cancellationToken);
     }
@@ -88,7 +99,15 @@ public sealed class LeadAppFunction : ILeadAppFunction
         lead.UpdatedBy = _currentUserAccessor.UserId;
 
         await _leadRepository.UpdateAsync(lead, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.updated", "Lead", lead.Id.ToString(), oldName, lead.CustomerName, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.updated", "Lead", lead.Id.ToString(), oldName, lead.CustomerName, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "lead.updated", "Lead", lead.Id);
+        }
 
         return await GetByIdAsync(__id, __cancellationToken);
     }
@@ -99,7 +118,16 @@ public sealed class LeadAppFunction : ILeadAppFunction
 
         var oldStatus = lead.Status;
         await _leadRepository.UpdateStatusAsync(__id, __request.Status, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.status.changed", "Lead", __id.ToString(), oldStatus, __request.Status, __cancellationToken);
+        _logger.LogInformation("Lead {LeadId} status changed {From} -> {To} by {UserId}", __id, oldStatus, __request.Status, _currentUserAccessor.UserId);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.status.changed", "Lead", __id.ToString(), oldStatus, __request.Status, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "lead.status.changed", "Lead", __id);
+        }
 
         return await GetByIdAsync(__id, __cancellationToken);
     }
@@ -111,7 +139,16 @@ public sealed class LeadAppFunction : ILeadAppFunction
             ?? throw new EntityNotFoundException("User", __request.AssignedToUserId);
 
         await _leadRepository.AssignAsync(__id, __request.AssignedToUserId, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.assigned", "Lead", __id.ToString(), null, __request.AssignedToUserId.ToString(), __cancellationToken);
+        _logger.LogInformation("Lead {LeadId} assigned to {AssignedToUserId} by {UserId}", __id, __request.AssignedToUserId, _currentUserAccessor.UserId);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.assigned", "Lead", __id.ToString(), null, __request.AssignedToUserId.ToString(), __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "lead.assigned", "Lead", __id);
+        }
 
         return await GetByIdAsync(__id, __cancellationToken);
     }
@@ -121,7 +158,15 @@ public sealed class LeadAppFunction : ILeadAppFunction
         var lead = await _leadRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Lead", __id);
 
         await _leadRepository.UpdateScoreAsync(__id, __request.LeadScore, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.score.changed", "Lead", __id.ToString(), lead.LeadScore.ToString(), __request.LeadScore.ToString(), __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.score.changed", "Lead", __id.ToString(), lead.LeadScore.ToString(), __request.LeadScore.ToString(), __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "lead.score.changed", "Lead", __id);
+        }
 
         return await GetByIdAsync(__id, __cancellationToken);
     }
@@ -155,7 +200,16 @@ public sealed class LeadAppFunction : ILeadAppFunction
 
         await _customerRepository.CreateAsync(customer, __cancellationToken);
         await _leadRepository.LinkCustomerAsync(__id, customer.Id, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.converted", "Lead", __id.ToString(), null, customer.Id.ToString(), __cancellationToken);
+        _logger.LogInformation("Lead {LeadId} converted to Customer {CustomerId} by {UserId}", __id, customer.Id, _currentUserAccessor.UserId);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.converted", "Lead", __id.ToString(), null, customer.Id.ToString(), __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "lead.converted", "Lead", __id);
+        }
 
         return new CustomerResponse
         {
@@ -172,7 +226,15 @@ public sealed class LeadAppFunction : ILeadAppFunction
         var lead = await _leadRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Lead", __id);
 
         await _leadRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.deleted", "Lead", __id.ToString(), lead.CustomerName, null, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "lead.deleted", "Lead", __id.ToString(), lead.CustomerName, null, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "lead.deleted", "Lead", __id);
+        }
     }
 
     private async Task ValidateReferencesAsync(LeadRequest __request, CancellationToken __cancellationToken)

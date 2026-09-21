@@ -1,4 +1,5 @@
 using Hangfire;
+using Microsoft.Extensions.Logging;
 using Moq;
 using OneClickYatra.Api.AppFunctions;
 using OneClickYatra.Api.Globals;
@@ -7,6 +8,7 @@ using OneClickYatra.Api.Models;
 using OneClickYatra.Api.Models.Requests;
 using OneClickYatra.Api.Repositories;
 using OneClickYatra.Api.Services;
+using OneClickYatra.Api.Services.Email;
 using OneClickYatra.Api.Services.Payments;
 
 namespace OneClickYatra.UnitTests.AppFunctions;
@@ -16,21 +18,26 @@ public class PaymentAppFunctionTests
     private readonly Mock<IPaymentRepository> _paymentRepository = new();
     private readonly Mock<IRefundRepository> _refundRepository = new();
     private readonly Mock<IBookingRepository> _bookingRepository = new();
+    private readonly Mock<ICustomerRepository> _customerRepository = new();
     private readonly Mock<IBookingAppFunction> _bookingAppFunction = new();
     private readonly Mock<IPaymentGateway> _paymentGateway = new();
     private readonly Mock<IBackgroundJobClient> _backgroundJobClient = new();
     private readonly Mock<ICurrentUserAccessor> _currentUserAccessor = new();
     private readonly Mock<IAuditLogWriter> _auditLogWriter = new();
+    private readonly Mock<IEmailNotificationSender> _emailNotificationSender = new();
 
     private PaymentAppFunction CreateSut() => new(
         _paymentRepository.Object,
         _refundRepository.Object,
         _bookingRepository.Object,
+        _customerRepository.Object,
         _bookingAppFunction.Object,
         _paymentGateway.Object,
         _backgroundJobClient.Object,
         _currentUserAccessor.Object,
-        _auditLogWriter.Object);
+        _auditLogWriter.Object,
+        _emailNotificationSender.Object,
+        Mock.Of<ILogger<PaymentAppFunction>>());
 
     private static BookingModel CreateBooking(string status = "PendingPayment", decimal total = 50000, decimal paid = 0) => new()
     {

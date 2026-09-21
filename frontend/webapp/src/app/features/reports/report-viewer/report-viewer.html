@@ -1,0 +1,83 @@
+<div class="page-header">
+  <div>
+    <a routerLink="/admin/reports" class="back-link">← All Reports</a>
+    <h1>{{ definition().label }}</h1>
+    <p class="subtitle">{{ definition().description }}</p>
+  </div>
+
+  <div class="export-actions">
+    @for (format of exportFormats; track format) {
+      <button type="button" class="secondary-button" [disabled]="exportingFormat() !== null" (click)="downloadExport(format)">
+        {{ exportingFormat() === format ? 'Exporting…' : 'Export ' + format.toUpperCase() }}
+      </button>
+    }
+  </div>
+</div>
+
+@if (exportError()) {
+  <p class="error-text">{{ exportError() }}</p>
+}
+
+@if (definition().hasDateRange || definition().hasGroupBy) {
+  <div class="filters-bar">
+    @if (definition().hasDateRange) {
+      <select class="date-filter" [value]="selectedPreset()" (change)="onPresetChange($any($event.target).value)">
+        @for (preset of presets; track preset) {
+          <option [value]="preset">{{ presetLabels[preset] }}</option>
+        }
+      </select>
+
+      @if (selectedPreset() === 'Custom') {
+        <input type="date" [value]="customFrom()" (change)="customFrom.set($any($event.target).value)" />
+        <span class="range-separator">to</span>
+        <input type="date" [value]="customTo()" (change)="customTo.set($any($event.target).value)" />
+        <button type="button" class="secondary-button" (click)="applyCustomRange()">Apply</button>
+      }
+    }
+
+    @if (definition().hasGroupBy) {
+      <select
+        class="date-filter"
+        [value]="groupBy()"
+        [disabled]="reportName() === 'monthly-growth'"
+        (change)="onGroupByChange($any($event.target).value)"
+      >
+        <option value="day">Group by Day</option>
+        <option value="week">Group by Week</option>
+        <option value="month">Group by Month</option>
+      </select>
+      @if (reportName() === 'monthly-growth') {
+        <span class="hint">Always grouped by calendar month</span>
+      }
+    }
+  </div>
+}
+
+<div class="table-wrapper">
+  @if (loading()) {
+    <p class="hint">Loading…</p>
+  } @else if (loadError()) {
+    <p class="error-text">{{ loadError() }}</p>
+  } @else if (rows().length === 0) {
+    <p class="hint">No data found for this report.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          @for (col of columns(); track col) {
+            <th>{{ columnLabel(col) }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track $index) {
+          <tr>
+            @for (col of columns(); track col) {
+              <td>{{ formatCell(row[col]) }}</td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

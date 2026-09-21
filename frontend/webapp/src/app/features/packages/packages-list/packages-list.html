@@ -20,6 +20,13 @@
   </select>
 </app-filter-bar>
 
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+@if (publishError()) {
+  <p class="form-error">{{ publishError() }}</p>
+}
+
 <app-data-table [columns]="columns" [rows]="packages()" [loading]="loading()" emptyMessage="No packages yet. Click 'Add Package' to create one.">
   <ng-template #rowTemplate let-pkg>
     <tr>
@@ -33,8 +40,8 @@
       </td>
       <td class="actions-cell">
         <button type="button" class="link-button" (click)="editPackage(pkg)">Edit</button>
-        <button type="button" class="link-button" (click)="togglePublish(pkg)">
-          {{ pkg.status === 'Published' ? 'Unpublish' : 'Publish' }}
+        <button type="button" class="link-button" [disabled]="publishTogglingId() === pkg.id" (click)="togglePublish(pkg)">
+          {{ publishTogglingId() === pkg.id ? 'Updating…' : (pkg.status === 'Published' ? 'Unpublish' : 'Publish') }}
         </button>
         <button type="button" class="link-button danger" (click)="confirmDelete(pkg)">Delete</button>
       </td>
@@ -49,6 +56,9 @@
   title="Delete package?"
   [message]="'This will permanently remove \'' + (deleteTarget()?.title ?? '') + '\' and all its itinerary, pricing and inventory data.'"
   confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
   (confirmed)="performDelete()"
   (cancelled)="cancelDelete()"
 />

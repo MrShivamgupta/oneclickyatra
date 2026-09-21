@@ -12,6 +12,10 @@
   <a routerLink="/admin/packages" class="secondary-button">← Back to list</a>
 </div>
 
+@if (loading()) {
+  <app-spinner label="Loading package…" />
+}
+
 <div class="tabs">
   @for (tab of tabs; track tab.key) {
     <button

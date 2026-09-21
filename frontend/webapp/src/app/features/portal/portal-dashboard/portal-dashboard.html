@@ -1,0 +1,37 @@
+<div class="portal-page">
+  @if (authService.currentUser(); as user) {
+    <h1>Welcome, {{ user.fullName }}</h1>
+  }
+  <p class="subtitle">Here's a quick look at your travel account.</p>
+
+  <div class="quick-links">
+    <a routerLink="/portal/bookings" class="quick-link-card">
+      <span class="quick-link-value">{{ totalBookings() }}</span>
+      <span class="quick-link-label">My Bookings</span>
+    </a>
+    <a routerLink="/portal/payments" class="quick-link-card">Payments</a>
+    <a routerLink="/portal/invoices" class="quick-link-card">Invoices</a>
+    <a routerLink="/portal/quotations" class="quick-link-card">Quotations</a>
+  </div>
+
+  <section class="card">
+    <h2>Recent Bookings</h2>
+    @if (loading()) {
+      <app-spinner label="Loading bookings…" />
+    } @else if (loadError()) {
+      <p class="hint form-error">{{ loadError() }}</p>
+    } @else if (recentBookings().length === 0) {
+      <p class="hint">You don't have any bookings yet. Once your travel agent confirms one, it'll show up here.</p>
+    } @else {
+      <ul class="mini-list">
+        @for (booking of recentBookings(); track booking.id) {
+          <li>
+            <a [routerLink]="['/portal/bookings', booking.id]">{{ booking.bookingNumber }}</a>
+            <span class="badge status" [attr.data-status]="booking.status">{{ booking.status }}</span>
+          </li>
+        }
+      </ul>
+      <a routerLink="/portal/bookings" class="view-all">View all bookings →</a>
+    }
+  </section>
+</div>

@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Data.SqlClient;
+using OneClickYatra.Api.Globals;
 
 namespace OneClickYatra.Api.Infrastructure;
 
@@ -10,7 +11,7 @@ public sealed class SqlConnectionFactory : IDbConnectionFactory
     public SqlConnectionFactory(IConfiguration __configuration)
     {
         _connectionString = __configuration.GetConnectionString("SqlServer")
-            ?? throw new InvalidOperationException("ConnectionStrings:SqlServer is not configured.");
+            ?? throw new ConfigurationException("The service is temporarily unavailable. Please try again shortly.");
     }
 
     public IDbConnection CreateConnection() => new SqlConnection(_connectionString);

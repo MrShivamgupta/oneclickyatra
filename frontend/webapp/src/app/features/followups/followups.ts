@@ -30,8 +30,11 @@ export class FollowUps {
 
   readonly followUps = signal<FollowUp[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly pageNumber = signal(1);
   readonly totalCount = signal(0);
+  readonly statusUpdatingId = signal<string | null>(null);
+  readonly statusError = signal<string | null>(null);
 
   constructor() {
     this.load();
@@ -39,6 +42,7 @@ export class FollowUps {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.followUpService.today({ pageNumber: this.pageNumber(), pageSize: PAGE_SIZE }).subscribe({
       next: (response) => {
         this.loading.set(false);
@@ -47,7 +51,10 @@ export class FollowUps {
           this.totalCount.set(response.data.totalCount);
         }
       },
-      error: () => this.loading.set(false)
+      error: (error) => {
+        this.loading.set(false);
+        this.loadError.set(error?.error?.message ?? 'Could not load today\'s follow-ups. Please try again.');
+      }
     });
   }
 
@@ -61,6 +68,17 @@ export class FollowUps {
   }
 
   markStatus(followUp: FollowUp, status: 'Completed' | 'Cancelled'): void {
-    this.followUpService.updateStatus(followUp.id, { status }).subscribe(() => this.load());
+    this.statusUpdatingId.set(followUp.id);
+    this.statusError.set(null);
+    this.followUpService.updateStatus(followUp.id, { status }).subscribe({
+      next: () => {
+        this.statusUpdatingId.set(null);
+        this.load();
+      },
+      error: (error) => {
+        this.statusUpdatingId.set(null);
+        this.statusError.set(error?.error?.message ?? 'Could not update this follow-up. Please try again.');
+      }
+    });
   }
 }

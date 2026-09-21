@@ -29,10 +29,12 @@ export class Invoices {
 
   readonly invoices = signal<Invoice[]>([]);
   readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly pageNumber = signal(1);
   readonly totalCount = signal(0);
   readonly searchTerm = signal('');
   readonly downloadingId = signal<string | null>(null);
+  readonly downloadError = signal<{ id: string; message: string } | null>(null);
 
   constructor() {
     this.load();
@@ -40,6 +42,7 @@ export class Invoices {
 
   load(): void {
     this.loading.set(true);
+    this.loadError.set(null);
     this.invoiceService
       .search({ pageNumber: this.pageNumber(), pageSize: PAGE_SIZE, searchTerm: this.searchTerm() || undefined })
       .subscribe({
@@ -48,9 +51,16 @@ export class Invoices {
           if (response.success && response.data) {
             this.invoices.set(response.data.items);
             this.totalCount.set(response.data.totalCount);
+          } else {
+            this.invoices.set([]);
+            this.totalCount.set(0);
+            this.loadError.set(response.message || 'Could not load invoices. Please try again.');
           }
         },
-        error: () => this.loading.set(false)
+        error: (error) => {
+          this.loading.set(false);
+          this.loadError.set(error?.error?.message ?? 'Could not load invoices. Please try again.');
+        }
       });
   }
 
@@ -67,6 +77,7 @@ export class Invoices {
 
   downloadPdf(invoice: Invoice): void {
     this.downloadingId.set(invoice.id);
+    this.downloadError.set(null);
     this.invoiceService.downloadPdf(invoice.id).subscribe({
       next: (blob) => {
         this.downloadingId.set(null);
@@ -77,7 +88,13 @@ export class Invoices {
         link.click();
         URL.revokeObjectURL(url);
       },
-      error: () => this.downloadingId.set(null)
+      error: (error) => {
+        this.downloadingId.set(null);
+        this.downloadError.set({
+          id: invoice.id,
+          message: error?.error?.message ?? 'Could not download this invoice. Please try again.'
+        });
+      }
     });
   }
 }

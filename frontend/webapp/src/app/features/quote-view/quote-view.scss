@@ -14,6 +14,10 @@
   color: tokens.$color-text-secondary;
 
   h1 { color: tokens.$color-text-primary; margin-bottom: tokens.$space-3; }
+
+  &.error {
+    color: tokens.$color-primary-dark;
+  }
 }
 
 .quote-page {

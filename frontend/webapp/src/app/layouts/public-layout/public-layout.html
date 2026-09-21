@@ -22,6 +22,8 @@
     @if (authService.isAuthenticated()) {
       @if (isStaff()) {
         <a routerLink="/admin/dashboard" class="admin-link" (click)="closeMobileNav()">Admin</a>
+      } @else {
+        <a routerLink="/portal/dashboard" class="admin-link" (click)="closeMobileNav()">My Account</a>
       }
       <button type="button" class="logout-link" (click)="logout()">Logout</button>
     } @else {

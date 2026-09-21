@@ -1,0 +1,47 @@
+<div class="portal-page">
+  <div class="page-header">
+    <div>
+      <h1>Payments</h1>
+      <p class="subtitle">Every payment made towards your bookings.</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p class="hint">Loading…</p>
+  } @else if (loadError()) {
+    <p class="hint form-error">{{ loadError() }}</p>
+  } @else if (payments().length === 0) {
+    <p class="hint">No payments yet.</p>
+  } @else {
+    <div class="card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Booking #</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (payment of payments(); track payment.id) {
+            <tr>
+              <td>{{ payment.bookingNumber }}</td>
+              <td>Rs. {{ payment.amount | number: '1.0-0' }}</td>
+              <td><span class="badge status" [attr.data-status]="payment.status">{{ payment.status }}</span></td>
+              <td>{{ payment.createdAt | date: 'dd MMM yyyy' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (totalPages > 1) {
+        <div class="pagination">
+          <button type="button" [disabled]="pageNumber() === 1" (click)="onPageChange(pageNumber() - 1)">← Prev</button>
+          <span>Page {{ pageNumber() }} of {{ totalPages }}</span>
+          <button type="button" [disabled]="pageNumber() >= totalPages" (click)="onPageChange(pageNumber() + 1)">Next →</button>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -7,6 +7,13 @@
 
 <app-filter-bar placeholder="Search by invoice #, booking # or customer…" (searchChange)="onSearchChange($event)" />
 
+@if (loadError()) {
+  <p class="form-error">
+    {{ loadError() }}
+    <button type="button" class="link-button" (click)="load()">Retry</button>
+  </p>
+}
+
 <app-data-table [columns]="columns" [rows]="invoices()" [loading]="loading()" emptyMessage="No invoices yet.">
   <ng-template #rowTemplate let-invoice>
     <tr>
@@ -19,6 +26,9 @@
         <button type="button" class="link-button" [disabled]="downloadingId() === invoice.id" (click)="downloadPdf(invoice)">
           {{ downloadingId() === invoice.id ? 'Preparing…' : 'Download PDF' }}
         </button>
+        @if (downloadError()?.id === invoice.id) {
+          <div class="form-error">{{ downloadError()?.message }}</div>
+        }
       </td>
     </tr>
   </ng-template>

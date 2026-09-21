@@ -6,10 +6,12 @@ namespace OneClickYatra.Api.AppFunctions;
 public sealed class UserAppFunction : IUserAppFunction
 {
     private readonly IUserRepository _userRepository;
+    private readonly ILogger<UserAppFunction> _logger;
 
-    public UserAppFunction(IUserRepository __userRepository)
+    public UserAppFunction(IUserRepository __userRepository, ILogger<UserAppFunction> __logger)
     {
         _userRepository = __userRepository;
+        _logger = __logger;
     }
 
     public async Task<IReadOnlyList<UserSummaryResponse>> ListStaffAsync(CancellationToken __cancellationToken)

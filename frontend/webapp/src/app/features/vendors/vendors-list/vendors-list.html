@@ -1,0 +1,45 @@
+<div class="page-header">
+  <div>
+    <h1>Vendors</h1>
+    <p class="subtitle">Manage hotels, airlines, transport partners, DMCs and activity providers.</p>
+  </div>
+  <button type="button" class="primary-button" (click)="createVendor()">+ New Vendor</button>
+</div>
+
+<app-filter-bar placeholder="Search by name, email or phone…" (searchChange)="onSearchChange($event)">
+  <select (change)="onTypeFilterChange($any($event.target).value)">
+    <option value="">All types</option>
+    @for (type of vendorTypes; track type) {
+      <option [value]="type">{{ type }}</option>
+    }
+  </select>
+  <select (change)="onActiveFilterChange($any($event.target).value)">
+    <option value="">All statuses</option>
+    <option value="true">Active</option>
+    <option value="false">Inactive</option>
+  </select>
+</app-filter-bar>
+
+@if (loadError()) {
+  <p class="form-error">
+    {{ loadError() }}
+    <button type="button" class="link-button" (click)="load()">Retry</button>
+  </p>
+}
+
+<app-data-table [columns]="columns" [rows]="vendors()" [loading]="loading()" emptyMessage="No vendors yet.">
+  <ng-template #rowTemplate let-vendor>
+    <tr class="clickable-row" (click)="openVendor(vendor)">
+      <td>{{ vendor.name }}</td>
+      <td>{{ vendor.vendorType }}</td>
+      <td>{{ location(vendor) }}</td>
+      <td>{{ vendor.rating != null ? (vendor.rating | number: '1.1-1') : '—' }}</td>
+      <td><span class="badge" [class.published]="vendor.isActive" [class.draft]="!vendor.isActive">{{ vendor.isActive ? 'Active' : 'Inactive' }}</span></td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="$event.stopPropagation(); openVendor(vendor)">View</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="10" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />

@@ -17,6 +17,9 @@
 @if (loading()) {
   <p>Loading…</p>
 }
+@if (loadError()) {
+  <div class="form-error">{{ loadError() }}</div>
+}
 
 <div class="detail-grid">
   <section class="card">
@@ -210,6 +213,10 @@
         </div>
       }
 
+      @if (passengersError()) {
+        <div class="form-error">{{ passengersError() }}</div>
+      }
+
       @if (isEditable && passengers().length > 0) {
         <div class="form-actions">
           <button type="button" class="primary-button" [disabled]="passengersSaving()" (click)="savePassengers()">
@@ -241,6 +248,10 @@
             <button type="button" class="link-button danger" (click)="removeAddOn(i)">✕</button>
           }
         </div>
+      }
+
+      @if (addOnsError()) {
+        <div class="form-error">{{ addOnsError() }}</div>
       }
 
       @if (isEditable && addOns().length > 0) {
@@ -280,6 +291,9 @@
   title="Delete booking?"
   [message]="'This will permanently remove \'' + (booking()?.bookingNumber ?? '') + '\'.'"
   confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
   (confirmed)="performDelete()"
   (cancelled)="cancelDelete()"
 />

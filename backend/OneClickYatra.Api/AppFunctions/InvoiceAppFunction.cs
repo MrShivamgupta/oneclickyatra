@@ -10,11 +10,13 @@ public sealed class InvoiceAppFunction : IInvoiceAppFunction
 {
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IInvoicePdfService _pdfService;
+    private readonly ILogger<InvoiceAppFunction> _logger;
 
-    public InvoiceAppFunction(IInvoiceRepository __invoiceRepository, IInvoicePdfService __pdfService)
+    public InvoiceAppFunction(IInvoiceRepository __invoiceRepository, IInvoicePdfService __pdfService, ILogger<InvoiceAppFunction> __logger)
     {
         _invoiceRepository = __invoiceRepository;
         _pdfService = __pdfService;
+        _logger = __logger;
     }
 
     public async Task<PaginationResponse<InvoiceResponse>> SearchAsync(InvoiceSearchRequest __request, CancellationToken __cancellationToken)
@@ -32,7 +34,16 @@ public sealed class InvoiceAppFunction : IInvoiceAppFunction
     public async Task<byte[]> GeneratePdfAsync(Guid __id, CancellationToken __cancellationToken)
     {
         var invoice = await _invoiceRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Invoice", __id);
-        return _pdfService.Generate(invoice);
+
+        try
+        {
+            return _pdfService.Generate(invoice);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to generate PDF for {InvoiceId}", __id);
+            throw;
+        }
     }
 
     private static InvoiceResponse ToResponse(OneClickYatra.Api.Models.InvoiceModel invoice) => new()

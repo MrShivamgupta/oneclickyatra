@@ -1,0 +1,31 @@
+<header class="site-header">
+  <a class="brand" routerLink="/vendor-portal/dashboard" (click)="closeMobileNav()">✈ One Click Yatra</a>
+
+  <button
+    type="button"
+    class="menu-toggle"
+    [attr.aria-expanded]="mobileNavOpen()"
+    aria-label="Toggle navigation menu"
+    (click)="toggleMobileNav()"
+  >
+    {{ mobileNavOpen() ? '✕' : '☰' }}
+  </button>
+
+  <nav class="site-nav" [class.open]="mobileNavOpen()">
+    <a routerLink="/vendor-portal/dashboard" routerLinkActive="active" (click)="closeMobileNav()">Dashboard</a>
+    <a routerLink="/vendor-portal/rates" routerLinkActive="active" (click)="closeMobileNav()">My Rates</a>
+    <a routerLink="/vendor-portal/payments" routerLinkActive="active" (click)="closeMobileNav()">Payments</a>
+    <a routerLink="/vendor-portal/booking-requests" routerLinkActive="active" (click)="closeMobileNav()">Booking Requests</a>
+    <a routerLink="/vendor-portal/profile" routerLinkActive="active" (click)="closeMobileNav()">My Profile</a>
+    <a routerLink="/" (click)="closeMobileNav()">Back to Site</a>
+    <button type="button" class="logout-link" (click)="logout()">Logout</button>
+  </nav>
+</header>
+
+<main>
+  <router-outlet />
+</main>
+
+<footer class="site-footer">
+  <p>© 2026 One Click Yatra. All rights reserved.</p>
+</footer>

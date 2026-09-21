@@ -14,6 +14,8 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
+
 builder.AddAppSerilog();
 
 builder.Services
@@ -34,6 +36,7 @@ var app = builder.Build();
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<TrackingIdMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -54,6 +57,13 @@ if (behindReverseProxy)
 else if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
+}
+
+// HSTS only makes sense once traffic is actually HTTPS (either terminated here, or terminated at
+// the reverse proxy and forwarded as such via UseForwardedHeaders above) — never in local HTTP dev.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
 }
 
 app.UseCors(CorsExtensions.PolicyName);
@@ -82,6 +92,31 @@ if (builder.Configuration.GetValue("Hangfire:DashboardEnabled", true))
 
 RecurringJob.AddOrUpdate<TokenCleanupJob>(
     "token-cleanup",
+    job => job.RunAsync(CancellationToken.None),
+    Cron.Daily);
+
+RecurringJob.AddOrUpdate<ReportGenerationJob>(
+    "report-generation",
+    job => job.RunAsync(CancellationToken.None),
+    Cron.Daily);
+
+RecurringJob.AddOrUpdate<PaymentReconciliationJob>(
+    "payment-reconciliation",
+    job => job.RunAsync(CancellationToken.None),
+    Cron.Daily);
+
+RecurringJob.AddOrUpdate<DepartureReminderJob>(
+    "departure-reminder",
+    job => job.RunAsync(CancellationToken.None),
+    Cron.Daily);
+
+RecurringJob.AddOrUpdate<PaymentReminderJob>(
+    "payment-reminder",
+    job => job.RunAsync(CancellationToken.None),
+    Cron.Daily);
+
+RecurringJob.AddOrUpdate<ScheduledFollowUpJob>(
+    "scheduled-followup",
     job => job.RunAsync(CancellationToken.None),
     Cron.Daily);
 

@@ -8,6 +8,7 @@ import { DestinationService } from '../../../core/services/destination.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { SeasonService } from '../../../core/services/season.service';
 import { Destination, Category, Season } from '../../../core/models/master-data.models';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 import {
   PackageInclusion,
   PackageInventoryDeparture,
@@ -21,7 +22,7 @@ type TabKey = 'basic' | 'itinerary' | 'inclusions' | 'pricing' | 'inventory' | '
 @Component({
   selector: 'app-package-editor',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, Spinner],
   templateUrl: './package-editor.html',
   styleUrl: './package-editor.scss'
 })

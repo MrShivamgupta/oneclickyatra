@@ -14,6 +14,13 @@
   </select>
 </app-filter-bar>
 
+@if (loadError()) {
+  <p class="form-error">
+    {{ loadError() }}
+    <button type="button" class="link-button" (click)="load()">Retry</button>
+  </p>
+}
+
 <app-data-table [columns]="columns" [rows]="payments()" [loading]="loading()" emptyMessage="No payments yet.">
   <ng-template #rowTemplate let-payment>
     <tr class="clickable-row" (click)="openBooking(payment)">

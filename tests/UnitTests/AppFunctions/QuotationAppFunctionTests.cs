@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Moq;
 using OneClickYatra.Api.AppFunctions;
 using OneClickYatra.Api.Globals;
@@ -7,6 +8,7 @@ using OneClickYatra.Api.Models.Requests;
 using OneClickYatra.Api.Repositories;
 using OneClickYatra.Api.Security;
 using OneClickYatra.Api.Services;
+using OneClickYatra.Api.Services.Email;
 
 namespace OneClickYatra.UnitTests.AppFunctions;
 
@@ -19,6 +21,7 @@ public class QuotationAppFunctionTests
     private readonly Mock<IQuotationPdfService> _pdfService = new();
     private readonly Mock<ICurrentUserAccessor> _currentUserAccessor = new();
     private readonly Mock<IAuditLogWriter> _auditLogWriter = new();
+    private readonly Mock<IEmailNotificationSender> _emailNotificationSender = new();
 
     private QuotationAppFunction CreateSut() => new(
         _quotationRepository.Object,
@@ -27,7 +30,9 @@ public class QuotationAppFunctionTests
         _packageRepository.Object,
         _pdfService.Object,
         _currentUserAccessor.Object,
-        _auditLogWriter.Object);
+        _auditLogWriter.Object,
+        _emailNotificationSender.Object,
+        Mock.Of<ILogger<QuotationAppFunction>>());
 
     private static QuotationModel CreateQuotation(string status = "Draft") => new()
     {
@@ -98,7 +103,7 @@ public class QuotationAppFunctionTests
         var quotation = CreateQuotation(status: "Draft");
         var destinationId = Guid.NewGuid();
         _quotationRepository.Setup(r => r.GetByIdAsync(quotation.Id, It.IsAny<CancellationToken>())).ReturnsAsync(quotation);
-        _destinationRepository.Setup(r => r.GetByIdAsync(destinationId, It.IsAny<CancellationToken>())).ReturnsAsync((DestinationModel?)null);
+        _destinationRepository.Setup(r => r.GetExistingIdsAsync(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<CancellationToken>())).ReturnsAsync([]);
 
         var sut = CreateSut();
         var options = new List<QuotationOptionRequest>

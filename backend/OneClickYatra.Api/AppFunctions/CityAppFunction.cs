@@ -14,17 +14,20 @@ public sealed class CityAppFunction : ICityAppFunction
     private readonly ICountryRepository _countryRepository;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IAuditLogWriter _auditLogWriter;
+    private readonly ILogger<CityAppFunction> _logger;
 
     public CityAppFunction(
         ICityRepository __cityRepository,
         ICountryRepository __countryRepository,
         ICurrentUserAccessor __currentUserAccessor,
-        IAuditLogWriter __auditLogWriter)
+        IAuditLogWriter __auditLogWriter,
+        ILogger<CityAppFunction> __logger)
     {
         _cityRepository = __cityRepository;
         _countryRepository = __countryRepository;
         _currentUserAccessor = __currentUserAccessor;
         _auditLogWriter = __auditLogWriter;
+        _logger = __logger;
     }
 
     public async Task<PaginationResponse<CityResponse>> ListAsync(PaginationRequest __request, Guid? __countryId, CancellationToken __cancellationToken)
@@ -58,7 +61,17 @@ public sealed class CityAppFunction : ICityAppFunction
         };
 
         await _cityRepository.CreateAsync(city, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "city.created", "City", city.Id.ToString(), null, city.Name, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "city.created", "City", city.Id.ToString(), null, city.Name, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "city.created", "City", city.Id);
+        }
+
+        _logger.LogInformation("City {CityId} {CityName} created by {UserId}", city.Id, city.Name, _currentUserAccessor.UserId);
 
         return await GetByIdAsync(city.Id, __cancellationToken);
     }
@@ -74,7 +87,17 @@ public sealed class CityAppFunction : ICityAppFunction
         city.UpdatedBy = _currentUserAccessor.UserId;
 
         await _cityRepository.UpdateAsync(city, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "city.updated", "City", city.Id.ToString(), oldName, city.Name, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "city.updated", "City", city.Id.ToString(), oldName, city.Name, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "city.updated", "City", city.Id);
+        }
+
+        _logger.LogInformation("City {CityId} updated {OldName} -> {NewName} by {UserId}", city.Id, oldName, city.Name, _currentUserAccessor.UserId);
 
         return await GetByIdAsync(__id, __cancellationToken);
     }
@@ -84,7 +107,17 @@ public sealed class CityAppFunction : ICityAppFunction
         var city = await _cityRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("City", __id);
 
         await _cityRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
-        await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "city.deleted", "City", __id.ToString(), city.Name, null, __cancellationToken);
+
+        try
+        {
+            await _auditLogWriter.LogAsync(_currentUserAccessor.UserId, "city.deleted", "City", __id.ToString(), city.Name, null, __cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "city.deleted", "City", __id);
+        }
+
+        _logger.LogInformation("City {CityId} {CityName} deleted by {UserId}", __id, city.Name, _currentUserAccessor.UserId);
     }
 
     private async Task EnsureCountryExistsAsync(Guid __countryId, CancellationToken __cancellationToken)

@@ -5,6 +5,11 @@
     <h1>Quotation not found</h1>
     <p>This link may have expired or been replaced with a newer one. Please contact your travel agent for an updated link.</p>
   </div>
+} @else if (loadError()) {
+  <div class="state-message error">
+    <p>{{ loadError() }}</p>
+    <button type="button" class="secondary-button" (click)="load()">Try again</button>
+  </div>
 } @else if (quotation(); as q) {
   <div class="quote-page">
     <header class="quote-header">
@@ -23,6 +28,7 @@
       <button type="button" class="link-button" [disabled]="pdfDownloading()" (click)="downloadPdf()">
         {{ pdfDownloading() ? 'Preparing PDF…' : 'Download as PDF' }}
       </button>
+      @if (downloadError()) { <p class="form-error">{{ downloadError() }}</p> }
     </header>
 
     @if (q.status === 'Expired') {

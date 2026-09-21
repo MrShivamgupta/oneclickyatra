@@ -1,0 +1,8 @@
+<div class="toast-stack" role="region" aria-label="Notifications">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div class="toast" [class]="toast.type" role="alert">
+      <span class="toast-text">{{ toast.text }}</span>
+      <button type="button" class="toast-dismiss" aria-label="Dismiss" (click)="toastService.dismiss(toast.id)">✕</button>
+    </div>
+  }
+</div>
