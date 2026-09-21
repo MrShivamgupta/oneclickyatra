@@ -17,4 +17,9 @@ public sealed class UserModel : IUserModel
     public DateTime? UpdatedAt { get; set; }
     public Guid? UpdatedBy { get; set; }
     public bool IsDeleted { get; set; }
+
+    /// <summary>Populated only by UserRepository.SearchAsync's join/STRING_AGG to UserRoles+Roles
+    /// (comma-separated staff role names for this user). Ignored by CreateAsync's INSERT and by
+    /// GetByEmailAsync/GetByIdAsync/ListStaffAsync, which don't select this column.</summary>
+    public string? RoleNames { get; set; }
 }

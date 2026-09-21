@@ -1,0 +1,23 @@
+@use '../../shared/styles/index' as tokens;
+
+// destinations.scss (reused alongside this file) styles input[type="text"] and select already;
+// this screen additionally needs email/password inputs and a field-level validation message.
+input[type='email'],
+input[type='password'] {
+  padding: tokens.$space-2 tokens.$space-3;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+  font-family: inherit;
+}
+
+.field-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-xs;
+}
+
+.actions-cell {
+  select {
+    margin-right: tokens.$space-1;
+  }
+}

@@ -191,6 +191,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/feedback-manager/feedback-manager').then((m) => m.FeedbackManager)
       },
       {
+        path: 'users',
+        loadComponent: () => import('./features/users/users').then((m) => m.Users)
+      },
+      {
         path: 'audit-logs',
         loadComponent: () => import('./features/audit-logs/audit-logs').then((m) => m.AuditLogs)
       },

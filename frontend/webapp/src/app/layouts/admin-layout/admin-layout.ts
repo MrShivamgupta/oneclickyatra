@@ -40,6 +40,7 @@ export class AdminLayout {
     { label: 'Reports & Analytics', route: '/admin/reports', icon: '📈' },
     { label: 'Feedback Manager', route: '/admin/feedback', icon: '⭐' },
     { label: 'Master Data', route: '/admin/master-data', icon: '🌍' },
+    { label: 'Users', route: '/admin/users', icon: '🪪' },
     { label: 'Audit Logs', route: '/admin/audit-logs', icon: '📜' },
     { label: 'Settings', route: '/admin/settings', icon: '⚙️' }
   ];

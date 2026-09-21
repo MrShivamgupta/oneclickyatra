@@ -1,0 +1,117 @@
+<div class="page-header">
+  <div>
+    <h1>Users</h1>
+    <p class="subtitle">Manage staff accounts — Travel Agents, Operations, Finance and Super Admins.</p>
+  </div>
+  <button type="button" class="primary-button" (click)="openCreateModal()">+ New User</button>
+</div>
+
+<app-filter-bar placeholder="Search by name or email…" (searchChange)="onSearchChange($event)">
+  <select (change)="onRoleFilterChange($any($event.target).value)">
+    <option value="">All roles</option>
+    @for (role of staffRoles; track role) {
+      <option [value]="role">{{ role }}</option>
+    }
+  </select>
+  <select (change)="onActiveFilterChange($any($event.target).value)">
+    <option value="">All statuses</option>
+    <option value="true">Active</option>
+    <option value="false">Inactive</option>
+  </select>
+</app-filter-bar>
+
+@if (loadError()) {
+  <p class="form-error">
+    {{ loadError() }}
+    <button type="button" class="link-button" (click)="load()">Retry</button>
+  </p>
+}
+@if (roleError()) {
+  <p class="form-error">{{ roleError() }}</p>
+}
+@if (statusError()) {
+  <p class="form-error">{{ statusError() }}</p>
+}
+
+<app-data-table [columns]="columns" [rows]="users()" [loading]="loading()" emptyMessage="No staff users yet.">
+  <ng-template #rowTemplate let-user>
+    <tr>
+      <td><strong>{{ user.fullName }}</strong></td>
+      <td>{{ user.email }}</td>
+      <td>{{ user.roles.join(', ') || '—' }}</td>
+      <td><span class="badge" [class.published]="user.isActive" [class.draft]="!user.isActive">{{ user.isActive ? 'Active' : 'Inactive' }}</span></td>
+      <td class="actions-cell">
+        <select
+          [value]="primaryRole(user)"
+          [disabled]="roleUpdatingId() === user.id"
+          [title]="'Change role for ' + user.fullName"
+          (change)="changeRole(user, $any($event.target).value)"
+        >
+          @for (role of staffRoles; track role) {
+            <option [value]="role">{{ role }}</option>
+          }
+        </select>
+        <button type="button" class="link-button" [disabled]="statusUpdatingId() === user.id" (click)="toggleActive(user)">
+          {{ statusUpdatingId() === user.id ? 'Updating…' : (user.isActive ? 'Deactivate' : 'Activate') }}
+        </button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-pagination [pageNumber]="pageNumber()" [pageSize]="10" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />
+
+@if (isModalOpen()) {
+  <div class="overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>New User</h2>
+
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <label>
+          Full name
+          <input type="text" formControlName="fullName" placeholder="e.g. Rohan Sharma" autocomplete="name" />
+          @if (form.controls.fullName.invalid && form.controls.fullName.touched) {
+            <span class="field-error">Full name is required.</span>
+          }
+        </label>
+
+        <label>
+          Email
+          <input type="email" formControlName="email" placeholder="e.g. rohan.agent@oneclickyatra.dev" autocomplete="email" />
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <span class="field-error">Enter a valid email address.</span>
+          }
+        </label>
+
+        <label>
+          Password
+          <input type="password" formControlName="password" autocomplete="new-password" />
+          <span class="hint">At least 8 characters, with an uppercase letter, a lowercase letter, and a digit.</span>
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <span class="field-error">Password does not meet the requirements above.</span>
+          }
+        </label>
+
+        <label>
+          Role
+          <select formControlName="role">
+            @for (role of staffRoles; track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select>
+        </label>
+
+        @if (formError()) {
+          <div class="form-error">{{ formError() }}</div>
+        }
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-button" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="primary-button" [disabled]="isSaving()">
+            {{ isSaving() ? 'Saving…' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

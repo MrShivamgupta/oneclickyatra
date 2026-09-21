@@ -1,6 +1,8 @@
 using Dapper;
+using OneClickYatra.Api.Globals;
 using OneClickYatra.Api.Infrastructure;
 using OneClickYatra.Api.Models;
+using OneClickYatra.Api.Models.Requests;
 
 namespace OneClickYatra.Api.Repositories;
 
@@ -80,6 +82,56 @@ public sealed class UserRepository : IUserRepository
         return users.ToList();
     }
 
+    /// <summary>Base FROM/JOIN/WHERE shared by the two statements in SearchAsync (the page and its
+    /// COUNT), restricted to staff (non-Customer/Guest/Vendor) users only — this screen is for staff
+    /// accounts; Customers/Vendors have their own admin screens already.</summary>
+    private const string SearchBase = """
+        FROM Users u
+        INNER JOIN UserRoles ur ON ur.UserId = u.Id
+        INNER JOIN Roles r ON r.Id = ur.RoleId AND r.IsDeleted = 0
+        WHERE u.IsDeleted = 0
+          AND r.Name IN ('TravelAgent', 'OperationsStaff', 'Finance', 'SuperAdmin')
+          AND (@SearchTerm IS NULL OR u.FullName LIKE '%' + @SearchTerm + '%' OR u.Email LIKE '%' + @SearchTerm + '%')
+          AND (@IsActive IS NULL OR u.IsActive = @IsActive)
+          AND (@Role IS NULL OR EXISTS (
+              SELECT 1 FROM UserRoles fur
+              INNER JOIN Roles fr ON fr.Id = fur.RoleId AND fr.IsDeleted = 0
+              WHERE fur.UserId = u.Id AND fr.Name = @Role))
+        """;
+
+    public async Task<PaginationResponse<UserModel>> SearchAsync(UserSearchRequest __request, CancellationToken __cancellationToken)
+    {
+        var sql = $"""
+            SELECT u.Id, u.Email, u.FullName, u.PasswordHash, u.IsActive, u.FailedLoginAttempts, u.LockedOutUntilUtc,
+                   u.CreatedAt, u.CreatedBy, u.UpdatedAt, u.UpdatedBy, u.IsDeleted,
+                   STRING_AGG(r.Name, ', ') AS RoleNames
+            {SearchBase}
+            GROUP BY u.Id, u.Email, u.FullName, u.PasswordHash, u.IsActive, u.FailedLoginAttempts, u.LockedOutUntilUtc,
+                     u.CreatedAt, u.CreatedBy, u.UpdatedAt, u.UpdatedBy, u.IsDeleted
+            ORDER BY u.FullName
+            OFFSET @Skip ROWS FETCH NEXT @PageSize ROWS ONLY;
+
+            SELECT COUNT(DISTINCT u.Id)
+            {SearchBase};
+            """;
+
+        using var connection = _connectionFactory.CreateConnection();
+        var command = new CommandDefinition(sql, new
+        {
+            __request.SearchTerm,
+            __request.Role,
+            __request.IsActive,
+            __request.Skip,
+            __request.PageSize
+        }, cancellationToken: __cancellationToken);
+
+        using var multi = await connection.QueryMultipleAsync(command);
+        var items = (await multi.ReadAsync<UserModel>()).ToList();
+        var total = await multi.ReadSingleAsync<long>();
+
+        return PaginationResponse<UserModel>.Create(items, __request.PageNumber, __request.PageSize, total);
+    }
+
     public async Task<IReadOnlyList<string>> GetRoleNamesAsync(Guid __userId, CancellationToken __cancellationToken)
     {
         const string sql = """
@@ -125,6 +177,32 @@ public sealed class UserRepository : IUserRepository
 
         using var connection = _connectionFactory.CreateConnection();
         var command = new CommandDefinition(sql, new { UserId = __userId, RoleName = __roleName }, cancellationToken: __cancellationToken);
+        await connection.ExecuteAsync(command);
+    }
+
+    public async Task RemoveRoleAsync(Guid __userId, string __roleName, CancellationToken __cancellationToken)
+    {
+        const string sql = """
+            DELETE FROM UserRoles
+            WHERE UserId = @UserId
+              AND RoleId = (SELECT Id FROM Roles WHERE Name = @RoleName AND IsDeleted = 0)
+            """;
+
+        using var connection = _connectionFactory.CreateConnection();
+        var command = new CommandDefinition(sql, new { UserId = __userId, RoleName = __roleName }, cancellationToken: __cancellationToken);
+        await connection.ExecuteAsync(command);
+    }
+
+    public async Task SetActiveStatusAsync(Guid __userId, bool __isActive, CancellationToken __cancellationToken)
+    {
+        const string sql = """
+            UPDATE Users
+            SET IsActive = @IsActive, UpdatedAt = SYSUTCDATETIME()
+            WHERE Id = @UserId
+            """;
+
+        using var connection = _connectionFactory.CreateConnection();
+        var command = new CommandDefinition(sql, new { UserId = __userId, IsActive = __isActive }, cancellationToken: __cancellationToken);
         await connection.ExecuteAsync(command);
     }
 
