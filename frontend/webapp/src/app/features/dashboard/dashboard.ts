@@ -157,18 +157,29 @@ export class Dashboard {
     };
   });
 
+  // "Revenue by Destination" is a share-of-total question, which a donut communicates more directly
+  // than a bar chart -- a fixed 6-color palette (reused from the app's own token colors) cycles per
+  // slice via modulo, so this doesn't break if a period ever has more than 6 destinations.
+  private static readonly DonutPalette = ['#1273d6', '#147a51', '#e6a417', '#6b4fe0', '#e0453f', '#0e90a8'];
+
   readonly destinationChartData = computed<ChartData>(() => ({
     labels: this.destinationPerformance().map((d) => d.destinationName),
     datasets: [
       {
         label: 'Revenue',
         data: this.destinationPerformance().map((d) => d.revenue),
-        backgroundColor: '#147a51',
-        borderRadius: 6,
-        maxBarThickness: 32
+        backgroundColor: this.destinationPerformance().map((_, i) => Dashboard.DonutPalette[i % Dashboard.DonutPalette.length]),
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverOffset: 6
       }
     ]
   }));
+
+  readonly destinationChartOptions = {
+    plugins: { legend: { display: true, position: 'right' as const, labels: { boxWidth: 10, font: { size: 11 } } } },
+    cutout: '65%'
+  };
 
   readonly salesChartData = computed<ChartData>(() => ({
     labels: this.salesPerformance().map((s) => s.staffName),

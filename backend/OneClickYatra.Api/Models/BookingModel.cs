@@ -28,4 +28,5 @@ public sealed class BookingModel
     public string? CustomerName { get; set; }
     public string? PackageTitle { get; set; }
     public string? DestinationName { get; set; }
+    public string? DestinationImageUrl { get; set; }
 }

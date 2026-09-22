@@ -32,6 +32,10 @@ $color-info: #0e90a8;
 // Dashboard's colorful headline KPI cards specifically.
 $color-success-solid: #147a51;
 
+// A 5th solid-card-safe accent (teal), for contexts needing more than the 4 KPI-card colors --
+// e.g. a 5th Quick Links tile. 5.03:1 with white text, computed the same way as the others above.
+$color-teal-solid: #0e7a8a;
+
 $color-bg: #f5f7fc;
 $color-surface: #ffffff;
 $color-border: #e6e9f2;

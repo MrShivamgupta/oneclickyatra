@@ -500,6 +500,7 @@ public sealed class BookingAppFunction : IBookingAppFunction
         PackageTitle = booking.PackageTitle,
         DestinationId = booking.DestinationId,
         DestinationName = booking.DestinationName,
+        DestinationImageUrl = booking.DestinationImageUrl,
         TravelDate = booking.TravelDate,
         ReturnDate = booking.ReturnDate,
         NumberOfAdults = booking.NumberOfAdults,

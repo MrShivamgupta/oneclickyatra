@@ -29,6 +29,7 @@ export interface Booking {
   packageTitle?: string | null;
   destinationId?: string | null;
   destinationName?: string | null;
+  destinationImageUrl?: string | null;
   travelDate?: string | null;
   returnDate?: string | null;
   numberOfAdults: number;

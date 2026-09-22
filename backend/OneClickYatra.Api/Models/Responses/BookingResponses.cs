@@ -13,6 +13,7 @@ public sealed class BookingResponse
     public string? PackageTitle { get; set; }
     public Guid? DestinationId { get; set; }
     public string? DestinationName { get; set; }
+    public string? DestinationImageUrl { get; set; }
     public DateOnly? TravelDate { get; set; }
     public DateOnly? ReturnDate { get; set; }
     public int NumberOfAdults { get; set; }

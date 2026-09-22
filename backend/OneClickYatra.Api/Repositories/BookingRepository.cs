@@ -13,7 +13,7 @@ public sealed class BookingRepository : IBookingRepository
                b.DestinationId, b.TravelDate, b.ReturnDate, b.NumberOfAdults, b.NumberOfChildren, b.TotalAmount,
                b.AmountPaid, b.Notes, b.Status, b.CancellationReason,
                b.CreatedAt, b.CreatedBy, b.UpdatedAt, b.UpdatedBy, b.IsDeleted,
-               c.FullName AS CustomerName, p.Title AS PackageTitle, d.Name AS DestinationName
+               c.FullName AS CustomerName, p.Title AS PackageTitle, d.Name AS DestinationName, d.HeroImageUrl AS DestinationImageUrl
         FROM Bookings b
         INNER JOIN Customers c ON c.Id = b.CustomerId
         LEFT JOIN Packages p ON p.Id = b.PackageId

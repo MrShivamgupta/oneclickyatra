@@ -69,6 +69,29 @@
     }
   </div>
 
+  <div class="quick-links">
+    <a routerLink="/admin/leads/new" class="quick-link-tile accent-blue">
+      <app-icon name="user" />
+      <span>Create Lead</span>
+    </a>
+    <a routerLink="/admin/quotations/new" class="quick-link-tile accent-purple">
+      <app-icon name="file-text" />
+      <span>New Quotation</span>
+    </a>
+    <a routerLink="/admin/bookings/new" class="quick-link-tile accent-green">
+      <app-icon name="calendar-check" />
+      <span>New Booking</span>
+    </a>
+    <a routerLink="/admin/customers" class="quick-link-tile accent-amber">
+      <app-icon name="users" />
+      <span>New Customer</span>
+    </a>
+    <a routerLink="/admin/ai-package-builder" class="quick-link-tile accent-teal">
+      <app-icon name="sparkles" />
+      <span>AI Package Builder</span>
+    </a>
+  </div>
+
   <div class="charts-grid">
     <section class="chart-card">
       <h2>Revenue Trend</h2>
@@ -85,11 +108,11 @@
     </section>
 
     <section class="chart-card">
-      <h2>Destination Performance</h2>
+      <h2>Revenue by Destination</h2>
       @if (destinationPerformance().length === 0) {
         <p class="hint">No destination-tagged bookings in the selected period.</p>
       } @else {
-        <app-chart-canvas type="bar" [data]="destinationChartData()" [options]="baseChartOptions" />
+        <app-chart-canvas type="doughnut" [data]="destinationChartData()" [options]="destinationChartOptions" />
       }
     </section>
 
@@ -207,11 +230,21 @@
       @if (upcomingDepartures().length === 0) {
         <p class="hint">No departures in the next 30 days.</p>
       } @else {
-        <ul class="mini-list">
+        <ul class="departure-list">
           @for (booking of upcomingDepartures(); track booking.id) {
             <li>
-              <a [routerLink]="['/admin/bookings', booking.id]">{{ booking.customerName }}</a>
-              <span>{{ booking.travelDate | date: 'dd MMM' }}</span>
+              <a [routerLink]="['/admin/bookings', booking.id]" class="departure-row">
+                <div class="departure-thumb" [style.background-image]="booking.destinationImageUrl ? 'url(' + booking.destinationImageUrl + ')' : null">
+                  @if (!booking.destinationImageUrl) {
+                    <app-icon name="map-pin" />
+                  }
+                </div>
+                <div class="departure-info">
+                  <div class="departure-title">{{ booking.destinationName ?? booking.packageTitle ?? booking.customerName }}</div>
+                  <div class="departure-meta">{{ booking.travelDate | date: 'dd MMM yyyy' }}</div>
+                </div>
+                <div class="departure-pax">{{ booking.numberOfAdults + booking.numberOfChildren }} Pax</div>
+              </a>
             </li>
           }
         </ul>
