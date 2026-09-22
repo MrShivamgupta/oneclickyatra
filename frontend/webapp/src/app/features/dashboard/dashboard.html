@@ -52,8 +52,32 @@
   <div class="kpi-grid">
     @for (card of kpiCards(); track card.label) {
       <a [class]="card.accent ? 'kpi-card accent-' + card.accent : 'kpi-card'" [routerLink]="card.link">
-        @if (card.icon) {
-          <span class="kpi-icon">{{ card.icon }}</span>
+        @switch (card.icon) {
+          @case ('users') {
+            <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          }
+          @case ('check') {
+            <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          }
+          @case ('currency') {
+            <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 4h9M6 8h9M6 4v10l8 6M6 9l8 6" />
+            </svg>
+          }
+          @case ('inbox') {
+            <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+              <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z" />
+            </svg>
+          }
         }
         <div class="kpi-label">{{ card.label }}</div>
         <div class="kpi-value">
@@ -75,13 +99,13 @@
       @if (revenueTrend().length === 0) {
         <p class="hint">No revenue in the selected period.</p>
       } @else {
-        <app-chart-canvas type="line" [data]="revenueChartData()" />
+        <app-chart-canvas type="line" [data]="revenueChartData()" [options]="baseChartOptions" />
       }
     </section>
 
     <section class="chart-card">
       <h2>Lead Conversion Funnel</h2>
-      <app-chart-canvas type="bar" [data]="leadFunnelChartData()" [options]="{ indexAxis: 'y' }" />
+      <app-chart-canvas type="bar" [data]="leadFunnelChartData()" [options]="leadFunnelChartOptions" />
     </section>
 
     <section class="chart-card">
@@ -89,7 +113,7 @@
       @if (destinationPerformance().length === 0) {
         <p class="hint">No destination-tagged bookings in the selected period.</p>
       } @else {
-        <app-chart-canvas type="bar" [data]="destinationChartData()" />
+        <app-chart-canvas type="bar" [data]="destinationChartData()" [options]="baseChartOptions" />
       }
     </section>
 
@@ -98,7 +122,7 @@
       @if (salesPerformance().length === 0) {
         <p class="hint">No leads assigned to staff in the selected period.</p>
       } @else {
-        <app-chart-canvas type="bar" [data]="salesChartData()" />
+        <app-chart-canvas type="bar" [data]="salesChartData()" [options]="baseChartOptions" />
       }
     </section>
   </div>

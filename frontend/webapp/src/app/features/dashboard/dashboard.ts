@@ -33,7 +33,10 @@ interface KpiCard {
   /** Headline cards only -- mirrors the reference template's colorful "order-card" treatment.
    * Omitted on secondary KPIs, which stay plain white cards. */
   accent?: 'blue' | 'green' | 'amber' | 'purple';
-  icon?: string;
+  /** Key into dashboard.html's inline SVG icon set -- deliberately not an emoji: font-dependent
+   * rendering and inconsistent sizing across platforms/browsers make emoji a poor fit for a
+   * structural UI icon (flagged by the ui-ux-pro-max skill's own icon guidance). */
+  icon?: 'users' | 'check' | 'currency' | 'inbox';
 }
 
 function toIsoDate(date: Date): string {
@@ -84,14 +87,14 @@ export class Dashboard {
     const k = this.kpis();
     if (!k) return [];
     return [
-      { label: 'Total Leads', value: k.totalLeads, format: 'number', link: '/admin/leads', accent: 'blue', icon: '👤' },
+      { label: 'Total Leads', value: k.totalLeads, format: 'number', link: '/admin/leads', accent: 'blue', icon: 'users' },
       {
         label: 'Confirmed Bookings',
         value: k.confirmedBookings,
         format: 'number',
         link: '/admin/bookings',
         accent: 'green',
-        icon: '✅'
+        icon: 'check'
       },
       {
         label: 'Revenue (period)',
@@ -99,7 +102,7 @@ export class Dashboard {
         format: 'currency',
         link: '/admin/bookings',
         accent: 'amber',
-        icon: '💰'
+        icon: 'currency'
       },
       {
         label: 'Open Enquiries',
@@ -107,7 +110,7 @@ export class Dashboard {
         format: 'number',
         link: '/admin/enquiries',
         accent: 'purple',
-        icon: '📥'
+        icon: 'inbox'
       },
       { label: "Today's Follow-Ups", value: this.todayFollowUpCount(), format: 'number', link: '/admin/followups' },
       { label: 'Active Quotations', value: k.activeQuotations, format: 'number', link: '/admin/quotations' },
@@ -126,9 +129,15 @@ export class Dashboard {
         label: 'Revenue',
         data: this.revenueTrend().map((p) => p.revenue),
         borderColor: '#1273d6',
-        backgroundColor: 'rgba(18, 115, 214, 0.15)',
+        backgroundColor: 'rgba(18, 115, 214, 0.12)',
         fill: true,
-        tension: 0.3
+        tension: 0.35,
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        pointBackgroundColor: '#1273d6',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 1.5
       }
     ]
   }));
@@ -142,7 +151,9 @@ export class Dashboard {
         {
           label: 'Leads',
           data: [...orderedStages.map((s) => byStatus.get(s) ?? 0), byStatus.get('Lost') ?? 0],
-          backgroundColor: [...orderedStages.map(() => '#1273d6'), '#e0453f']
+          backgroundColor: [...orderedStages.map(() => '#1273d6'), '#e0453f'],
+          borderRadius: 6,
+          maxBarThickness: 22
         }
       ]
     };
@@ -150,13 +161,49 @@ export class Dashboard {
 
   readonly destinationChartData = computed<ChartData>(() => ({
     labels: this.destinationPerformance().map((d) => d.destinationName),
-    datasets: [{ label: 'Revenue', data: this.destinationPerformance().map((d) => d.revenue), backgroundColor: '#1fa971' }]
+    datasets: [
+      {
+        label: 'Revenue',
+        data: this.destinationPerformance().map((d) => d.revenue),
+        backgroundColor: '#147a51',
+        borderRadius: 6,
+        maxBarThickness: 32
+      }
+    ]
   }));
 
   readonly salesChartData = computed<ChartData>(() => ({
     labels: this.salesPerformance().map((s) => s.staffName),
-    datasets: [{ label: 'Revenue', data: this.salesPerformance().map((s) => s.revenue), backgroundColor: '#e6a417' }]
+    datasets: [
+      {
+        label: 'Revenue',
+        data: this.salesPerformance().map((s) => s.revenue),
+        backgroundColor: '#6b4fe0',
+        borderRadius: 6,
+        maxBarThickness: 32
+      }
+    ]
   }));
+
+  /** Shared, minimal Chart.js theming: no redundant per-series legend (the section already has an
+   * h2 title), softer gridlines than the Chart.js default, and no vertical gridlines on bar/line
+   * x-axes -- reduces visual noise without hiding any data. */
+  readonly baseChartOptions = {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: 'rgba(15, 28, 63, 0.06)' }, beginAtZero: true }
+    }
+  };
+
+  readonly leadFunnelChartOptions = {
+    indexAxis: 'y' as const,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(15, 28, 63, 0.06)' }, beginAtZero: true },
+      y: { grid: { display: false } }
+    }
+  };
 
   constructor() {
     this.loadAll();
