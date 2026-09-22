@@ -16,12 +16,13 @@
 }
 
 .sidebar {
-  background: tokens.$color-navy-900;
-  color: tokens.$color-text-inverse;
+  background: tokens.$color-surface;
+  color: tokens.$color-text-secondary;
   display: flex;
   flex-direction: column;
   padding: tokens.$space-4 0;
   overflow-y: auto;
+  border-right: 1px solid tokens.$color-border;
 
   @include tokens.respond-below(tokens.$breakpoint-tablet) {
     display: none;
@@ -42,16 +43,19 @@
 .brand-title {
   font-weight: tokens.$font-weight-bold;
   font-size: tokens.$font-size-base;
+  color: tokens.$color-text-primary;
 }
 
 .brand-subtitle {
   font-size: tokens.$font-size-xs;
-  opacity: 0.7;
+  color: tokens.$color-text-secondary;
 }
 
 .nav {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  padding: 0 tokens.$space-2;
 }
 
 .nav-item {
@@ -59,20 +63,20 @@
   align-items: center;
   gap: tokens.$space-3;
   padding: tokens.$space-3 tokens.$space-4;
-  color: rgba(255, 255, 255, 0.75);
+  color: tokens.$color-text-secondary;
   text-decoration: none;
   font-size: tokens.$font-size-sm;
-  border-left: 3px solid transparent;
+  border-radius: tokens.$radius-md;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: tokens.$color-text-inverse;
+    background: tokens.$color-bg;
+    color: tokens.$color-text-primary;
   }
 
   &.active {
-    background: rgba(18, 115, 214, 0.18);
-    border-left-color: tokens.$color-primary;
-    color: tokens.$color-text-inverse;
+    background: tokens.$color-primary-light;
+    color: tokens.$color-primary-dark;
+    font-weight: tokens.$font-weight-semibold;
   }
 }
 
@@ -87,8 +91,8 @@
   align-items: center;
   gap: tokens.$space-4;
   padding: tokens.$space-3 tokens.$space-6;
-  background: tokens.$color-surface;
-  border-bottom: 1px solid tokens.$color-border;
+  background: tokens.$color-primary;
+  color: tokens.$color-text-inverse;
 }
 
 .icon-button {
@@ -96,15 +100,22 @@
   border: none;
   font-size: tokens.$font-size-lg;
   cursor: pointer;
+  color: tokens.$color-text-inverse;
 }
 
 .search {
   flex: 1;
   max-width: 420px;
   padding: tokens.$space-2 tokens.$space-3;
-  border: 1px solid tokens.$color-border;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: tokens.$radius-pill;
   font-size: tokens.$font-size-sm;
+  background: rgba(255, 255, 255, 0.15);
+  color: tokens.$color-text-inverse;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.75);
+  }
 }
 
 .topbar-actions {
@@ -121,19 +132,20 @@
 
 .profile-role {
   font-size: tokens.$font-size-xs;
-  color: tokens.$color-text-secondary;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .logout-button {
-  border: 1px solid tokens.$color-border;
-  background: tokens.$color-surface;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+  color: tokens.$color-text-inverse;
   border-radius: tokens.$radius-sm;
   padding: tokens.$space-2 tokens.$space-3;
   cursor: pointer;
   font-size: tokens.$font-size-sm;
 
   &:hover {
-    background: tokens.$color-bg;
+    background: rgba(255, 255, 255, 0.15);
   }
 }
 
