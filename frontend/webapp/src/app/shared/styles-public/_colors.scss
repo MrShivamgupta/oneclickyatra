@@ -1,7 +1,19 @@
 // Public site palette — deliberately distinct from the admin dashboard's dark navy system.
-$color-primary: #ff7a45;
-$color-primary-dark: #e05f2b;
-$color-accent: #0f9d8f;
+//
+// Real bug found while redesigning: the original $color-primary (#ff7a45) was used both as button
+// fill (with white text) and as plain text/link color on white -- but it only clears ~2.6:1 contrast
+// in either direction, well under WCAG AA's 4.5:1 for normal text. Fixed with a two-tier scheme:
+// $color-primary is now the accessible, text/button-safe shade (4.95:1 with white); the original
+// bright orange survives as $color-primary-vivid for decorative-only use (gradients, photo overlays,
+// large image-backed surfaces) where no text sits directly on the raw color.
+$color-primary: #c7431a;
+$color-primary-dark: #9e3513;
+$color-primary-light: #fdeee7;
+$color-primary-vivid: #ff7a45;
+
+// Same fix applied to the teal accent: #0f9d8f only hit ~3.4:1 as text on white.
+$color-accent: #0b7a70;
+$color-accent-vivid: #0f9d8f;
 
 $color-bg: #ffffff;
 $color-bg-alt: #fbf7f2;
@@ -11,3 +23,7 @@ $color-border: #eee3d8;
 $color-text-primary: #241c15;
 $color-text-secondary: #6b5f52;
 $color-text-inverse: #ffffff;
+
+// Gradients -- decorative only (hero backgrounds, photo-card overlays), never behind plain text.
+$gradient-hero: linear-gradient(135deg, #ff7a45 0%, #ff5470 100%);
+$gradient-card-overlay: linear-gradient(180deg, rgba(36, 28, 21, 0) 0%, rgba(36, 28, 21, 0.78) 100%);

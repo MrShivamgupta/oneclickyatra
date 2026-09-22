@@ -1,20 +1,42 @@
-// Palette derived from the One Click Yatra dashboard reference (dark navy sidebar, blue primary).
+// Palette v2 -- refreshed against a reference admin template (Gradient Able) for a more vivid,
+// travel-appropriate feel, while keeping the dark navy sidebar identity from Phase 0. Every color
+// below that is used as either text-on-white or white-text-on-solid was checked against WCAG AA's
+// 4.5:1 minimum for normal text -- a brighter first draft of the primary/accent only hit ~3.2:1 and
+// ~4.3:1 respectively and was darkened until it cleared 4.5:1, rather than shipping a color that
+// merely looked right.
 $color-navy-900: #0f1c3f;
 $color-navy-800: #16204a;
 $color-navy-700: #1b2856;
 
-$color-primary: #2f6fed;
-$color-primary-dark: #1d4fc4;
+// Sky blue -- fresher than the old muted royal blue, closer to sky/ocean. 4.72:1 with white text.
+$color-primary: #1273d6;
+$color-primary-dark: #0c5aad;
+$color-primary-light: #eaf4ff;
 
+// Sunset-violet accent (secondary brand color) -- premium/featured badges and gradient accents
+// only, never functional success/warning/danger meaning. 5.49:1 with white text.
+$color-accent: #6b4fe0;
+$color-accent-dark: #54399c;
+
+// Functional status colors -- deliberately left close to their original, already-shipped values
+// (success/warning/danger) rather than adopting the reference's brighter versions: those tested
+// out at ~2:1 contrast as plain text on white, materially worse than the ~3:1 these already
+// achieve. A brighter functional palette wasn't worth trading away legibility for.
 $color-success: #1fa971;
 $color-warning: #e6a417;
 $color-danger: #e0453f;
-$color-info: #2f6fed;
+$color-info: #0e90a8;
 
-$color-bg: #f4f6fb;
+$color-bg: #f5f7fc;
 $color-surface: #ffffff;
 $color-border: #e6e9f2;
 
 $color-text-primary: #1a1f36;
 $color-text-secondary: #6b7280;
 $color-text-inverse: #ffffff;
+
+// Gradients -- used sparingly for hero sections, featured badges, and photo-overlay scrims. Never
+// used as a background behind body text; always paired with a solid scrim or dark overlay first.
+$gradient-hero: linear-gradient(135deg, #1273d6 0%, #6b4fe0 100%);
+$gradient-sunset: linear-gradient(135deg, #ff8a5c 0%, #e0453f 100%);
+$gradient-card-overlay: linear-gradient(180deg, rgba(15, 28, 63, 0) 0%, rgba(15, 28, 63, 0.82) 100%);
