@@ -1,6 +1,6 @@
 <div class="shell" [class.collapsed]="sidebarCollapsed()">
   <aside class="sidebar">
-    <div class="brand">
+    <a class="brand" routerLink="/admin/dashboard">
       <span class="brand-icon">✈</span>
       @if (!sidebarCollapsed()) {
         <div>
@@ -8,7 +8,7 @@
           <div class="brand-subtitle">CRM</div>
         </div>
       }
-    </div>
+    </a>
 
     <nav class="nav">
       @for (item of navItems; track item.route) {
@@ -20,11 +20,20 @@
         </a>
       }
     </nav>
+
+    <div class="sidebar-footer">
+      <button type="button" class="nav-item logout-item" (click)="logout()">
+        <app-icon class="nav-icon" name="logout" />
+        @if (!sidebarCollapsed()) {
+          <span class="nav-label">Logout</span>
+        }
+      </button>
+    </div>
   </aside>
 
   <div class="main">
     <header class="topbar">
-      <button type="button" class="icon-button" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+      <button type="button" class="sidebar-toggle" (click)="toggleSidebar()" aria-label="Toggle sidebar">
         <app-icon name="menu" />
       </button>
       <div class="search-wrap">
@@ -38,10 +47,6 @@
             <div class="profile-name">{{ user.fullName }}</div>
             <div class="profile-role">{{ user.roles[0] }}</div>
           </div>
-          <button type="button" class="logout-button" (click)="logout()">
-            <app-icon name="logout" />
-            Logout
-          </button>
         }
       </div>
     </header>

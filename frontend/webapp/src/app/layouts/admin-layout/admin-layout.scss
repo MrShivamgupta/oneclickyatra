@@ -1,28 +1,28 @@
 @use '../../shared/styles/index' as tokens;
 
 .shell {
-  display: grid;
-  grid-template-columns: 260px 1fr;
   min-height: 100vh;
-  transition: grid-template-columns 0.2s ease;
 
   &.collapsed {
-    grid-template-columns: 72px 1fr;
-  }
-
-  @include tokens.respond-below(tokens.$breakpoint-tablet) {
-    grid-template-columns: 1fr;
+    .sidebar { width: 72px; }
+    .main { margin-left: 72px; }
   }
 }
 
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  z-index: 20;
   background: tokens.$color-surface;
   color: tokens.$color-text-secondary;
   display: flex;
   flex-direction: column;
-  padding: tokens.$space-4 0;
-  overflow-y: auto;
+  padding-top: tokens.$space-4;
   border-right: 1px solid tokens.$color-border;
+  transition: width 0.2s ease;
 
   @include tokens.respond-below(tokens.$breakpoint-tablet) {
     display: none;
@@ -34,6 +34,8 @@
   align-items: center;
   gap: tokens.$space-2;
   padding: 0 tokens.$space-4 tokens.$space-6;
+  text-decoration: none;
+  color: inherit;
 }
 
 .brand-icon {
@@ -52,10 +54,25 @@
 }
 
 .nav {
+  flex: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 0 tokens.$space-2;
+}
+
+.sidebar-footer {
+  padding: tokens.$space-2;
+  border-top: 1px solid tokens.$color-border;
+}
+
+.logout-item {
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .nav-item {
@@ -90,9 +107,18 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  margin-left: 260px;
+  transition: margin-left 0.2s ease;
+
+  @include tokens.respond-below(tokens.$breakpoint-tablet) {
+    margin-left: 0;
+  }
 }
 
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   gap: tokens.$space-4;
@@ -115,6 +141,29 @@
   app-icon {
     width: 20px;
     height: 20px;
+  }
+}
+
+.sidebar-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: tokens.$color-text-inverse;
+  width: 36px;
+  height: 36px;
+  border-radius: tokens.$radius-sm;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  app-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
   }
 }
 
@@ -164,28 +213,6 @@
 .profile-role {
   font-size: tokens.$font-size-xs;
   color: rgba(255, 255, 255, 0.8);
-}
-
-.logout-button {
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: transparent;
-  color: tokens.$color-text-inverse;
-  border-radius: tokens.$radius-sm;
-  padding: tokens.$space-2 tokens.$space-3;
-  cursor: pointer;
-  font-size: tokens.$font-size-sm;
-  display: inline-flex;
-  align-items: center;
-  gap: tokens.$space-2;
-
-  app-icon {
-    width: 14px;
-    height: 14px;
-  }
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.15);
-  }
 }
 
 .content {

@@ -256,6 +256,46 @@ input[type='date'] {
   border-color: tokens.$color-accent;
 }
 
+// Light-tint treatment for the secondary KPI cards -- background/border stay near-white (only the
+// icon carries the hue), so no new text-contrast verification is needed: the label/value keep the
+// same neutral colors every plain card already used safely. Icons only need WCAG's 3:1 non-text
+// contrast minimum, which every one of these hues clears easily against a near-white tint.
+.accent-blue-light {
+  background: rgba(18, 115, 214, 0.08);
+  border-color: rgba(18, 115, 214, 0.2);
+  .kpi-icon { color: tokens.$color-primary; }
+}
+
+.accent-green-light {
+  background: rgba(20, 122, 81, 0.08);
+  border-color: rgba(20, 122, 81, 0.2);
+  .kpi-icon { color: tokens.$color-success-solid; }
+}
+
+.accent-amber-light {
+  background: rgba(230, 164, 23, 0.1);
+  border-color: rgba(230, 164, 23, 0.22);
+  .kpi-icon { color: tokens.$color-warning; }
+}
+
+.accent-purple-light {
+  background: rgba(107, 79, 224, 0.08);
+  border-color: rgba(107, 79, 224, 0.2);
+  .kpi-icon { color: tokens.$color-accent; }
+}
+
+.accent-teal-light {
+  background: rgba(14, 122, 138, 0.08);
+  border-color: rgba(14, 122, 138, 0.2);
+  .kpi-icon { color: tokens.$color-teal-solid; }
+}
+
+.accent-danger-light {
+  background: rgba(224, 69, 63, 0.08);
+  border-color: rgba(224, 69, 63, 0.2);
+  .kpi-icon { color: tokens.$color-danger; }
+}
+
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));

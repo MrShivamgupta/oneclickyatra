@@ -31,9 +31,11 @@ interface KpiCard {
   value: number;
   format: 'number' | 'currency' | 'percent';
   link?: string;
-  /** Headline cards only -- mirrors the reference template's colorful "order-card" treatment.
-   * Omitted on secondary KPIs, which stay plain white cards. */
-  accent?: 'blue' | 'green' | 'amber' | 'purple';
+  /** 'blue'/'green'/'amber'/'purple' are the bold, solid-fill headline treatment (white text).
+   * The '-light' variants are a lighter tint used on the remaining secondary KPIs, per direct
+   * follow-up request to color every card, not just the 4 headline ones -- reuses the same hue
+   * tokens at a light background/dark-icon tint instead of inventing a second palette. */
+  accent?: 'blue' | 'green' | 'amber' | 'purple' | 'blue-light' | 'green-light' | 'amber-light' | 'purple-light' | 'teal-light' | 'danger-light';
   icon?: IconName;
 }
 
@@ -110,13 +112,62 @@ export class Dashboard {
         accent: 'purple',
         icon: 'inbox'
       },
-      { label: "Today's Follow-Ups", value: this.todayFollowUpCount(), format: 'number', link: '/admin/followups' },
-      { label: 'Active Quotations', value: k.activeQuotations, format: 'number', link: '/admin/quotations' },
-      { label: 'Pending Payments', value: k.pendingPayments, format: 'currency', link: '/admin/bookings' },
-      { label: 'Upcoming Departures', value: k.upcomingDepartures, format: 'number', link: '/admin/bookings' },
-      { label: 'Total Bookings', value: k.totalBookings, format: 'number', link: '/admin/bookings' },
-      { label: 'Cancellations', value: k.cancellations, format: 'number', link: '/admin/bookings' },
-      { label: 'Conversion Rate', value: k.conversionRate, format: 'percent', link: '/admin/leads' }
+      {
+        label: "Today's Follow-Ups",
+        value: this.todayFollowUpCount(),
+        format: 'number',
+        link: '/admin/followups',
+        accent: 'teal-light',
+        icon: 'phone'
+      },
+      {
+        label: 'Active Quotations',
+        value: k.activeQuotations,
+        format: 'number',
+        link: '/admin/quotations',
+        accent: 'blue-light',
+        icon: 'file-text'
+      },
+      {
+        label: 'Pending Payments',
+        value: k.pendingPayments,
+        format: 'currency',
+        link: '/admin/bookings',
+        accent: 'amber-light',
+        icon: 'credit-card'
+      },
+      {
+        label: 'Upcoming Departures',
+        value: k.upcomingDepartures,
+        format: 'number',
+        link: '/admin/bookings',
+        accent: 'purple-light',
+        icon: 'calendar-check'
+      },
+      {
+        label: 'Total Bookings',
+        value: k.totalBookings,
+        format: 'number',
+        link: '/admin/bookings',
+        accent: 'green-light',
+        icon: 'package'
+      },
+      {
+        label: 'Cancellations',
+        value: k.cancellations,
+        format: 'number',
+        link: '/admin/bookings',
+        accent: 'danger-light',
+        icon: 'x-circle'
+      },
+      {
+        label: 'Conversion Rate',
+        value: k.conversionRate,
+        format: 'percent',
+        link: '/admin/leads',
+        accent: 'teal-light',
+        icon: 'bar-chart'
+      }
     ];
   });
 

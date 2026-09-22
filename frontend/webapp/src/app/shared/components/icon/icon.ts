@@ -29,7 +29,8 @@ export type IconName =
   | 'menu'
   | 'search'
   | 'bell'
-  | 'logout';
+  | 'logout'
+  | 'x-circle';
 
 @Component({
   selector: 'app-icon',
