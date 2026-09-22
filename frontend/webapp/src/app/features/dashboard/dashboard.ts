@@ -30,6 +30,10 @@ interface KpiCard {
   value: number;
   format: 'number' | 'currency' | 'percent';
   link?: string;
+  /** Headline cards only -- mirrors the reference template's colorful "order-card" treatment.
+   * Omitted on secondary KPIs, which stay plain white cards. */
+  accent?: 'blue' | 'green' | 'amber' | 'purple';
+  icon?: string;
 }
 
 function toIsoDate(date: Date): string {
@@ -80,16 +84,37 @@ export class Dashboard {
     const k = this.kpis();
     if (!k) return [];
     return [
-      { label: 'Total Leads', value: k.totalLeads, format: 'number', link: '/admin/leads' },
+      { label: 'Total Leads', value: k.totalLeads, format: 'number', link: '/admin/leads', accent: 'blue', icon: '👤' },
+      {
+        label: 'Confirmed Bookings',
+        value: k.confirmedBookings,
+        format: 'number',
+        link: '/admin/bookings',
+        accent: 'green',
+        icon: '✅'
+      },
+      {
+        label: 'Revenue (period)',
+        value: k.periodRevenue,
+        format: 'currency',
+        link: '/admin/bookings',
+        accent: 'amber',
+        icon: '💰'
+      },
+      {
+        label: 'Open Enquiries',
+        value: k.openEnquiries,
+        format: 'number',
+        link: '/admin/enquiries',
+        accent: 'purple',
+        icon: '📥'
+      },
       { label: "Today's Follow-Ups", value: this.todayFollowUpCount(), format: 'number', link: '/admin/followups' },
       { label: 'Active Quotations', value: k.activeQuotations, format: 'number', link: '/admin/quotations' },
-      { label: 'Confirmed Bookings', value: k.confirmedBookings, format: 'number', link: '/admin/bookings' },
-      { label: 'Revenue (period)', value: k.periodRevenue, format: 'currency', link: '/admin/bookings' },
       { label: 'Pending Payments', value: k.pendingPayments, format: 'currency', link: '/admin/bookings' },
       { label: 'Upcoming Departures', value: k.upcomingDepartures, format: 'number', link: '/admin/bookings' },
       { label: 'Total Bookings', value: k.totalBookings, format: 'number', link: '/admin/bookings' },
       { label: 'Cancellations', value: k.cancellations, format: 'number', link: '/admin/bookings' },
-      { label: 'Open Enquiries', value: k.openEnquiries, format: 'number', link: '/admin/enquiries' },
       { label: 'Conversion Rate', value: k.conversionRate, format: 'percent', link: '/admin/leads' }
     ];
   });
@@ -100,8 +125,8 @@ export class Dashboard {
       {
         label: 'Revenue',
         data: this.revenueTrend().map((p) => p.revenue),
-        borderColor: '#2f6fed',
-        backgroundColor: 'rgba(47, 111, 237, 0.15)',
+        borderColor: '#1273d6',
+        backgroundColor: 'rgba(18, 115, 214, 0.15)',
         fill: true,
         tension: 0.3
       }
@@ -117,7 +142,7 @@ export class Dashboard {
         {
           label: 'Leads',
           data: [...orderedStages.map((s) => byStatus.get(s) ?? 0), byStatus.get('Lost') ?? 0],
-          backgroundColor: [...orderedStages.map(() => '#2f6fed'), '#e0453f']
+          backgroundColor: [...orderedStages.map(() => '#1273d6'), '#e0453f']
         }
       ]
     };

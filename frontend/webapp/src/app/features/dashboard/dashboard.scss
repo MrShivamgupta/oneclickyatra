@@ -151,6 +151,13 @@ input[type='date'] {
   }
 }
 
+.kpi-icon {
+  font-size: tokens.$font-size-2xl;
+  float: right;
+  line-height: 1;
+  opacity: 0.9;
+}
+
 .kpi-label {
   font-size: tokens.$font-size-xs;
   color: tokens.$color-text-secondary;
@@ -161,6 +168,41 @@ input[type='date'] {
   font-size: tokens.$font-size-xl;
   font-weight: tokens.$font-weight-bold;
   color: tokens.$color-text-primary;
+}
+
+// Headline KPI cards -- mirrors the reference template's colorful "order-card" pattern. Every
+// variant here was checked against WCAG AA 4.5:1 for its text color; amber uses dark text instead
+// of white for exactly that reason (see _colors.scss's $color-warning comment -- yellow/amber
+// hues are too light to ever pair safely with white text, so this deliberately breaks the
+// otherwise-uniform white-text look on the 4 headline cards rather than ship a color combination
+// that reads fine as a design intent but fails for anyone who actually needs the contrast).
+.accent-blue,
+.accent-green,
+.accent-purple {
+  .kpi-label,
+  .kpi-value {
+    color: tokens.$color-text-inverse;
+  }
+}
+
+.accent-blue {
+  background: tokens.$color-primary;
+  border-color: tokens.$color-primary;
+}
+
+.accent-green {
+  background: tokens.$color-success-solid;
+  border-color: tokens.$color-success-solid;
+}
+
+.accent-amber {
+  background: tokens.$color-warning;
+  border-color: tokens.$color-warning;
+}
+
+.accent-purple {
+  background: tokens.$color-accent;
+  border-color: tokens.$color-accent;
 }
 
 .charts-grid {

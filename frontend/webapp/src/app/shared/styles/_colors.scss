@@ -27,6 +27,11 @@ $color-warning: #e6a417;
 $color-danger: #e0453f;
 $color-info: #0e90a8;
 
+// Solid-card-safe green -- $color-success above only clears ~3:1 with white (fine for its existing
+// small-badge-text use, not enough for a full card background). This one clears 5.34:1. Used by the
+// Dashboard's colorful headline KPI cards specifically.
+$color-success-solid: #147a51;
+
 $color-bg: #f5f7fc;
 $color-surface: #ffffff;
 $color-border: #e6e9f2;

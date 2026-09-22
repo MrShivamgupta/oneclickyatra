@@ -51,7 +51,10 @@
 } @else {
   <div class="kpi-grid">
     @for (card of kpiCards(); track card.label) {
-      <a class="kpi-card" [routerLink]="card.link">
+      <a [class]="card.accent ? 'kpi-card accent-' + card.accent : 'kpi-card'" [routerLink]="card.link">
+        @if (card.icon) {
+          <span class="kpi-icon">{{ card.icon }}</span>
+        }
         <div class="kpi-label">{{ card.label }}</div>
         <div class="kpi-value">
           @if (card.format === 'currency') {
