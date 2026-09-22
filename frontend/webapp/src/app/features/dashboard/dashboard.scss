@@ -154,34 +154,63 @@ input[type='date'] {
   text-align: center;
   font-size: tokens.$font-size-sm;
   font-weight: tokens.$font-weight-semibold;
+  color: tokens.$color-text-primary;
   box-shadow: tokens.$shadow-sm;
   transition: box-shadow 0.15s ease, transform 0.15s ease;
-
-  app-icon {
-    width: 24px;
-    height: 24px;
-  }
 
   &:hover {
     box-shadow: tokens.$shadow-md;
     transform: translateY(-1px);
   }
+}
 
-  &.accent-blue,
-  &.accent-green,
-  &.accent-purple,
-  &.accent-teal {
+// Light tile background + a small solid-color icon badge -- matches the reference "Quick Links"
+// mockup directly (pastel tile, colored rounded-square badge behind the icon), rather than the
+// full-bleed solid fill the KPI cards used before this same round of feedback retired that look.
+.tile-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: tokens.$radius-sm;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  app-icon {
+    width: 20px;
+    height: 20px;
     color: tokens.$color-text-inverse;
-  }
-
-  &.accent-amber {
-    color: tokens.$color-text-primary;
   }
 }
 
-.accent-teal {
-  background: tokens.$color-teal-solid;
-  border-color: tokens.$color-teal-solid;
+.tile-blue {
+  background: rgba(18, 115, 214, 0.08);
+  .tile-icon-badge { background: tokens.$color-primary; }
+}
+
+.tile-green {
+  background: rgba(20, 122, 81, 0.08);
+  .tile-icon-badge { background: tokens.$color-success-solid; }
+}
+
+.tile-purple {
+  background: rgba(107, 79, 224, 0.08);
+  .tile-icon-badge { background: tokens.$color-accent; }
+}
+
+.tile-danger {
+  background: rgba(224, 69, 63, 0.08);
+  .tile-icon-badge { background: tokens.$color-danger; }
+}
+
+// Amber badge needs a dark icon, not white -- #e6a417 only clears ~2.2:1 against white, well under
+// even the lenient 3:1 WCAG non-text-contrast minimum (same reason the bold KPI card below used to
+// give amber dark text instead of white).
+.tile-amber {
+  background: rgba(230, 164, 23, 0.1);
+  .tile-icon-badge {
+    background: tokens.$color-warning;
+    app-icon { color: tokens.$color-text-primary; }
+  }
 }
 
 .kpi-card {
@@ -221,42 +250,7 @@ input[type='date'] {
   color: tokens.$color-text-primary;
 }
 
-// Headline KPI cards -- mirrors the reference template's colorful "order-card" pattern. Every
-// variant here was checked against WCAG AA 4.5:1 for its text color; amber uses dark text instead
-// of white for exactly that reason (see _colors.scss's $color-warning comment -- yellow/amber
-// hues are too light to ever pair safely with white text, so this deliberately breaks the
-// otherwise-uniform white-text look on the 4 headline cards rather than ship a color combination
-// that reads fine as a design intent but fails for anyone who actually needs the contrast).
-.accent-blue,
-.accent-green,
-.accent-purple {
-  .kpi-label,
-  .kpi-value {
-    color: tokens.$color-text-inverse;
-  }
-}
-
-.accent-blue {
-  background: tokens.$color-primary;
-  border-color: tokens.$color-primary;
-}
-
-.accent-green {
-  background: tokens.$color-success-solid;
-  border-color: tokens.$color-success-solid;
-}
-
-.accent-amber {
-  background: tokens.$color-warning;
-  border-color: tokens.$color-warning;
-}
-
-.accent-purple {
-  background: tokens.$color-accent;
-  border-color: tokens.$color-accent;
-}
-
-// Light-tint treatment for the secondary KPI cards -- background/border stay near-white (only the
+// Light-tint treatment for every KPI card -- background/border stay near-white (only the
 // icon carries the hue), so no new text-contrast verification is needed: the label/value keep the
 // same neutral colors every plain card already used safely. Icons only need WCAG's 3:1 non-text
 // contrast minimum, which every one of these hues clears easily against a near-white tint.

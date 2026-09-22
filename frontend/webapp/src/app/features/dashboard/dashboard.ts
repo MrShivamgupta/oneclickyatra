@@ -31,11 +31,11 @@ interface KpiCard {
   value: number;
   format: 'number' | 'currency' | 'percent';
   link?: string;
-  /** 'blue'/'green'/'amber'/'purple' are the bold, solid-fill headline treatment (white text).
-   * The '-light' variants are a lighter tint used on the remaining secondary KPIs, per direct
-   * follow-up request to color every card, not just the 4 headline ones -- reuses the same hue
-   * tokens at a light background/dark-icon tint instead of inventing a second palette. */
-  accent?: 'blue' | 'green' | 'amber' | 'purple' | 'blue-light' | 'green-light' | 'amber-light' | 'purple-light' | 'teal-light' | 'danger-light';
+  /** Every card uses the same light-tint treatment -- near-white background, colored icon only.
+   * Started as a bold-solid-fill-for-4-headline-cards-only design; per direct follow-up requests
+   * that grew to "color every card" and then "make the headline 4 light too, to match", so the
+   * bold variant was retired rather than kept as an unused second treatment. */
+  accent?: 'blue-light' | 'green-light' | 'amber-light' | 'purple-light' | 'teal-light' | 'danger-light';
   icon?: IconName;
 }
 
@@ -87,13 +87,13 @@ export class Dashboard {
     const k = this.kpis();
     if (!k) return [];
     return [
-      { label: 'Total Leads', value: k.totalLeads, format: 'number', link: '/admin/leads', accent: 'blue', icon: 'users' },
+      { label: 'Total Leads', value: k.totalLeads, format: 'number', link: '/admin/leads', accent: 'blue-light', icon: 'users' },
       {
         label: 'Confirmed Bookings',
         value: k.confirmedBookings,
         format: 'number',
         link: '/admin/bookings',
-        accent: 'green',
+        accent: 'green-light',
         icon: 'check-circle'
       },
       {
@@ -101,7 +101,7 @@ export class Dashboard {
         value: k.periodRevenue,
         format: 'currency',
         link: '/admin/bookings',
-        accent: 'amber',
+        accent: 'amber-light',
         icon: 'currency'
       },
       {
@@ -109,7 +109,7 @@ export class Dashboard {
         value: k.openEnquiries,
         format: 'number',
         link: '/admin/enquiries',
-        accent: 'purple',
+        accent: 'purple-light',
         icon: 'inbox'
       },
       {
