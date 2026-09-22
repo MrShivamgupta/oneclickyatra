@@ -184,12 +184,13 @@
   display: inline-block;
   padding: tokens.$space-3 tokens.$space-8;
   border-radius: tokens.$radius-pill;
-  background: tokens.$color-primary;
+  background: tokens.$gradient-button;
   color: tokens.$color-text-inverse;
   font-weight: tokens.$font-weight-semibold;
   text-decoration: none;
+  transition: filter 0.15s ease;
 
   &:hover {
-    background: tokens.$color-primary-dark;
+    filter: brightness(0.92);
   }
 }

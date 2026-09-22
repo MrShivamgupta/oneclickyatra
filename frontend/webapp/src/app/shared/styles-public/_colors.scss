@@ -27,3 +27,8 @@ $color-text-inverse: #ffffff;
 // Gradients -- decorative only (hero backgrounds, photo-card overlays), never behind plain text.
 $gradient-hero: linear-gradient(135deg, #ff7a45 0%, #ff5470 100%);
 $gradient-card-overlay: linear-gradient(180deg, rgba(36, 28, 21, 0) 0%, rgba(36, 28, 21, 0.78) 100%);
+
+// Button gradient -- built from $color-primary/a matching dark rose, both independently verified
+// at 4.5:1+ with white text (4.95:1 / 5.57:1), unlike $gradient-hero above which uses the vivid,
+// contrast-failing tones and must never sit directly under text.
+$gradient-button: linear-gradient(135deg, #c7431a 0%, #b8395a 100%);

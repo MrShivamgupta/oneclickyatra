@@ -50,13 +50,14 @@ input[type='date'] {
   padding: tokens.$space-2 tokens.$space-5;
   border: none;
   border-radius: tokens.$radius-sm;
-  background: tokens.$color-primary;
+  background: tokens.$gradient-hero;
   color: tokens.$color-text-inverse;
   font-weight: tokens.$font-weight-semibold;
   cursor: pointer;
   white-space: nowrap;
+  transition: filter 0.15s ease;
 
-  &:hover { background: tokens.$color-primary-dark; }
+  &:hover { filter: brightness(0.92); }
 }
 
 .secondary-button {
