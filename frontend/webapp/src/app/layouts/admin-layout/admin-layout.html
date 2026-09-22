@@ -13,7 +13,7 @@
     <nav class="nav">
       @for (item of navItems; track item.route) {
         <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
-          <span class="nav-icon">{{ item.icon }}</span>
+          <app-icon class="nav-icon" [name]="item.icon" />
           @if (!sidebarCollapsed()) {
             <span class="nav-label">{{ item.label }}</span>
           }
@@ -24,16 +24,24 @@
 
   <div class="main">
     <header class="topbar">
-      <button type="button" class="icon-button" (click)="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
-      <input class="search" type="search" placeholder="Search by Lead, Customer, Booking, Invoice…" />
+      <button type="button" class="icon-button" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+        <app-icon name="menu" />
+      </button>
+      <div class="search-wrap">
+        <app-icon name="search" class="search-icon" />
+        <input class="search" type="search" placeholder="Search by Lead, Customer, Booking, Invoice…" />
+      </div>
       <div class="topbar-actions">
-        <span class="icon-button" aria-hidden="true">🔔</span>
+        <span class="icon-button" aria-hidden="true"><app-icon name="bell" /></span>
         @if (currentUser(); as user) {
           <div class="profile">
             <div class="profile-name">{{ user.fullName }}</div>
             <div class="profile-role">{{ user.roles[0] }}</div>
           </div>
-          <button type="button" class="logout-button" (click)="logout()">Logout</button>
+          <button type="button" class="logout-button" (click)="logout()">
+            <app-icon name="logout" />
+            Logout
+          </button>
         }
       </div>
     </header>

@@ -80,6 +80,12 @@
   }
 }
 
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 .main {
   display: flex;
   flex-direction: column;
@@ -98,15 +104,40 @@
 .icon-button {
   background: none;
   border: none;
-  font-size: tokens.$font-size-lg;
   cursor: pointer;
   color: tokens.$color-text-inverse;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  app-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: tokens.$space-3;
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.75);
+  pointer-events: none;
 }
 
 .search {
-  flex: 1;
-  max-width: 420px;
-  padding: tokens.$space-2 tokens.$space-3;
+  width: 100%;
+  padding: tokens.$space-2 tokens.$space-3 tokens.$space-2 calc(tokens.$space-3 * 2 + 16px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: tokens.$radius-pill;
   font-size: tokens.$font-size-sm;
@@ -143,6 +174,14 @@
   padding: tokens.$space-2 tokens.$space-3;
   cursor: pointer;
   font-size: tokens.$font-size-sm;
+  display: inline-flex;
+  align-items: center;
+  gap: tokens.$space-2;
+
+  app-icon {
+    width: 14px;
+    height: 14px;
+  }
 
   &:hover {
     background: rgba(255, 255, 255, 0.15);

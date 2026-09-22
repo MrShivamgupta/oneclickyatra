@@ -5,6 +5,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { FollowUpService } from '../../core/services/followup.service';
 import { ChartCanvas } from '../../shared/components/chart-canvas/chart-canvas';
+import { Icon, IconName } from '../../shared/components/icon/icon';
 import { Spinner } from '../../shared/components/spinner/spinner';
 import {
   DATE_PRESETS,
@@ -33,10 +34,7 @@ interface KpiCard {
   /** Headline cards only -- mirrors the reference template's colorful "order-card" treatment.
    * Omitted on secondary KPIs, which stay plain white cards. */
   accent?: 'blue' | 'green' | 'amber' | 'purple';
-  /** Key into dashboard.html's inline SVG icon set -- deliberately not an emoji: font-dependent
-   * rendering and inconsistent sizing across platforms/browsers make emoji a poor fit for a
-   * structural UI icon (flagged by the ui-ux-pro-max skill's own icon guidance). */
-  icon?: 'users' | 'check' | 'currency' | 'inbox';
+  icon?: IconName;
 }
 
 function toIsoDate(date: Date): string {
@@ -46,7 +44,7 @@ function toIsoDate(date: Date): string {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, DatePipe, DecimalPipe, ChartCanvas, Spinner],
+  imports: [RouterLink, DatePipe, DecimalPipe, ChartCanvas, Icon, Spinner],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
@@ -94,7 +92,7 @@ export class Dashboard {
         format: 'number',
         link: '/admin/bookings',
         accent: 'green',
-        icon: 'check'
+        icon: 'check-circle'
       },
       {
         label: 'Revenue (period)',
