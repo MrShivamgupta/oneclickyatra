@@ -38,7 +38,74 @@
       </button>
       <div class="search-wrap">
         <app-icon name="search" class="search-icon" />
-        <input class="search" type="search" placeholder="Search by Lead, Customer, Booking, Invoice…" />
+        <input
+          class="search"
+          type="search"
+          placeholder="Search by Lead, Customer, Booking, Invoice…"
+          [value]="globalSearchTerm()"
+          (input)="onGlobalSearchInput($any($event.target).value)"
+          (focus)="onGlobalSearchFocus()"
+          (keydown.escape)="closeGlobalSearch()"
+        />
+        @if (globalSearchOpen()) {
+          <div class="global-search-panel">
+            @if (globalSearchLoading()) {
+              <p class="gsp-status">Searching…</p>
+            } @else if (
+              globalSearchResults().leads.length === 0 &&
+              globalSearchResults().customers.length === 0 &&
+              globalSearchResults().bookings.length === 0 &&
+              globalSearchResults().invoices.length === 0
+            ) {
+              <p class="gsp-status">No results found.</p>
+            } @else {
+              @if (globalSearchResults().leads.length > 0) {
+                <div class="gsp-section">
+                  <div class="gsp-section-title">Leads</div>
+                  @for (lead of globalSearchResults().leads; track lead.id) {
+                    <button type="button" class="gsp-item" (click)="goToResult(['/admin/leads', lead.id])">
+                      <span class="gsp-item-title">{{ lead.customerName }}</span>
+                      <span class="gsp-item-meta">{{ lead.email || lead.mobile }}</span>
+                    </button>
+                  }
+                </div>
+              }
+              @if (globalSearchResults().customers.length > 0) {
+                <div class="gsp-section">
+                  <div class="gsp-section-title">Customers</div>
+                  @for (customer of globalSearchResults().customers; track customer.id) {
+                    <button type="button" class="gsp-item" (click)="goToResult(['/admin/customers'])">
+                      <span class="gsp-item-title">{{ customer.fullName }}</span>
+                      <span class="gsp-item-meta">{{ customer.email || customer.phone }}</span>
+                    </button>
+                  }
+                </div>
+              }
+              @if (globalSearchResults().bookings.length > 0) {
+                <div class="gsp-section">
+                  <div class="gsp-section-title">Bookings</div>
+                  @for (booking of globalSearchResults().bookings; track booking.id) {
+                    <button type="button" class="gsp-item" (click)="goToResult(['/admin/bookings', booking.id])">
+                      <span class="gsp-item-title">{{ booking.bookingNumber }}</span>
+                      <span class="gsp-item-meta">{{ booking.customerName }}</span>
+                    </button>
+                  }
+                </div>
+              }
+              @if (globalSearchResults().invoices.length > 0) {
+                <div class="gsp-section">
+                  <div class="gsp-section-title">Invoices</div>
+                  @for (invoice of globalSearchResults().invoices; track invoice.id) {
+                    <button type="button" class="gsp-item" (click)="goToResult(['/admin/invoices'])">
+                      <span class="gsp-item-title">{{ invoice.invoiceNumber }}</span>
+                      <span class="gsp-item-meta">{{ invoice.customerName }}</span>
+                    </button>
+                  }
+                </div>
+              }
+            }
+          </div>
+        }
       </div>
       <div class="topbar-actions">
         <span class="icon-button" aria-hidden="true"><app-icon name="bell" /></span>
