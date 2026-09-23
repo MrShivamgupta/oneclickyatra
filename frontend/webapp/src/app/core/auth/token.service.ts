@@ -14,12 +14,14 @@ interface DecodedAccessToken {
 @Injectable({ providedIn: 'root' })
 export class TokenService {
   private readonly _accessToken = signal<string | null>(null);
+  private readonly _userId = signal<string | null>(null);
   private readonly _roles = signal<string[]>([]);
   private readonly _permissions = signal<string[]>([]);
   private readonly _email = signal<string | null>(null);
   private readonly _fullName = signal<string | null>(null);
 
   readonly accessToken = this._accessToken.asReadonly();
+  readonly userId = this._userId.asReadonly();
   readonly roles = this._roles.asReadonly();
   readonly permissions = this._permissions.asReadonly();
   readonly email = this._email.asReadonly();
@@ -28,6 +30,7 @@ export class TokenService {
   setSession(accessToken: string, refreshToken: string): void {
     this._accessToken.set(accessToken);
     const decoded = this.decode(accessToken);
+    this._userId.set(decoded?.sub ?? null);
     this._roles.set(this.toArray(decoded?.role));
     this._permissions.set(this.toArray(decoded?.permission));
     this._email.set(decoded?.email ?? null);
@@ -42,6 +45,7 @@ export class TokenService {
 
   clearSession(): void {
     this._accessToken.set(null);
+    this._userId.set(null);
     this._roles.set([]);
     this._permissions.set([]);
     this._email.set(null);

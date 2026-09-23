@@ -28,6 +28,16 @@
   &:hover { text-decoration: underline; }
 }
 
+.ownership-banner {
+  background: rgba(230, 164, 23, 0.1);
+  color: #a86c00;
+  border: 1px solid rgba(230, 164, 23, 0.3);
+  border-radius: tokens.$radius-sm;
+  padding: tokens.$space-3 tokens.$space-4;
+  font-size: tokens.$font-size-sm;
+  margin-bottom: tokens.$space-5;
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

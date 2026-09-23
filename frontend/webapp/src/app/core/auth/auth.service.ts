@@ -19,6 +19,7 @@ export class AuthService {
     }
     return {
       email,
+      userId: this.tokenService.userId(),
       fullName: this.tokenService.fullName() ?? '',
       roles: this.tokenService.roles()
     };

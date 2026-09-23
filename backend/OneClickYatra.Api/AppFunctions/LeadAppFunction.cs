@@ -52,6 +52,14 @@ public sealed class LeadAppFunction : ILeadAppFunction
     {
         await ValidateReferencesAsync(__request, __cancellationToken);
 
+        // A non-SuperAdmin may only hand a brand-new lead to themselves (or leave it unassigned, for
+        // someone to claim later) -- not directly assign it to a colleague, which would be an
+        // end-run around AssignAsync's "only an admin reassigns" rule below.
+        if (!_currentUserAccessor.IsSuperAdmin && __request.AssignedToUserId is { } requestedOwnerId && requestedOwnerId != _currentUserAccessor.UserId)
+        {
+            throw new ForbiddenException("You can only assign a new lead to yourself. An administrator can assign it to someone else.");
+        }
+
         var lead = new LeadModel
         {
             Id = Guid.NewGuid(),
@@ -85,6 +93,7 @@ public sealed class LeadAppFunction : ILeadAppFunction
     public async Task<LeadResponse> UpdateAsync(Guid __id, LeadRequest __request, CancellationToken __cancellationToken)
     {
         var lead = await _leadRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Lead", __id);
+        EnsureCanManage(lead);
         await ValidateReferencesAsync(__request, __cancellationToken);
 
         var oldName = lead.CustomerName;
@@ -95,7 +104,10 @@ public sealed class LeadAppFunction : ILeadAppFunction
         lead.TravelDate = __request.TravelDate;
         lead.Budget = __request.Budget;
         lead.Source = __request.Source;
-        lead.AssignedToUserId = __request.AssignedToUserId;
+        // Assignment is exclusively AssignAsync's job now, with its own claim/reassign rules --
+        // this used to also apply __request.AssignedToUserId here, which silently unassigned every
+        // lead on every basic-details edit (the "Edit Details" form never sends this field, so it
+        // deserialized as null and overwrote whatever the lead's real assignment was).
         lead.UpdatedBy = _currentUserAccessor.UserId;
 
         await _leadRepository.UpdateAsync(lead, __cancellationToken);
@@ -115,6 +127,7 @@ public sealed class LeadAppFunction : ILeadAppFunction
     public async Task<LeadResponse> UpdateStatusAsync(Guid __id, LeadStatusRequest __request, CancellationToken __cancellationToken)
     {
         var lead = await _leadRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Lead", __id);
+        EnsureCanManage(lead);
 
         var oldStatus = lead.Status;
         await _leadRepository.UpdateStatusAsync(__id, __request.Status, _currentUserAccessor.UserId, __cancellationToken);
@@ -134,9 +147,24 @@ public sealed class LeadAppFunction : ILeadAppFunction
 
     public async Task<LeadResponse> AssignAsync(Guid __id, LeadAssignRequest __request, CancellationToken __cancellationToken)
     {
-        _ = await _leadRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Lead", __id);
+        var lead = await _leadRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Lead", __id);
         _ = await _userRepository.GetByIdAsync(__request.AssignedToUserId, __cancellationToken)
             ?? throw new EntityNotFoundException("User", __request.AssignedToUserId);
+
+        // Non-SuperAdmin: this is a "claim an unassigned lead for myself" action, not a general
+        // reassign -- an agent can pick up a fresh lead from the pool, but can't hand off their own
+        // lead or take one already assigned to a colleague. Only an administrator reassigns freely.
+        if (!_currentUserAccessor.IsSuperAdmin)
+        {
+            if (lead.AssignedToUserId is not null)
+            {
+                throw new ForbiddenException("This lead is already assigned. Only an administrator can reassign it.");
+            }
+            if (__request.AssignedToUserId != _currentUserAccessor.UserId)
+            {
+                throw new ForbiddenException("You can only claim an unassigned lead for yourself.");
+            }
+        }
 
         await _leadRepository.AssignAsync(__id, __request.AssignedToUserId, _currentUserAccessor.UserId, __cancellationToken);
         _logger.LogInformation("Lead {LeadId} assigned to {AssignedToUserId} by {UserId}", __id, __request.AssignedToUserId, _currentUserAccessor.UserId);
@@ -156,6 +184,7 @@ public sealed class LeadAppFunction : ILeadAppFunction
     public async Task<LeadResponse> UpdateScoreAsync(Guid __id, LeadScoreRequest __request, CancellationToken __cancellationToken)
     {
         var lead = await _leadRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Lead", __id);
+        EnsureCanManage(lead);
 
         await _leadRepository.UpdateScoreAsync(__id, __request.LeadScore, _currentUserAccessor.UserId, __cancellationToken);
 
@@ -174,6 +203,7 @@ public sealed class LeadAppFunction : ILeadAppFunction
     public async Task<CustomerResponse> ConvertToCustomerAsync(Guid __id, CancellationToken __cancellationToken)
     {
         var lead = await _leadRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Lead", __id);
+        EnsureCanManage(lead);
 
         if (lead.CustomerId is { } existingCustomerId)
         {
@@ -224,6 +254,7 @@ public sealed class LeadAppFunction : ILeadAppFunction
     public async Task DeleteAsync(Guid __id, CancellationToken __cancellationToken)
     {
         var lead = await _leadRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("Lead", __id);
+        EnsureCanManage(lead);
 
         await _leadRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
 
@@ -234,6 +265,20 @@ public sealed class LeadAppFunction : ILeadAppFunction
         catch (Exception exception)
         {
             _logger.LogWarning(exception, "Failed to write audit log for {Action} on {EntityType} {EntityId}", "lead.deleted", "Lead", __id);
+        }
+    }
+
+    /// <summary>Per-record ownership gate: SuperAdmin can manage any lead; everyone else (with the
+    /// lead.update/delete permission generally) may only manage a lead currently assigned to them.
+    /// [HasPermission] already checked the caller holds the permission in general -- this is the
+    /// second, record-specific check [HasPermission] structurally can't do, since it never sees the
+    /// request body/route id.</summary>
+    private void EnsureCanManage(LeadModel __lead)
+    {
+        if (_currentUserAccessor.IsSuperAdmin) return;
+        if (__lead.AssignedToUserId != _currentUserAccessor.UserId)
+        {
+            throw new ForbiddenException("This lead is assigned to another team member. Only that agent or an administrator can make changes to it.");
         }
     }
 

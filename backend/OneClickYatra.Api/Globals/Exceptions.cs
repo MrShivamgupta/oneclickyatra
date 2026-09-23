@@ -34,6 +34,17 @@ public sealed class EntityNotFoundException : Exception
     }
 }
 
+/// <summary>Thrown when the caller holds the permission for this kind of action in general, but not
+/// on this specific record (e.g. a TravelAgent trying to update a lead assigned to a colleague).
+/// Distinct from [HasPermission]'s all-or-nothing role check, which never sees individual records.
+/// Maps to 403 (the caller is authenticated and generally permitted, just not for this resource).</summary>
+public sealed class ForbiddenException : Exception
+{
+    public ForbiddenException(string __message) : base(__message)
+    {
+    }
+}
+
 /// <summary>Thrown for a failed login/refresh attempt (maps to 401). Message is intentionally generic.</summary>
 public sealed class InvalidCredentialsException : Exception
 {

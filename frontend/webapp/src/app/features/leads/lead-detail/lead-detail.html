@@ -10,7 +10,7 @@
     }
   </div>
   @if (!isNew()) {
-    <button type="button" class="secondary-button danger" (click)="confirmDelete()">Delete Lead</button>
+    <button type="button" class="secondary-button danger" [disabled]="!canManage()" (click)="confirmDelete()">Delete Lead</button>
   }
 </div>
 
@@ -19,6 +19,12 @@
 }
 @if (loadError()) {
   <div class="form-error">{{ loadError() }}</div>
+}
+
+@if (!isNew() && !canManage()) {
+  <div class="ownership-banner">
+    This lead is assigned to {{ lead()?.assignedToName ?? 'another team member' }} — only they or an administrator can make changes to it.
+  </div>
 }
 
 <div class="detail-grid">
@@ -70,7 +76,7 @@
       }
 
       <div class="form-actions">
-        <button type="submit" class="primary-button" [disabled]="basicSaving()">
+        <button type="submit" class="primary-button" [disabled]="basicSaving() || !canManage()">
           {{ basicSaving() ? 'Saving…' : (isNew() ? 'Create Lead' : 'Save Changes') }}
         </button>
       </div>
@@ -92,7 +98,7 @@
         <div class="form-error">{{ statusError() }}</div>
       }
       <div class="form-actions">
-        <button type="button" class="primary-button" [disabled]="statusSaving()" (click)="saveStatus()">
+        <button type="button" class="primary-button" [disabled]="statusSaving() || !canManage()" (click)="saveStatus()">
           {{ statusSaving() ? 'Updating…' : 'Update Status' }}
         </button>
       </div>
@@ -108,7 +114,7 @@
         <div class="form-error">{{ scoreError() }}</div>
       }
       <div class="form-actions">
-        <button type="button" class="primary-button" [disabled]="scoreSaving()" (click)="saveScore()">
+        <button type="button" class="primary-button" [disabled]="scoreSaving() || !canManage()" (click)="saveScore()">
           {{ scoreSaving() ? 'Updating…' : 'Update Score' }}
         </button>
       </div>
@@ -116,23 +122,37 @@
 
     <section class="card">
       <h2>Assignment</h2>
-      <label>
-        Assigned to
-        <select [ngModel]="assignValue()" (ngModelChange)="assignValue.set($event)" [ngModelOptions]="{standalone: true}">
-          <option value="">Unassigned</option>
-          @for (member of staff(); track member.id) {
-            <option [value]="member.id">{{ member.fullName }}</option>
-          }
-        </select>
-      </label>
-      @if (assignError()) {
-        <div class="form-error">{{ assignError() }}</div>
+      @if (isSuperAdmin()) {
+        <label>
+          Assigned to
+          <select [ngModel]="assignValue()" (ngModelChange)="assignValue.set($event)" [ngModelOptions]="{standalone: true}">
+            <option value="">Unassigned</option>
+            @for (member of staff(); track member.id) {
+              <option [value]="member.id">{{ member.fullName }}</option>
+            }
+          </select>
+        </label>
+        @if (assignError()) {
+          <div class="form-error">{{ assignError() }}</div>
+        }
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="assignSaving() || !assignValue()" (click)="saveAssign()">
+            {{ assignSaving() ? 'Assigning…' : 'Assign' }}
+          </button>
+        </div>
+      } @else if (canClaim()) {
+        <p class="hint">This lead isn't assigned to anyone yet.</p>
+        @if (claimError()) {
+          <div class="form-error">{{ claimError() }}</div>
+        }
+        <div class="form-actions">
+          <button type="button" class="primary-button" [disabled]="claimSaving()" (click)="claimLead()">
+            {{ claimSaving() ? 'Claiming…' : 'Claim this lead' }}
+          </button>
+        </div>
+      } @else {
+        <p class="hint">Assigned to <strong>{{ lead()?.assignedToName ?? '—' }}</strong>. Only an administrator can reassign it.</p>
       }
-      <div class="form-actions">
-        <button type="button" class="primary-button" [disabled]="assignSaving() || !assignValue()" (click)="saveAssign()">
-          {{ assignSaving() ? 'Assigning…' : 'Assign' }}
-        </button>
-      </div>
     </section>
 
     <section class="card">
@@ -154,7 +174,7 @@
           <div class="form-error">{{ convertError() }}</div>
         }
         <div class="form-actions">
-          <button type="button" class="primary-button" [disabled]="convertSaving()" (click)="convertToCustomer()">
+          <button type="button" class="primary-button" [disabled]="convertSaving() || !canManage()" (click)="convertToCustomer()">
             {{ convertSaving() ? 'Converting…' : 'Convert to Customer' }}
           </button>
         </div>

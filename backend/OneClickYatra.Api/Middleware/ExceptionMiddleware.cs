@@ -61,6 +61,7 @@ public sealed class ExceptionMiddleware
         ValidationAppException validationAppException => ((int)HttpStatusCode.UnprocessableEntity, "Validation failed.", validationAppException.Errors),
         ValidationException fluentValidationException => ((int)HttpStatusCode.UnprocessableEntity, "Validation failed.", ToErrorDictionary(fluentValidationException)),
         EntityNotFoundException notFoundException => ((int)HttpStatusCode.NotFound, notFoundException.Message, null),
+        ForbiddenException forbiddenException => ((int)HttpStatusCode.Forbidden, forbiddenException.Message, null),
         InvalidCredentialsException invalidCredentialsException => ((int)HttpStatusCode.Unauthorized, invalidCredentialsException.Message, null),
         AccountLockedException accountLockedException => ((int)HttpStatusCode.Locked, accountLockedException.Message, null),
         InvalidWebhookSignatureException invalidWebhookSignatureException => ((int)HttpStatusCode.BadRequest, invalidWebhookSignatureException.Message, null),

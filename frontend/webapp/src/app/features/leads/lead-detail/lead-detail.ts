@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationDialog } from '../../../shared/components/confirmation-dialog/confirmation-dialog';
@@ -8,6 +8,7 @@ import { LeadService } from '../../../core/services/lead.service';
 import { DestinationService } from '../../../core/services/destination.service';
 import { UserService } from '../../../core/services/user.service';
 import { FollowUpService } from '../../../core/services/followup.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Destination } from '../../../core/models/master-data.models';
 import { FollowUp, FOLLOW_UP_TYPES, FollowUpType, Lead, LEAD_STATUSES, UserSummary } from '../../../core/models/crm.models';
 
@@ -23,6 +24,7 @@ export class LeadDetail {
   private readonly destinationService = inject(DestinationService);
   private readonly userService = inject(UserService);
   private readonly followUpService = inject(FollowUpService);
+  private readonly authService = inject(AuthService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -54,6 +56,22 @@ export class LeadDetail {
   readonly assignValue = signal('');
   readonly assignSaving = signal(false);
   readonly assignError = signal<string | null>(null);
+
+  readonly claimSaving = signal(false);
+  readonly claimError = signal<string | null>(null);
+
+  // Backend enforces the real rule (LeadAppFunction.EnsureCanManage / AssignAsync's self-claim
+  // check) -- these mirror it here only so the UI doesn't invite an action that's guaranteed to
+  // come back as a 403, not as a second, independently-trusted security boundary.
+  readonly isSuperAdmin = computed(() => this.authService.currentUser()?.roles.includes('SuperAdmin') ?? false);
+  readonly isOwner = computed(() => {
+    const l = this.lead();
+    const userId = this.authService.currentUser()?.userId;
+    return l != null && userId != null && l.assignedToUserId === userId;
+  });
+  readonly canManage = computed(() => this.isNew() || this.isSuperAdmin() || this.isOwner());
+  readonly isUnassigned = computed(() => (this.lead()?.assignedToUserId ?? null) === null);
+  readonly canClaim = computed(() => !this.isNew() && !this.isSuperAdmin() && this.isUnassigned());
 
   readonly convertSaving = signal(false);
   readonly convertError = signal<string | null>(null);
@@ -243,6 +261,24 @@ export class LeadDetail {
       error: (error) => {
         this.assignSaving.set(false);
         this.assignError.set(error?.error?.message ?? 'Could not assign this lead. Please try again.');
+      }
+    });
+  }
+
+  claimLead(): void {
+    const id = this.leadId();
+    const userId = this.authService.currentUser()?.userId;
+    if (!id || !userId) return;
+    this.claimSaving.set(true);
+    this.claimError.set(null);
+    this.leadService.assign(id, userId).subscribe({
+      next: (response) => {
+        this.claimSaving.set(false);
+        if (response.success && response.data) this.applyLead(response.data);
+      },
+      error: (error) => {
+        this.claimSaving.set(false);
+        this.claimError.set(error?.error?.message ?? 'Could not claim this lead. Please try again.');
       }
     });
   }
