@@ -217,7 +217,7 @@
         <div class="form-error">{{ passengersError() }}</div>
       }
 
-      @if (isEditable && passengers().length > 0) {
+      @if (isEditable) {
         <div class="form-actions">
           <button type="button" class="primary-button" [disabled]="passengersSaving()" (click)="savePassengers()">
             {{ passengersSaving() ? 'Saving…' : 'Save Passengers' }}
@@ -254,7 +254,7 @@
         <div class="form-error">{{ addOnsError() }}</div>
       }
 
-      @if (isEditable && addOns().length > 0) {
+      @if (isEditable) {
         <div class="form-actions">
           <button type="button" class="primary-button" [disabled]="addOnsSaving()" (click)="saveAddOns()">
             {{ addOnsSaving() ? 'Saving…' : 'Save Add-Ons' }}

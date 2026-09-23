@@ -179,7 +179,22 @@ export class VendorDetail {
       this.vendorService.create(request).subscribe({
         next: (response) => {
           this.basicSaving.set(false);
-          if (response.success && response.data) this.router.navigate(['/admin/vendors', response.data.id]);
+          if (response.success && response.data) {
+            // Apply the created vendor's state directly instead of relying on the route
+            // navigation to re-trigger init logic -- /vendors/new and /vendors/:id are the
+            // same route, so Angular's route-reuse strategy keeps this component instance
+            // alive across the navigate() below and its constructor-only load logic never
+            // re-runs.
+            this.isNew.set(false);
+            this.vendorId.set(response.data.id);
+            this.applyVendor(response.data);
+            this.loadContacts();
+            this.loadRates();
+            this.loadPayments();
+            this.loadInvoices();
+            this.loadPerformanceHistory();
+            this.router.navigate(['/admin/vendors', response.data.id], { replaceUrl: true });
+          }
         },
         error: (error) => {
           this.basicSaving.set(false);

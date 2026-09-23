@@ -189,7 +189,16 @@ export class LeadDetail {
         next: (response) => {
           this.basicSaving.set(false);
           if (response.success && response.data) {
-            this.router.navigate(['/admin/leads', response.data.id]);
+            // Apply the created lead's state directly instead of relying on the route
+            // navigation to re-trigger init logic -- /leads/new and /leads/:id are the
+            // same route, so Angular's route-reuse strategy keeps this component instance
+            // alive across the navigate() below and its constructor-only load logic never
+            // re-runs.
+            this.isNew.set(false);
+            this.leadId.set(response.data.id);
+            this.applyLead(response.data);
+            this.loadFollowUps();
+            this.router.navigate(['/admin/leads', response.data.id], { replaceUrl: true });
           }
         },
         error: (error) => {
