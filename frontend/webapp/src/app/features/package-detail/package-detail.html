@@ -1,5 +1,5 @@
 @if (loading()) {
-  <div class="state-message">Loading package…</div>
+  <app-spinner label="Loading package…" />
 } @else if (notFound()) {
   <div class="state-message">
     <h2>Package not found</h2>

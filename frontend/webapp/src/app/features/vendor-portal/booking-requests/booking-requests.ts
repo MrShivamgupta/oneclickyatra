@@ -2,13 +2,14 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { VendorPortalService } from '../../../core/services/vendor-portal.service';
 import { VendorBookingRequestItem } from '../../../core/models/vendor.models';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 const PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-booking-requests',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, Spinner],
   templateUrl: './booking-requests.html',
   styleUrl: '../vendor-portal-shared.scss'
 })

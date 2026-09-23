@@ -26,7 +26,7 @@
   </div>
 
   @if (loadingDestinations()) {
-    <div class="state-message">Loading destinations…</div>
+    <app-spinner label="Loading destinations…" />
   } @else if (destinationsError()) {
     <div class="state-message error">{{ destinationsError() }}</div>
   } @else if (featuredDestinations().length === 0) {
@@ -57,7 +57,7 @@
   </div>
 
   @if (loadingPackages()) {
-    <div class="state-message">Loading packages…</div>
+    <app-spinner label="Loading packages…" />
   } @else if (packagesError()) {
     <div class="state-message error">{{ packagesError() }}</div>
   } @else if (featuredPackages().length === 0) {

@@ -2,13 +2,14 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { VendorPortalService } from '../../../core/services/vendor-portal.service';
 import { VendorPayment } from '../../../core/models/vendor.models';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 const PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-vendor-my-payments',
   standalone: true,
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, Spinner],
   templateUrl: './my-payments.html',
   styleUrl: '../vendor-portal-shared.scss'
 })

@@ -4,13 +4,14 @@ import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { QuotationService } from '../../core/services/quotation.service';
 import { QuotationPublic } from '../../core/models/quotation.models';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 type DecisionMode = 'none' | 'approve' | 'reject';
 
 @Component({
   selector: 'app-quote-view',
   standalone: true,
-  imports: [FormsModule, DatePipe, DecimalPipe],
+  imports: [FormsModule, DatePipe, DecimalPipe, Spinner],
   templateUrl: './quote-view.html',
   styleUrl: './quote-view.scss'
 })

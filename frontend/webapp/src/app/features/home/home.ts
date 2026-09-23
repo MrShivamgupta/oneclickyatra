@@ -5,11 +5,12 @@ import { DestinationService } from '../../core/services/destination.service';
 import { PackageService } from '../../core/services/package.service';
 import { Destination } from '../../core/models/master-data.models';
 import { PackageSummary } from '../../core/models/package.models';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, Spinner],
   templateUrl: './home.html',
   styleUrl: './home.scss'
 })

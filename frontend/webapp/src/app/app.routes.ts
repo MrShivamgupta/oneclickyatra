@@ -1,7 +1,13 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { permissionGuard } from './core/guards/permission.guard';
 
 export const routes: Routes = [
+  {
+    path: 'forbidden',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/forbidden/forbidden').then((m) => m.Forbidden)
+  },
   {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login)
@@ -94,70 +100,87 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
+        canActivate: [permissionGuard('dashboard.view')],
         loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard)
       },
       {
         path: 'destinations',
+        canActivate: [permissionGuard('destination.view')],
         loadComponent: () => import('./features/destinations/destinations').then((m) => m.Destinations)
       },
       {
         path: 'master-data',
+        canActivate: [permissionGuard('masterdata.view')],
         loadComponent: () => import('./features/master-data/master-data').then((m) => m.MasterData)
       },
       {
         path: 'packages',
+        canActivate: [permissionGuard('package.view')],
         loadComponent: () => import('./features/packages/packages-list/packages-list').then((m) => m.PackagesList)
       },
       {
         path: 'packages/:id',
+        canActivate: [permissionGuard('package.view')],
         loadComponent: () => import('./features/packages/package-editor/package-editor').then((m) => m.PackageEditor)
       },
       {
         path: 'leads',
+        canActivate: [permissionGuard('lead.view')],
         loadComponent: () => import('./features/leads/leads-list/leads-list').then((m) => m.LeadsList)
       },
       {
         path: 'leads/:id',
+        canActivate: [permissionGuard('lead.view')],
         loadComponent: () => import('./features/leads/lead-detail/lead-detail').then((m) => m.LeadDetail)
       },
       {
         path: 'customers',
+        canActivate: [permissionGuard('customer.view')],
         loadComponent: () => import('./features/customers/customers').then((m) => m.Customers)
       },
       {
         path: 'followups',
+        canActivate: [permissionGuard('followup.view')],
         loadComponent: () => import('./features/followups/followups').then((m) => m.FollowUps)
       },
       {
         path: 'quotations',
+        canActivate: [permissionGuard('quotation.view')],
         loadComponent: () => import('./features/quotations/quotations-list/quotations-list').then((m) => m.QuotationsList)
       },
       {
         path: 'quotations/:id',
+        canActivate: [permissionGuard('quotation.view')],
         loadComponent: () => import('./features/quotations/quotation-detail/quotation-detail').then((m) => m.QuotationDetailPage)
       },
       {
         path: 'bookings',
+        canActivate: [permissionGuard('booking.view')],
         loadComponent: () => import('./features/bookings/bookings-list/bookings-list').then((m) => m.BookingsList)
       },
       {
         path: 'bookings/:id',
+        canActivate: [permissionGuard('booking.view')],
         loadComponent: () => import('./features/bookings/booking-detail/booking-detail').then((m) => m.BookingDetail)
       },
       {
         path: 'enquiries',
+        canActivate: [permissionGuard('enquiry.view')],
         loadComponent: () => import('./features/enquiries-admin/enquiries-admin').then((m) => m.EnquiriesAdmin)
       },
       {
         path: 'payments',
+        canActivate: [permissionGuard('payment.view')],
         loadComponent: () => import('./features/payments/payments').then((m) => m.Payments)
       },
       {
         path: 'invoices',
+        canActivate: [permissionGuard('payment.view')],
         loadComponent: () => import('./features/invoices/invoices').then((m) => m.Invoices)
       },
       {
         path: 'ai-package-builder',
+        canActivate: [permissionGuard('package.view')],
         loadComponent: () => import('./features/admin-placeholder/admin-placeholder').then((m) => m.AdminPlaceholder),
         data: {
           title: 'AI Package Builder',
@@ -168,38 +191,52 @@ export const routes: Routes = [
       },
       {
         path: 'vendors',
+        canActivate: [permissionGuard('vendor.view')],
         loadComponent: () => import('./features/vendors/vendors-list/vendors-list').then((m) => m.VendorsList)
       },
       {
         path: 'vendors/:id',
+        canActivate: [permissionGuard('vendor.view')],
         loadComponent: () => import('./features/vendors/vendor-detail/vendor-detail').then((m) => m.VendorDetail)
       },
       {
         path: 'whatsapp',
+        canActivate: [permissionGuard('whatsapp.manage')],
         loadComponent: () => import('./features/whatsapp/whatsapp-center/whatsapp-center').then((m) => m.WhatsAppCenter)
       },
       {
         path: 'reports',
+        canActivate: [permissionGuard('report.view')],
         loadComponent: () => import('./features/reports/reports-hub/reports-hub').then((m) => m.ReportsHub)
       },
       {
         path: 'reports/:reportName',
+        canActivate: [permissionGuard('report.view')],
         loadComponent: () => import('./features/reports/report-viewer/report-viewer').then((m) => m.ReportViewer)
       },
       {
         path: 'feedback',
+        canActivate: [permissionGuard('feedback.view')],
         loadComponent: () => import('./features/feedback-manager/feedback-manager').then((m) => m.FeedbackManager)
       },
       {
         path: 'users',
+        canActivate: [permissionGuard('user.manage')],
         loadComponent: () => import('./features/users/users').then((m) => m.Users)
       },
       {
+        path: 'roles',
+        canActivate: [permissionGuard('role.manage')],
+        loadComponent: () => import('./features/roles/roles').then((m) => m.Roles)
+      },
+      {
         path: 'audit-logs',
+        canActivate: [permissionGuard('audit.view')],
         loadComponent: () => import('./features/audit-logs/audit-logs').then((m) => m.AuditLogs)
       },
       {
         path: 'settings',
+        canActivate: [permissionGuard('settings.manage')],
         loadComponent: () => import('./features/admin-placeholder/admin-placeholder').then((m) => m.AdminPlaceholder),
         data: {
           title: 'Settings',

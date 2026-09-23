@@ -19,7 +19,7 @@
   </app-filter-bar>
 
   @if (loading()) {
-    <div class="state-message">Loading packages…</div>
+    <app-spinner label="Loading packages…" />
   } @else if (error()) {
     <div class="state-message error">{{ error() }}</div>
   } @else if (packages().length === 0) {

@@ -1,11 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PortalService } from '../../../core/services/portal.service';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-my-profile',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, Spinner],
   templateUrl: './my-profile.html',
   styleUrl: '../portal-shared.scss'
 })

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationDialog } from '../../../shared/components/confirmation-dialog/confirmation-dialog';
 import { Pagination } from '../../../shared/components/pagination/pagination';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 import { VendorService } from '../../../core/services/vendor.service';
 import { DestinationService } from '../../../core/services/destination.service';
 import { Destination } from '../../../core/models/master-data.models';
@@ -24,7 +25,7 @@ const RATING_OPTIONS = [1, 2, 3, 4, 5];
 @Component({
   selector: 'app-vendor-detail',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, RouterLink, ConfirmationDialog, Pagination, DatePipe, DecimalPipe],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, ConfirmationDialog, Pagination, Spinner, DatePipe, DecimalPipe],
   templateUrl: './vendor-detail.html',
   styleUrl: './vendor-detail.scss'
 })

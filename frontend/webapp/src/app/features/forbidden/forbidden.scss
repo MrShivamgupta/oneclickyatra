@@ -1,0 +1,44 @@
+@use '../../shared/styles/index' as tokens;
+
+.forbidden-page {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: tokens.$space-3;
+  padding: tokens.$space-8;
+}
+
+.forbidden-icon {
+  width: 48px;
+  height: 48px;
+  color: tokens.$color-text-secondary;
+  margin-bottom: tokens.$space-2;
+}
+
+h1 {
+  margin: 0;
+  font-size: tokens.$font-size-xl;
+}
+
+p {
+  margin: 0 0 tokens.$space-2;
+  max-width: 420px;
+  color: tokens.$color-text-secondary;
+}
+
+.primary-button {
+  padding: tokens.$space-2 tokens.$space-5;
+  border: none;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-primary;
+  color: tokens.$color-text-inverse;
+  font-weight: tokens.$font-weight-semibold;
+  text-decoration: none;
+
+  &:hover {
+    background: tokens.$color-primary-dark;
+  }
+}

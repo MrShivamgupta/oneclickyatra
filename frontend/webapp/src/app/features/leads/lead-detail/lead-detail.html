@@ -15,7 +15,7 @@
 </div>
 
 @if (loading()) {
-  <p>Loading…</p>
+  <app-spinner label="Loading…" />
 }
 @if (loadError()) {
   <div class="form-error">{{ loadError() }}</div>

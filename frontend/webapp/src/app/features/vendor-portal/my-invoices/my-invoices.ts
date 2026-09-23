@@ -3,13 +3,14 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VendorPortalService } from '../../../core/services/vendor-portal.service';
 import { VendorInvoice } from '../../../core/models/vendor.models';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 const PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-vendor-my-invoices',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, FormsModule],
+  imports: [DatePipe, DecimalPipe, FormsModule, Spinner],
   templateUrl: './my-invoices.html',
   styleUrl: '../vendor-portal-shared.scss'
 })

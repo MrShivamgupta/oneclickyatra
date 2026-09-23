@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { TokenService } from '../../core/auth/token.service';
 import { LeadService } from '../../core/services/lead.service';
 import { CustomerService } from '../../core/services/customer.service';
 import { BookingService } from '../../core/services/booking.service';
@@ -15,6 +16,11 @@ interface NavItem {
   label: string;
   route: string;
   icon: IconName;
+  /** Matches the PermissionConstants key gating this page's route and API calls (see
+   * permission.guard.ts / [HasPermission] backend attributes) — a nav item only renders when the
+   * signed-in user's role actually holds this permission, so the sidebar never links to a page
+   * that would 403/redirect-to-forbidden anyway. */
+  permission: string;
 }
 
 interface GlobalSearchResults {
@@ -38,6 +44,7 @@ const EMPTY_GLOBAL_SEARCH_RESULTS: GlobalSearchResults = { leads: [], customers:
 })
 export class AdminLayout {
   private readonly authService = inject(AuthService);
+  private readonly tokenService = inject(TokenService);
   private readonly router = inject(Router);
   private readonly leadService = inject(LeadService);
   private readonly customerService = inject(CustomerService);
@@ -60,27 +67,30 @@ export class AdminLayout {
   // inconsistently across platforms/fonts and can't be sized/colored via CSS the way a structural
   // UI icon needs to be.
   readonly navItems: NavItem[] = [
-    { label: 'Dashboard', route: '/admin/dashboard', icon: 'grid' },
-    { label: 'Lead Management', route: '/admin/leads', icon: 'user' },
-    { label: 'Enquiries', route: '/admin/enquiries', icon: 'inbox' },
-    { label: 'Customer Database', route: '/admin/customers', icon: 'users' },
-    { label: 'Destinations', route: '/admin/destinations', icon: 'map-pin' },
-    { label: 'Tour Packages', route: '/admin/packages', icon: 'package' },
-    { label: 'AI Package Builder', route: '/admin/ai-package-builder', icon: 'sparkles' },
-    { label: 'Quotations', route: '/admin/quotations', icon: 'file-text' },
-    { label: 'Bookings', route: '/admin/bookings', icon: 'calendar-check' },
-    { label: 'Payments', route: '/admin/payments', icon: 'credit-card' },
-    { label: 'Invoices', route: '/admin/invoices', icon: 'receipt' },
-    { label: 'Vendors', route: '/admin/vendors', icon: 'briefcase' },
-    { label: 'Follow-ups', route: '/admin/followups', icon: 'phone' },
-    { label: 'WhatsApp Center', route: '/admin/whatsapp', icon: 'message-circle' },
-    { label: 'Reports & Analytics', route: '/admin/reports', icon: 'bar-chart' },
-    { label: 'Feedback Manager', route: '/admin/feedback', icon: 'star' },
-    { label: 'Master Data', route: '/admin/master-data', icon: 'database' },
-    { label: 'Users', route: '/admin/users', icon: 'id-badge' },
-    { label: 'Audit Logs', route: '/admin/audit-logs', icon: 'clipboard-list' },
-    { label: 'Settings', route: '/admin/settings', icon: 'settings' }
+    { label: 'Dashboard', route: '/admin/dashboard', icon: 'grid', permission: 'dashboard.view' },
+    { label: 'Lead Management', route: '/admin/leads', icon: 'user', permission: 'lead.view' },
+    { label: 'Enquiries', route: '/admin/enquiries', icon: 'inbox', permission: 'enquiry.view' },
+    { label: 'Customer Database', route: '/admin/customers', icon: 'users', permission: 'customer.view' },
+    { label: 'Destinations', route: '/admin/destinations', icon: 'map-pin', permission: 'destination.view' },
+    { label: 'Tour Packages', route: '/admin/packages', icon: 'package', permission: 'package.view' },
+    { label: 'AI Package Builder', route: '/admin/ai-package-builder', icon: 'sparkles', permission: 'package.view' },
+    { label: 'Quotations', route: '/admin/quotations', icon: 'file-text', permission: 'quotation.view' },
+    { label: 'Bookings', route: '/admin/bookings', icon: 'calendar-check', permission: 'booking.view' },
+    { label: 'Payments', route: '/admin/payments', icon: 'credit-card', permission: 'payment.view' },
+    { label: 'Invoices', route: '/admin/invoices', icon: 'receipt', permission: 'payment.view' },
+    { label: 'Vendors', route: '/admin/vendors', icon: 'briefcase', permission: 'vendor.view' },
+    { label: 'Follow-ups', route: '/admin/followups', icon: 'phone', permission: 'followup.view' },
+    { label: 'WhatsApp Center', route: '/admin/whatsapp', icon: 'message-circle', permission: 'whatsapp.manage' },
+    { label: 'Reports & Analytics', route: '/admin/reports', icon: 'bar-chart', permission: 'report.view' },
+    { label: 'Feedback Manager', route: '/admin/feedback', icon: 'star', permission: 'feedback.view' },
+    { label: 'Master Data', route: '/admin/master-data', icon: 'database', permission: 'masterdata.view' },
+    { label: 'Users', route: '/admin/users', icon: 'id-badge', permission: 'user.manage' },
+    { label: 'Roles & Permissions', route: '/admin/roles', icon: 'shield', permission: 'role.manage' },
+    { label: 'Audit Logs', route: '/admin/audit-logs', icon: 'clipboard-list', permission: 'audit.view' },
+    { label: 'Settings', route: '/admin/settings', icon: 'settings', permission: 'settings.manage' }
   ];
+
+  readonly visibleNavItems = computed(() => this.navItems.filter((item) => this.tokenService.hasPermission(item.permission)));
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update((collapsed) => !collapsed);

@@ -1,0 +1,168 @@
+@use '../../shared/styles/index' as tokens;
+
+.page-header {
+  margin-bottom: tokens.$space-5;
+
+  h1 {
+    margin: 0;
+    font-size: tokens.$font-size-xl;
+  }
+
+  .subtitle {
+    margin: tokens.$space-1 0 0;
+    color: tokens.$color-text-secondary;
+    font-size: tokens.$font-size-sm;
+  }
+}
+
+.form-error {
+  color: tokens.$color-danger;
+  background: rgba(224, 69, 63, 0.08);
+  padding: tokens.$space-2 tokens.$space-3;
+  border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+  margin: 0 0 tokens.$space-3;
+}
+
+.save-success {
+  color: tokens.$color-success-solid;
+  font-size: tokens.$font-size-sm;
+  margin: 0 0 tokens.$space-3;
+}
+
+.link-button {
+  border: none;
+  background: none;
+  color: tokens.$color-primary;
+  cursor: pointer;
+  font-size: tokens.$font-size-sm;
+  padding: 0;
+  margin-left: tokens.$space-2;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.primary-button {
+  padding: tokens.$space-2 tokens.$space-5;
+  border: none;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-primary;
+  color: tokens.$color-text-inverse;
+  font-weight: tokens.$font-weight-semibold;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: tokens.$space-2;
+
+  &:hover:not(:disabled) {
+    background: tokens.$color-primary-dark;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.secondary-button {
+  padding: tokens.$space-2 tokens.$space-5;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-sm;
+  background: tokens.$color-surface;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.matrix-toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: tokens.$space-2;
+  margin-bottom: tokens.$space-4;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: tokens.$space-3;
+}
+
+.matrix-scroll {
+  overflow-x: auto;
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+}
+
+.matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: tokens.$font-size-sm;
+
+  th,
+  td {
+    padding: tokens.$space-2 tokens.$space-3;
+    border-bottom: 1px solid tokens.$color-border;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: tokens.$color-surface;
+    font-size: tokens.$font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: tokens.$color-text-secondary;
+    z-index: 1;
+
+    &.dirty {
+      color: tokens.$color-primary-dark;
+    }
+  }
+
+  .permission-col {
+    min-width: 260px;
+  }
+}
+
+.group-row td {
+  background: tokens.$color-bg;
+  font-weight: tokens.$font-weight-semibold;
+  text-transform: capitalize;
+  color: tokens.$color-text-primary;
+}
+
+.permission-cell {
+  display: flex;
+  flex-direction: column;
+  white-space: normal;
+}
+
+.permission-key {
+  font-family: monospace;
+  font-size: tokens.$font-size-xs;
+  color: tokens.$color-text-primary;
+}
+
+.permission-desc {
+  font-size: tokens.$font-size-xs;
+  color: tokens.$color-text-secondary;
+}
+
+.checkbox-cell {
+  text-align: center;
+
+  input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+}

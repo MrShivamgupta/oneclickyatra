@@ -7,7 +7,7 @@
   </div>
 
   @if (loading()) {
-    <p class="hint">Loading…</p>
+    <app-spinner label="Loading…" />
   } @else if (loadError()) {
     <p class="hint form-error">{{ loadError() }}</p>
   } @else if (invoices().length === 0) {

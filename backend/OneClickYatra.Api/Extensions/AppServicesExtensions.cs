@@ -67,6 +67,7 @@ public static class AppServicesExtensions
         __services.AddScoped<IRefundRepository, RefundRepository>();
         __services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         __services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+        __services.AddScoped<IRoleRepository, RoleRepository>();
 
         // Vendor Management
         __services.AddScoped<IVendorRepository, VendorRepository>();
@@ -137,6 +138,8 @@ public static class AppServicesExtensions
         __services.AddScoped<IFeedbackAppFunction, FeedbackAppFunction>();
 
         __services.AddScoped<IAuditLogAppFunction, AuditLogAppFunction>();
+
+        __services.AddScoped<IRoleAppFunction, RoleAppFunction>();
 
         // Validators
         __services.AddValidatorsFromAssemblyContaining<Program>();

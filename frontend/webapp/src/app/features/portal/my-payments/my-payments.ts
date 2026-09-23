@@ -2,13 +2,14 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { PortalService } from '../../../core/services/portal.service';
 import { Payment } from '../../../core/models/payment.models';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 const PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-my-payments',
   standalone: true,
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, Spinner],
   templateUrl: './my-payments.html',
   styleUrl: '../portal-shared.scss'
 })

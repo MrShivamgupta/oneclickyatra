@@ -5,13 +5,14 @@ import { FormsModule } from '@angular/forms';
 import { PortalService } from '../../../core/services/portal.service';
 import { Booking, BookingAddOn, BookingPassenger } from '../../../core/models/booking.models';
 import { CustomerDocument } from '../../../core/models/portal.models';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 const VOUCHER_ELIGIBLE_STATUSES = ['Confirmed', 'InProgress', 'Completed'];
 
 @Component({
   selector: 'app-my-booking-detail',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink, FormsModule],
+  imports: [DatePipe, DecimalPipe, RouterLink, FormsModule, Spinner],
   templateUrl: './my-booking-detail.html',
   styleUrl: '../portal-shared.scss'
 })

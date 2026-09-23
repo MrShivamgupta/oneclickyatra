@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReportService } from '../../../core/services/report.service';
 import { EXPORT_FORMATS, ExportFormat, REPORT_DEFINITIONS, REPORT_NAMES, ReportDefinition, ReportGroupBy, ReportName, ReportRow } from '../../../core/models/report.models';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 // Same preset set and computeRange logic as features/dashboard/dashboard.ts, copied rather than
 // re-derived so both places compute date ranges identically.
@@ -39,7 +40,7 @@ interface ReportQueryParams {
 @Component({
   selector: 'app-report-viewer',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, Spinner],
   templateUrl: './report-viewer.html',
   styleUrl: './report-viewer.scss'
 })

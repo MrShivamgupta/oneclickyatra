@@ -2,11 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CmsPageService } from '../../core/services/cms-page.service';
 import { CmsPage as CmsPageModel } from '../../core/models/cms.models';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-cms-page',
   standalone: true,
-  imports: [],
+  imports: [Spinner],
   templateUrl: './cms-page.html',
   styleUrl: './cms-page.scss'
 })

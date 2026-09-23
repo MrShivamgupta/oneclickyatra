@@ -2,11 +2,12 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { VendorPortalService } from '../../../core/services/vendor-portal.service';
 import { VendorRate } from '../../../core/models/vendor.models';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-my-rates',
   standalone: true,
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, Spinner],
   templateUrl: './my-rates.html',
   styleUrl: '../vendor-portal-shared.scss'
 })

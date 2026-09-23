@@ -55,7 +55,7 @@
 
 <div class="table-wrapper">
   @if (loading()) {
-    <p class="hint">Loading…</p>
+    <app-spinner label="Loading…" />
   } @else if (loadError()) {
     <p class="error-text">{{ loadError() }}</p>
   } @else if (rows().length === 0) {

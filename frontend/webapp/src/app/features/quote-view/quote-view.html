@@ -1,5 +1,5 @@
 @if (loading()) {
-  <div class="state-message">Loading your quotation…</div>
+  <app-spinner label="Loading your quotation…" />
 } @else if (notFound()) {
   <div class="state-message">
     <h1>Quotation not found</h1>

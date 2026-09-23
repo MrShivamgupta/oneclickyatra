@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationDialog } from '../../../shared/components/confirmation-dialog/confirmation-dialog';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 import { QuotationService } from '../../../core/services/quotation.service';
 import { LeadService } from '../../../core/services/lead.service';
 import { DestinationService } from '../../../core/services/destination.service';
@@ -18,7 +19,7 @@ const EDITABLE_STATUSES = ['Draft', 'Sent', 'Expired'];
 @Component({
   selector: 'app-quotation-detail',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, RouterLink, ConfirmationDialog, DatePipe],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, ConfirmationDialog, DatePipe, Spinner],
   templateUrl: './quotation-detail.html',
   styleUrl: './quotation-detail.scss'
 })

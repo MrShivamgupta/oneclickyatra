@@ -2,7 +2,7 @@
   <a routerLink="/portal/bookings" class="view-all">← Back to my bookings</a>
 
   @if (loading()) {
-    <p class="hint">Loading…</p>
+    <app-spinner label="Loading…" />
   } @else if (notFound()) {
     <h1>Booking not found</h1>
   } @else if (booking(); as b) {

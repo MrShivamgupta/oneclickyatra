@@ -2,11 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DestinationService } from '../../core/services/destination.service';
 import { Destination } from '../../core/models/master-data.models';
+import { Spinner } from '../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-destination-detail',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, Spinner],
   templateUrl: './destination-detail.html',
   styleUrl: './destination-detail.scss'
 })

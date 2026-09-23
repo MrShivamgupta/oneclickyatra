@@ -30,7 +30,8 @@ export type IconName =
   | 'search'
   | 'bell'
   | 'logout'
-  | 'x-circle';
+  | 'x-circle'
+  | 'shield';
 
 @Component({
   selector: 'app-icon',

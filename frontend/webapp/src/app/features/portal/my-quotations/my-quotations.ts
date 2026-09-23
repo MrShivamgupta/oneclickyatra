@@ -2,13 +2,14 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { PortalService } from '../../../core/services/portal.service';
 import { Quotation } from '../../../core/models/quotation.models';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 const PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-my-quotations',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, Spinner],
   templateUrl: './my-quotations.html',
   styleUrl: '../portal-shared.scss'
 })

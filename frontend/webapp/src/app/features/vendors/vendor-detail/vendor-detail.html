@@ -18,7 +18,7 @@
 </div>
 
 @if (loading()) {
-  <p>Loading…</p>
+  <app-spinner label="Loading vendor…" />
 }
 
 <div class="detail-grid">
@@ -185,7 +185,7 @@
       <h2>Payments</h2>
 
       @if (paymentsLoading()) {
-        <p class="hint">Loading…</p>
+        <app-spinner label="Loading payments…" />
       } @else if (payments().length === 0) {
         <p class="hint">No payments recorded yet.</p>
       } @else {
@@ -259,7 +259,7 @@
       <p class="hint">Invoices the vendor has submitted for review through their own portal.</p>
 
       @if (invoicesLoading()) {
-        <p class="hint">Loading…</p>
+        <app-spinner label="Loading invoices…" />
       } @else if (invoices().length === 0) {
         <p class="hint">No invoices submitted yet.</p>
       } @else {
@@ -315,7 +315,7 @@
       <h2>Performance History</h2>
 
       @if (performanceLoading()) {
-        <p class="hint">Loading…</p>
+        <app-spinner label="Loading performance history…" />
       } @else if (performanceHistory().length === 0) {
         <p class="hint">No performance ratings recorded yet.</p>
       } @else {

@@ -2,11 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { VendorPortalService } from '../../../core/services/vendor-portal.service';
 import { Vendor } from '../../../core/models/vendor.models';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-vendor-my-profile',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, Spinner],
   templateUrl: './my-profile.html',
   styleUrl: '../vendor-portal-shared.scss'
 })

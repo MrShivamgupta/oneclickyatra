@@ -3,13 +3,14 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { PortalService } from '../../../core/services/portal.service';
 import { Booking } from '../../../core/models/booking.models';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 
 const PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-my-bookings',
   standalone: true,
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, Spinner],
   templateUrl: './my-bookings.html',
   styleUrl: '../portal-shared.scss'
 })

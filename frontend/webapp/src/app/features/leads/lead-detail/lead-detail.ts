@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationDialog } from '../../../shared/components/confirmation-dialog/confirmation-dialog';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 import { LeadService } from '../../../core/services/lead.service';
 import { DestinationService } from '../../../core/services/destination.service';
 import { UserService } from '../../../core/services/user.service';
@@ -13,7 +14,7 @@ import { FollowUp, FOLLOW_UP_TYPES, FollowUpType, Lead, LEAD_STATUSES, UserSumma
 @Component({
   selector: 'app-lead-detail',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, RouterLink, ConfirmationDialog, DatePipe],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, ConfirmationDialog, DatePipe, Spinner],
   templateUrl: './lead-detail.html',
   styleUrl: './lead-detail.scss'
 })

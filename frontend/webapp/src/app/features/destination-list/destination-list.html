@@ -12,7 +12,7 @@
   />
 
   @if (loading()) {
-    <div class="state-message">Loading destinations…</div>
+    <app-spinner label="Loading destinations…" />
   } @else if (error()) {
     <div class="state-message error">
       <p>{{ error() }}</p>

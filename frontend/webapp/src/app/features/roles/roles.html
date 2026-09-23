@@ -1,0 +1,74 @@
+<div class="page-header">
+  <div>
+    <h1>Roles &amp; Permissions</h1>
+    <p class="subtitle">Choose which pages and actions each role can access. Changes apply to a role's members the next time they log in.</p>
+  </div>
+</div>
+
+@if (loadError()) {
+  <p class="form-error">
+    {{ loadError() }}
+    <button type="button" class="link-button" (click)="load()">Retry</button>
+  </p>
+}
+
+@if (loading()) {
+  <app-spinner label="Loading roles and permissions…" />
+} @else if (matrix(); as m) {
+  <div class="matrix-toolbar">
+    @if (saveError()) {
+      <p class="form-error">{{ saveError() }}</p>
+    }
+    @if (saveSuccess()) {
+      <p class="save-success">Saved.</p>
+    }
+    <div class="toolbar-actions">
+      <button type="button" class="secondary-button" [disabled]="!hasChanges() || saving()" (click)="discardChanges()">Discard changes</button>
+      <button type="button" class="primary-button" [disabled]="!hasChanges() || saving()" (click)="saveChanges()">
+        @if (saving()) {
+          <app-spinner [iconOnly]="true" label="Saving" />
+        }
+        Save changes
+      </button>
+    </div>
+  </div>
+
+  <div class="matrix-scroll">
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th class="permission-col">Permission</th>
+          @for (role of m.roles; track role.roleId) {
+            <th [class.dirty]="dirtyRoleIds().includes(role.roleId)">{{ role.roleName }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (group of groups(); track group.name) {
+          <tr class="group-row">
+            <td [attr.colspan]="m.roles.length + 1">{{ group.name }}</td>
+          </tr>
+          @for (permission of group.permissions; track permission.key) {
+            <tr>
+              <td class="permission-cell">
+                <span class="permission-key">{{ permission.key }}</span>
+                @if (permission.description) {
+                  <span class="permission-desc">{{ permission.description }}</span>
+                }
+              </td>
+              @for (role of m.roles; track role.roleId) {
+                <td class="checkbox-cell">
+                  <input
+                    type="checkbox"
+                    [checked]="isChecked(role.roleId, permission.key)"
+                    (change)="toggle(role.roleId, permission.key)"
+                  />
+                </td>
+              }
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+}

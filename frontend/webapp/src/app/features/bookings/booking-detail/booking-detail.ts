@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationDialog } from '../../../shared/components/confirmation-dialog/confirmation-dialog';
+import { Spinner } from '../../../shared/components/spinner/spinner';
 import { BookingService } from '../../../core/services/booking.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { CustomerService } from '../../../core/services/customer.service';
@@ -30,7 +31,7 @@ declare const Razorpay: new (options: Record<string, unknown>) => { open(): void
 @Component({
   selector: 'app-booking-detail',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, RouterLink, ConfirmationDialog, DatePipe, DecimalPipe],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, ConfirmationDialog, Spinner, DatePipe, DecimalPipe],
   templateUrl: './booking-detail.html',
   styleUrl: './booking-detail.scss'
 })
