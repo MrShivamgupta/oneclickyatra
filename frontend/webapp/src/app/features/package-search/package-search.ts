@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { FilterBar } from '../../shared/components/filter-bar/filter-bar';
 import { Pagination } from '../../shared/components/pagination/pagination';
 import { Spinner } from '../../shared/components/spinner/spinner';
@@ -13,7 +14,7 @@ const PAGE_SIZE = 12;
 @Component({
   selector: 'app-package-search',
   standalone: true,
-  imports: [RouterLink, FilterBar, Pagination, Spinner],
+  imports: [RouterLink, FilterBar, Pagination, Spinner, FormsModule],
   templateUrl: './package-search.html',
   styleUrl: './package-search.scss'
 })

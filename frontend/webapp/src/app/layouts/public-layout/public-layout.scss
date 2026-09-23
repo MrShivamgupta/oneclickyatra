@@ -1,5 +1,19 @@
 @use '../../shared/styles-public/index' as tokens;
 
+// Sticky footer: without this, a short page (an empty state, a form with little content) leaves the
+// footer floating right under the content instead of pinned to the bottom of the viewport, with a
+// large empty gap below it. Shared by public-layout, portal-layout and vendor-portal-layout, which
+// all point their styleUrl at this one file and share this exact header/main/footer structure.
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
 .site-header {
   display: flex;
   align-items: center;

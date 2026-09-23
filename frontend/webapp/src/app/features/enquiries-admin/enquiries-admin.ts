@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { DataTable, DataTableColumn } from '../../shared/components/data-table/data-table';
 import { Pagination } from '../../shared/components/pagination/pagination';
 import { FilterBar } from '../../shared/components/filter-bar/filter-bar';
@@ -12,7 +13,7 @@ const PAGE_SIZE = 10;
 @Component({
   selector: 'app-enquiries-admin',
   standalone: true,
-  imports: [DataTable, Pagination, FilterBar, ConfirmationDialog, DatePipe],
+  imports: [DataTable, Pagination, FilterBar, ConfirmationDialog, DatePipe, FormsModule],
   templateUrl: './enquiries-admin.html',
   styleUrls: ['../destinations/destinations.scss', '../leads/leads-list/leads-list.scss', './enquiries-admin.scss']
 })
