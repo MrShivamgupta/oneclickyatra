@@ -141,6 +141,8 @@ public static class AppServicesExtensions
 
         __services.AddScoped<IRoleAppFunction, RoleAppFunction>();
 
+        __services.AddScoped<IEmailTemplateAppFunction, EmailTemplateAppFunction>();
+
         // Validators
         __services.AddValidatorsFromAssemblyContaining<Program>();
 

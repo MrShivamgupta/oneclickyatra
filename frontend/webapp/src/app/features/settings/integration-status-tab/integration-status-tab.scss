@@ -1,0 +1,66 @@
+@use '../../../shared/styles/index' as tokens;
+
+.intro {
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-sm;
+  max-width: 640px;
+  margin: 0 0 tokens.$space-5;
+}
+
+.form-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-sm;
+}
+
+.status-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-3;
+  max-width: 640px;
+}
+
+.status-list li {
+  background: tokens.$color-surface;
+  border: 1px solid tokens.$color-border;
+  border-radius: tokens.$radius-md;
+  padding: tokens.$space-4;
+}
+
+.status-main {
+  display: flex;
+  align-items: center;
+  gap: tokens.$space-2;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.ok { background: tokens.$color-success-solid; }
+  &.missing { background: tokens.$color-text-secondary; }
+}
+
+.status-label {
+  font-weight: tokens.$font-weight-semibold;
+  flex: 1;
+}
+
+.badge {
+  padding: 2px tokens.$space-2;
+  border-radius: tokens.$radius-pill;
+  font-size: tokens.$font-size-xs;
+
+  &.ok { background: rgba(31, 169, 113, 0.15); color: #157a4f; }
+  &.missing { background: tokens.$color-bg; color: tokens.$color-text-secondary; }
+}
+
+.status-description {
+  margin: tokens.$space-2 0 0;
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-xs;
+}

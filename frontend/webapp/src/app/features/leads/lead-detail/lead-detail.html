@@ -202,7 +202,7 @@
               @if (followUp.notes) {
                 <div class="followup-notes">{{ followUp.notes }}</div>
               }
-              @if (followUp.status === 'Pending') {
+              @if (followUp.status === 'Pending' && canManage()) {
                 <div class="followup-actions">
                   <button type="button" class="link-button" [disabled]="followUpStatusUpdatingId() === followUp.id" (click)="markFollowUpStatus(followUp, 'Completed')">
                     {{ followUpStatusUpdatingId() === followUp.id ? 'Updating…' : 'Mark Completed' }}
@@ -238,7 +238,7 @@
         }
 
         <div class="form-actions">
-          <button type="submit" class="secondary-button" [disabled]="followUpSaving()">
+          <button type="submit" class="secondary-button" [disabled]="followUpSaving() || !canManage()">
             {{ followUpSaving() ? 'Scheduling…' : '+ Schedule Follow-Up' }}
           </button>
         </div>

@@ -1,0 +1,79 @@
+@if (!showForm()) {
+  <div class="tab-toolbar">
+    <button type="button" class="primary-button" (click)="addNew()">+ New Template</button>
+  </div>
+}
+
+@if (showForm()) {
+  <form class="template-form" [formGroup]="form" (ngSubmit)="save()">
+    <label class="field">
+      Name
+      <input type="text" formControlName="name" placeholder="e.g. WelcomeEmail" />
+      @if (editingId()) {
+        <span class="field-hint">Name can't be changed once created — other code looks this template up by it.</span>
+      }
+    </label>
+
+    <label class="field">
+      Subject
+      <input type="text" formControlName="subject" placeholder="e.g. Your booking is confirmed!" />
+    </label>
+
+    <label class="field">
+      Body (HTML)
+      <textarea formControlName="bodyHtml" rows="10" placeholder="e.g. <p>Dear customer, ...</p>"></textarea>
+      <span class="field-hint">{{ placeholderHint }}</span>
+    </label>
+
+    <label class="field checkbox-field">
+      <input type="checkbox" formControlName="isActive" />
+      Active
+    </label>
+
+    @if (formError()) {
+      <div class="form-error">{{ formError() }}</div>
+    }
+
+    <div class="form-actions">
+      <button type="submit" class="primary-button" [disabled]="isSaving()">
+        {{ isSaving() ? 'Saving…' : (editingId() ? 'Update Template' : 'Create Template') }}
+      </button>
+      <button type="button" class="secondary-button" (click)="cancelEdit()">Cancel</button>
+    </div>
+  </form>
+}
+
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+
+<app-data-table [columns]="columns" [rows]="templates()" [loading]="loading()" emptyMessage="No email templates yet.">
+  <ng-template #rowTemplate let-template>
+    <tr>
+      <td><span class="template-name">{{ template.name }}</span></td>
+      <td class="subject-cell">{{ template.subject }}</td>
+      <td>
+        <span class="badge" [class.active]="template.isActive" [class.inactive]="!template.isActive">
+          {{ template.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </td>
+      <td>{{ template.updatedAt ? (template.updatedAt | date: 'dd MMM yyyy') : '—' }}</td>
+      <td class="actions-cell">
+        <button type="button" class="link-button" (click)="edit(template)">Edit</button>
+        <button type="button" class="link-button danger" (click)="confirmDelete(template)">Delete</button>
+      </td>
+    </tr>
+  </ng-template>
+</app-data-table>
+
+<app-confirmation-dialog
+  [open]="deleteTarget() !== null"
+  title="Delete email template?"
+  [message]="'This will remove \'' + (deleteTarget()?.name ?? '') + '\'. If any automated email still refers to this name, it will stop sending until the template is recreated.'"
+  confirmLabel="Delete"
+  [confirming]="deleting()"
+  confirmingLabel="Deleting…"
+  [errorMessage]="deleteError()"
+  (confirmed)="performDelete()"
+  (cancelled)="cancelDelete()"
+/>

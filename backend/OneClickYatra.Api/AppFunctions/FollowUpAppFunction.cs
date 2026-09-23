@@ -44,7 +44,8 @@ public sealed class FollowUpAppFunction : IFollowUpAppFunction
 
     public async Task<FollowUpResponse> CreateAsync(Guid __leadId, FollowUpRequest __request, CancellationToken __cancellationToken)
     {
-        _ = await _leadRepository.GetByIdAsync(__leadId, __cancellationToken) ?? throw new EntityNotFoundException("Lead", __leadId);
+        var lead = await _leadRepository.GetByIdAsync(__leadId, __cancellationToken) ?? throw new EntityNotFoundException("Lead", __leadId);
+        EnsureCanManageLead(lead);
 
         var followUp = new FollowUpModel
         {
@@ -77,6 +78,8 @@ public sealed class FollowUpAppFunction : IFollowUpAppFunction
     public async Task<FollowUpResponse> UpdateStatusAsync(Guid __id, FollowUpStatusRequest __request, CancellationToken __cancellationToken)
     {
         var followUp = await _followUpRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("FollowUp", __id);
+        var lead = await _leadRepository.GetByIdAsync(followUp.LeadId, __cancellationToken) ?? throw new EntityNotFoundException("Lead", followUp.LeadId);
+        EnsureCanManageLead(lead);
 
         var oldStatus = followUp.Status;
         var completedAt = __request.Status == "Completed" ? DateTime.UtcNow : followUp.CompletedAt;
@@ -101,6 +104,8 @@ public sealed class FollowUpAppFunction : IFollowUpAppFunction
     public async Task DeleteAsync(Guid __id, CancellationToken __cancellationToken)
     {
         var followUp = await _followUpRepository.GetByIdAsync(__id, __cancellationToken) ?? throw new EntityNotFoundException("FollowUp", __id);
+        var lead = await _leadRepository.GetByIdAsync(followUp.LeadId, __cancellationToken) ?? throw new EntityNotFoundException("Lead", followUp.LeadId);
+        EnsureCanManageLead(lead);
 
         await _followUpRepository.DeleteAsync(__id, _currentUserAccessor.UserId, __cancellationToken);
 
@@ -114,6 +119,18 @@ public sealed class FollowUpAppFunction : IFollowUpAppFunction
         }
 
         _logger.LogInformation("FollowUp {FollowUpId} deleted by {UserId}", __id, _currentUserAccessor.UserId);
+    }
+
+    /// <summary>Mirrors LeadAppFunction.EnsureCanManage -- a follow-up's real owner is its parent
+    /// lead's assigned agent, so the same "SuperAdmin bypasses, everyone else must own it" rule
+    /// applies here through the lead rather than a separate, follow-up-specific ownership concept.</summary>
+    private void EnsureCanManageLead(LeadModel __lead)
+    {
+        if (_currentUserAccessor.IsSuperAdmin) return;
+        if (__lead.AssignedToUserId != _currentUserAccessor.UserId)
+        {
+            throw new ForbiddenException("This lead is assigned to another team member. Only that agent or an administrator can manage its follow-ups.");
+        }
     }
 
     private static FollowUpResponse ToResponse(FollowUpModel followUp) => new()

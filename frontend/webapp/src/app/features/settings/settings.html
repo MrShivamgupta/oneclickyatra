@@ -1,0 +1,19 @@
+<div class="page-header">
+  <div>
+    <h1>Settings</h1>
+    <p class="subtitle">Notification templates and integration status.</p>
+  </div>
+</div>
+
+<div class="tabs">
+  @for (tab of tabs; track tab.key) {
+    <button type="button" [class.active]="activeTab() === tab.key" (click)="selectTab(tab.key)">
+      {{ tab.label }}
+    </button>
+  }
+</div>
+
+@switch (activeTab()) {
+  @case ('email-templates') { <app-email-templates-tab /> }
+  @case ('integrations') { <app-integration-status-tab /> }
+}

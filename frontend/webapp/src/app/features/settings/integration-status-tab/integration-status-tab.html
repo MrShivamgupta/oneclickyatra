@@ -1,0 +1,27 @@
+<p class="intro">
+  Credentials for these integrations are configured via environment variables/appsettings on the
+  server, not here — this is a read-only status check, not an editable secrets form.
+</p>
+
+@if (loadError()) {
+  <p class="form-error">{{ loadError() }}</p>
+}
+
+@if (loading()) {
+  <app-spinner label="Loading integration status…" />
+} @else if (status(); as s) {
+  <ul class="status-list">
+    @for (row of rows; track row.key) {
+      <li>
+        <div class="status-main">
+          <span class="dot" [class.ok]="s[row.key]" [class.missing]="!s[row.key]"></span>
+          <span class="status-label">{{ row.label }}</span>
+          <span class="badge" [class.ok]="s[row.key]" [class.missing]="!s[row.key]">
+            {{ s[row.key] ? 'Configured' : 'Not configured' }}
+          </span>
+        </div>
+        <p class="status-description">{{ row.description }}</p>
+      </li>
+    }
+  </ul>
+}

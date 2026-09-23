@@ -237,13 +237,7 @@ export const routes: Routes = [
       {
         path: 'settings',
         canActivate: [permissionGuard('settings.manage')],
-        loadComponent: () => import('./features/admin-placeholder/admin-placeholder').then((m) => m.AdminPlaceholder),
-        data: {
-          title: 'Settings',
-          icon: '⚙️',
-          description: 'Agency profile, email templates, payment gateway keys and system configuration.',
-          phase: 'Phase 7'
-        }
+        loadComponent: () => import('./features/settings/settings').then((m) => m.Settings)
       }
     ]
   },
