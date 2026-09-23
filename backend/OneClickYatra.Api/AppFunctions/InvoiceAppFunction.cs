@@ -37,7 +37,7 @@ public sealed class InvoiceAppFunction : IInvoiceAppFunction
 
         try
         {
-            return _pdfService.Generate(invoice);
+            return await _pdfService.GenerateAsync(invoice, __cancellationToken);
         }
         catch (Exception exception)
         {

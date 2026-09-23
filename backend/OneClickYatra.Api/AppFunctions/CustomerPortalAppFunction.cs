@@ -263,7 +263,7 @@ public sealed class CustomerPortalAppFunction : ICustomerPortalAppFunction
             throw new BusinessException("A voucher is only available once the booking is confirmed.");
         }
 
-        return _voucherPdfService.Generate(detail);
+        return await _voucherPdfService.GenerateAsync(detail, __cancellationToken);
     }
 
     /// <summary>Resolves the Customer linked to this user, creating one if this account predates

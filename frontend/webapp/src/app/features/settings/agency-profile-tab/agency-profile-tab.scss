@@ -1,0 +1,79 @@
+@use '../../../shared/styles/index' as tokens;
+@use '../../../shared/styles/admin-crud' as crud;
+
+.profile-form {
+  max-width: 640px;
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-4;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$space-1;
+  font-size: tokens.$font-size-xs;
+  color: tokens.$color-text-secondary;
+
+  input, textarea {
+    @include crud.field-input;
+    font-family: inherit;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.field-hint {
+  color: tokens.$color-text-secondary;
+  font-size: tokens.$font-size-xs;
+}
+
+.logo-preview {
+  display: flex;
+  align-items: center;
+  gap: tokens.$space-3;
+  margin-top: tokens.$space-4;
+
+  img {
+    max-width: 160px;
+    max-height: 80px;
+    object-fit: contain;
+    border: 1px solid tokens.$color-border;
+    border-radius: tokens.$radius-sm;
+    padding: tokens.$space-2;
+    background: tokens.$color-surface;
+  }
+}
+
+.preview-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-xs;
+}
+
+.form-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-sm;
+  margin: tokens.$space-4 0 0;
+}
+
+.save-success {
+  color: tokens.$color-success-solid;
+  font-size: tokens.$font-size-sm;
+  margin: tokens.$space-4 0 0;
+}
+
+.link-button {
+  @include crud.link-button;
+  margin-left: tokens.$space-2;
+}
+
+.form-actions {
+  margin-top: tokens.$space-4;
+}
+
+.primary-button { @include crud.primary-button; }

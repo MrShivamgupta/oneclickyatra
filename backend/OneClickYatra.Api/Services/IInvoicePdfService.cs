@@ -4,5 +4,5 @@ namespace OneClickYatra.Api.Services;
 
 public interface IInvoicePdfService
 {
-    byte[] Generate(InvoiceModel __invoice);
+    Task<byte[]> GenerateAsync(InvoiceModel __invoice, CancellationToken __cancellationToken);
 }

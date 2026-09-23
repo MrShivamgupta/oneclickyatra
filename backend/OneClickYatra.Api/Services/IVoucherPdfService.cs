@@ -4,5 +4,5 @@ namespace OneClickYatra.Api.Services;
 
 public interface IVoucherPdfService
 {
-    byte[] Generate(BookingDetailResponse __booking);
+    Task<byte[]> GenerateAsync(BookingDetailResponse __booking, CancellationToken __cancellationToken);
 }

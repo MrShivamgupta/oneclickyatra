@@ -426,7 +426,7 @@ public sealed class QuotationAppFunction : IQuotationAppFunction
         var options = await _quotationRepository.GetOptionsAsync(__quotation.Id, __cancellationToken);
         var items = await _quotationRepository.GetItemsForOptionsAsync(options.Select(o => o.Id).ToList(), __cancellationToken);
         var itemsByOptionId = items.GroupBy(i => i.QuotationOptionId).ToDictionary(g => g.Key, g => g.ToList());
-        return _pdfService.Generate(__quotation, options, itemsByOptionId);
+        return await _pdfService.GenerateAsync(__quotation, options, itemsByOptionId, __cancellationToken);
     }
 
     private async Task<QuotationModel> LoadPublicQuotationAsync(string __token, CancellationToken __cancellationToken)

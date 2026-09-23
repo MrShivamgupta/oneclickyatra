@@ -150,7 +150,7 @@ public class CustomerPortalAppFunctionTests
         var sut = CreateSut();
 
         await Assert.ThrowsAsync<BusinessException>(() => sut.GetVoucherPdfAsync(userId, bookingId, CancellationToken.None));
-        _voucherPdfService.Verify(s => s.Generate(It.IsAny<BookingDetailResponse>()), Times.Never);
+        _voucherPdfService.Verify(s => s.GenerateAsync(It.IsAny<BookingDetailResponse>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public class CustomerPortalAppFunctionTests
         var bookingId = Guid.NewGuid();
         var detail = new BookingDetailResponse { Booking = new BookingResponse { Id = bookingId, CustomerId = customer.Id, Status = "Confirmed" } };
         _bookingAppFunction.Setup(b => b.GetByIdAsync(bookingId, It.IsAny<CancellationToken>())).ReturnsAsync(detail);
-        _voucherPdfService.Setup(s => s.Generate(detail)).Returns([1, 2, 3]);
+        _voucherPdfService.Setup(s => s.GenerateAsync(detail, It.IsAny<CancellationToken>())).ReturnsAsync([1, 2, 3]);
 
         var sut = CreateSut();
         var result = await sut.GetVoucherPdfAsync(userId, bookingId, CancellationToken.None);

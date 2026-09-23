@@ -26,3 +26,24 @@ export interface IntegrationStatus {
   whatsAppConfigured: boolean;
   emailConfigured: boolean;
 }
+
+export interface AgencyProfile {
+  name: string;
+  logoUrl?: string | null;
+  address?: string | null;
+  gstNumber?: string | null;
+  currency: string;
+  supportEmail?: string | null;
+  supportPhone?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface UpdateAgencyProfileRequest {
+  name: string;
+  logoUrl?: string | null;
+  address?: string | null;
+  gstNumber?: string | null;
+  currency: string;
+  supportEmail?: string | null;
+  supportPhone?: string | null;
+}

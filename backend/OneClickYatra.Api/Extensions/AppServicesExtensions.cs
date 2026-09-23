@@ -82,9 +82,11 @@ public static class AppServicesExtensions
         __services.AddScoped<IVendorInvoiceRepository, VendorInvoiceRepository>();
 
         __services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
+        __services.AddScoped<IAgencyProfileRepository, AgencyProfileRepository>();
 
         // Services
         __services.AddScoped<IAuditLogWriter, AuditLogWriter>();
+        __services.AddHttpClient<IAgencyBrandingProvider, AgencyBrandingProvider>();
         __services.AddScoped<IQuotationPdfService, QuotationPdfService>();
         __services.AddScoped<IInvoicePdfService, InvoicePdfService>();
         __services.Configure<RazorpayOptions>(__configuration.GetSection(RazorpayOptions.SectionName));
@@ -142,6 +144,8 @@ public static class AppServicesExtensions
         __services.AddScoped<IRoleAppFunction, RoleAppFunction>();
 
         __services.AddScoped<IEmailTemplateAppFunction, EmailTemplateAppFunction>();
+
+        __services.AddScoped<IAgencyProfileAppFunction, AgencyProfileAppFunction>();
 
         // Validators
         __services.AddValidatorsFromAssemblyContaining<Program>();

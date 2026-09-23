@@ -1,0 +1,75 @@
+@if (loadError()) {
+  <p class="form-error">
+    {{ loadError() }}
+    <button type="button" class="link-button" (click)="load()">Retry</button>
+  </p>
+}
+
+@if (loading()) {
+  <app-spinner label="Loading agency profile…" />
+} @else {
+  <form class="profile-form" [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-grid">
+      <label class="field">
+        Agency name
+        <input type="text" formControlName="name" placeholder="e.g. One Click Yatra" />
+      </label>
+
+      <label class="field">
+        Logo URL (optional)
+        <input type="text" formControlName="logoUrl" placeholder="https://…/logo.png" (input)="onLogoUrlChange()" />
+        <span class="field-hint">Shown on generated invoices, quotations and booking vouchers. If it can't be loaded when a document is generated, the document is still produced without it.</span>
+      </label>
+
+      <label class="field">
+        Address (optional)
+        <textarea formControlName="address" rows="3" placeholder="Registered business address"></textarea>
+      </label>
+
+      <label class="field">
+        GST number (optional)
+        <input type="text" formControlName="gstNumber" placeholder="e.g. 22AAAAA0000A1Z5" />
+      </label>
+
+      <label class="field">
+        Currency
+        <input type="text" formControlName="currency" placeholder="e.g. INR" maxlength="10" />
+        <span class="field-hint">Shown next to amounts on generated invoices and quotations.</span>
+      </label>
+
+      <label class="field">
+        Support email (optional)
+        <input type="email" formControlName="supportEmail" placeholder="support@example.com" />
+      </label>
+
+      <label class="field">
+        Support phone (optional)
+        <input type="text" formControlName="supportPhone" placeholder="+91 98765 43210" />
+      </label>
+    </div>
+
+    @if (form.getRawValue().logoUrl) {
+      <div class="logo-preview">
+        <span class="field-hint">Preview:</span>
+        @if (!logoPreviewError()) {
+          <img [src]="form.getRawValue().logoUrl" alt="Agency logo preview" (error)="logoPreviewError.set(true)" />
+        } @else {
+          <span class="preview-error">Couldn't load an image from this URL.</span>
+        }
+      </div>
+    }
+
+    @if (saveError()) {
+      <div class="form-error">{{ saveError() }}</div>
+    }
+    @if (saveSuccess()) {
+      <div class="save-success">Saved.</div>
+    }
+
+    <div class="form-actions">
+      <button type="submit" class="primary-button" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : 'Save Changes' }}
+      </button>
+    </div>
+  </form>
+}
