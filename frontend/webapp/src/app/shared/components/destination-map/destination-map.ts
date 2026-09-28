@@ -13,8 +13,10 @@ export interface MapMarker {
 // Urdu, Greek, etc.), while Esri's reference layer labels everything in English/Latin script
 // globally, matching what a user of this site actually asked for.
 const TILE_LAYER_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
-const TILE_ATTRIBUTION =
-  'Tiles &copy; Esri &mdash; Source: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, (c) OpenStreetMap contributors, and the GIS User Community';
+// Esri's terms require credit for the free tiles, but not the full multi-vendor legal text their
+// REST service metadata publishes -- a short "Esri" credit is the commonly-accepted practical form
+// and keeps Leaflet's attribution corner compact instead of wrapping across two lines.
+const TILE_ATTRIBUTION = 'Tiles &copy; Esri';
 
 /** Free, no-API-key map (Leaflet + OpenStreetMap tiles) used on the public site to show where a
  * destination (or every destination) actually is. Custom div-icon pins, not Leaflet's default

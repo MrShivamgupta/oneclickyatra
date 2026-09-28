@@ -49,10 +49,16 @@
 .map-section {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 tokens.$space-8 tokens.$space-8;
+  padding: tokens.$space-10 tokens.$space-8;
+
+  h2 {
+    font-size: tokens.$font-size-lg;
+    margin: 0 0 tokens.$space-4;
+    text-align: center;
+  }
 
   @include tokens.respond-below(tokens.$breakpoint-tablet) {
-    padding: 0 tokens.$space-4 tokens.$space-6;
+    padding: tokens.$space-8 tokens.$space-4;
   }
 }
 
