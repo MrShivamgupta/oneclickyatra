@@ -1,18 +1,84 @@
 @use '../../shared/styles-public/index' as tokens;
 
 .hero {
-  background: linear-gradient(180deg, tokens.$color-bg-alt 0%, tokens.$color-bg 100%);
-  padding: tokens.$space-12 tokens.$space-8;
+  position: relative;
+  overflow: hidden;
   text-align: center;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transform: scale(1.05);
+  transition: opacity 1.8s ease-in-out;
+
+  &.active {
+    opacity: 1;
+    animation: hero-ken-burns 6.5s ease-in-out forwards;
+  }
+}
+
+@keyframes hero-ken-burns {
+  from {
+    transform: scale(1.05);
+  }
+  to {
+    transform: scale(1.16);
+  }
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(199, 67, 26, 0.55) 0%, rgba(184, 57, 90, 0.6) 100%);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  padding: tokens.$space-12 tokens.$space-8;
 
   h1 {
     font-size: tokens.$font-size-3xl;
     margin: 0 0 tokens.$space-3;
+    color: tokens.$color-text-inverse;
+    text-shadow: 0 2px 12px rgba(36, 20, 12, 0.35);
   }
 
   p {
-    color: tokens.$color-text-secondary;
+    color: tokens.$color-text-inverse;
     margin: 0 0 tokens.$space-8;
+    text-shadow: 0 1px 8px rgba(36, 20, 12, 0.3);
+  }
+}
+
+.hero-dots {
+  display: flex;
+  justify-content: center;
+  gap: tokens.$space-2;
+  margin-top: tokens.$space-6;
+}
+
+.hero-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  &.active {
+    background: tokens.$color-text-inverse;
+    transform: scale(1.3);
   }
 }
 
@@ -62,12 +128,20 @@
 }
 
 .featured-section {
-  max-width: 1200px;
+  padding: tokens.$space-10 0;
+
+  &.alt {
+    background: tokens.$color-bg-alt;
+  }
+}
+
+.featured-section-inner {
+  max-width: 1600px;
   margin: 0 auto;
-  padding: tokens.$space-10 tokens.$space-8;
+  padding: 0 tokens.$space-8;
 
   @include tokens.respond-below(tokens.$breakpoint-tablet) {
-    padding: tokens.$space-8 tokens.$space-4;
+    padding: 0 tokens.$space-4;
   }
 }
 
@@ -106,7 +180,7 @@
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: tokens.$space-5;
 }
 
@@ -129,7 +203,7 @@
 }
 
 .card-image {
-  height: 140px;
+  aspect-ratio: 16 / 9;
   background-size: cover;
   background-position: center;
   background-color: tokens.$color-bg-alt;

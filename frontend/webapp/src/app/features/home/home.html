@@ -1,87 +1,110 @@
 <section class="hero">
-  <h1>Plan your next unforgettable trip</h1>
-  <p>Search destinations, compare packages and book everything in one place.</p>
+  @for (image of heroImages; track image; let i = $index) {
+    <div class="hero-bg" [class.active]="i === heroIndex()" [style.background-image]="'url(' + image + ')'"></div>
+  }
+  <div class="hero-overlay"></div>
 
-  <form class="search-card" (ngSubmit)="search()">
-    <label>
-      Destination
-      <input type="text" name="destination" [(ngModel)]="destination" placeholder="Where do you want to go?" />
-    </label>
-    <label>
-      Travel dates
-      <input type="date" name="travelDate" [(ngModel)]="travelDate" />
-    </label>
-    <label>
-      Travelers
-      <input type="number" name="travelers" [(ngModel)]="travelers" min="1" />
-    </label>
-    <button type="submit">Search</button>
-  </form>
+  <div class="hero-content">
+    <h1>Plan your next unforgettable trip</h1>
+    <p>Search destinations, compare packages and book everything in one place.</p>
+
+    <form class="search-card" (ngSubmit)="search()">
+      <label>
+        Destination
+        <input type="text" name="destination" [(ngModel)]="destination" placeholder="Where do you want to go?" />
+      </label>
+      <label>
+        Travel dates
+        <input type="date" name="travelDate" [(ngModel)]="travelDate" />
+      </label>
+      <label>
+        Travelers
+        <input type="number" name="travelers" [(ngModel)]="travelers" min="1" />
+      </label>
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="hero-dots">
+      @for (image of heroImages; track image; let i = $index) {
+        <button
+          type="button"
+          class="hero-dot"
+          [class.active]="i === heroIndex()"
+          [attr.aria-label]="'Show slide ' + (i + 1)"
+          (click)="heroIndex.set(i)"
+        ></button>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="featured-section alt">
+  <div class="featured-section-inner">
+    <div class="section-header">
+      <h2>Popular Destinations</h2>
+      <a routerLink="/destinations">View all →</a>
+    </div>
+
+    @if (loadingDestinations()) {
+      <app-spinner label="Loading destinations…" />
+    } @else if (destinationsError()) {
+      <div class="state-message error">{{ destinationsError() }}</div>
+    } @else if (featuredDestinations().length === 0) {
+      <div class="state-message">No featured destinations yet — check back soon.</div>
+    } @else {
+      <div class="card-grid">
+        @for (destination of featuredDestinations(); track destination.id) {
+          <a class="destination-card" [routerLink]="['/destinations', destination.slug]">
+            <div class="card-image" [style.background-image]="destination.heroImageUrl ? 'url(' + destination.heroImageUrl + ')' : null">
+              @if (!destination.heroImageUrl) {
+                <span class="image-placeholder">📍</span>
+              }
+            </div>
+            <div class="card-body">
+              <h3>{{ destination.name }}</h3>
+              <p>{{ destination.countryName }}</p>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </div>
 </section>
 
 <section class="featured-section">
-  <div class="section-header">
-    <h2>Popular Destinations</h2>
-    <a routerLink="/destinations">View all →</a>
-  </div>
-
-  @if (loadingDestinations()) {
-    <app-spinner label="Loading destinations…" />
-  } @else if (destinationsError()) {
-    <div class="state-message error">{{ destinationsError() }}</div>
-  } @else if (featuredDestinations().length === 0) {
-    <div class="state-message">No featured destinations yet — check back soon.</div>
-  } @else {
-    <div class="card-grid">
-      @for (destination of featuredDestinations(); track destination.id) {
-        <a class="destination-card" [routerLink]="['/destinations', destination.slug]">
-          <div class="card-image" [style.background-image]="destination.heroImageUrl ? 'url(' + destination.heroImageUrl + ')' : null">
-            @if (!destination.heroImageUrl) {
-              <span class="image-placeholder">📍</span>
-            }
-          </div>
-          <div class="card-body">
-            <h3>{{ destination.name }}</h3>
-            <p>{{ destination.countryName }}</p>
-          </div>
-        </a>
-      }
+  <div class="featured-section-inner">
+    <div class="section-header">
+      <h2>Featured Packages</h2>
+      <a routerLink="/packages">View all →</a>
     </div>
-  }
-</section>
 
-<section class="featured-section">
-  <div class="section-header">
-    <h2>Featured Packages</h2>
-    <a routerLink="/packages">View all →</a>
+    @if (loadingPackages()) {
+      <app-spinner label="Loading packages…" />
+    } @else if (packagesError()) {
+      <div class="state-message error">{{ packagesError() }}</div>
+    } @else if (featuredPackages().length === 0) {
+      <div class="state-message">No packages published yet — check back soon.</div>
+    } @else {
+      <div class="card-grid">
+        @for (pkg of featuredPackages(); track pkg.id) {
+          <a class="destination-card" [routerLink]="['/packages', pkg.slug]">
+            <div class="card-image" [style.background-image]="pkg.heroImageUrl ? 'url(' + pkg.heroImageUrl + ')' : null">
+              @if (!pkg.heroImageUrl) {
+                <span class="image-placeholder">✈</span>
+              }
+            </div>
+            <div class="card-body">
+              <h3>{{ pkg.title }}</h3>
+              <p>{{ pkg.destinationName }} · {{ pkg.durationDays }}D/{{ pkg.durationNights }}N</p>
+              @if (pkg.startingPricePerPerson) {
+                <p class="card-price">From {{ pkg.priceCurrency ?? 'INR' }} {{ formatPrice(pkg.startingPricePerPerson) }}</p>
+              }
+            </div>
+          </a>
+        }
+      </div>
+    }
   </div>
-
-  @if (loadingPackages()) {
-    <app-spinner label="Loading packages…" />
-  } @else if (packagesError()) {
-    <div class="state-message error">{{ packagesError() }}</div>
-  } @else if (featuredPackages().length === 0) {
-    <div class="state-message">No packages published yet — check back soon.</div>
-  } @else {
-    <div class="card-grid">
-      @for (pkg of featuredPackages(); track pkg.id) {
-        <a class="destination-card" [routerLink]="['/packages', pkg.slug]">
-          <div class="card-image" [style.background-image]="pkg.heroImageUrl ? 'url(' + pkg.heroImageUrl + ')' : null">
-            @if (!pkg.heroImageUrl) {
-              <span class="image-placeholder">✈</span>
-            }
-          </div>
-          <div class="card-body">
-            <h3>{{ pkg.title }}</h3>
-            <p>{{ pkg.destinationName }} · {{ pkg.durationDays }}D/{{ pkg.durationNights }}N</p>
-            @if (pkg.startingPricePerPerson) {
-              <p class="card-price">From {{ pkg.priceCurrency ?? 'INR' }} {{ formatPrice(pkg.startingPricePerPerson) }}</p>
-            }
-          </div>
-        </a>
-      }
-    </div>
-  }
 </section>
 
 <section class="cta-section">

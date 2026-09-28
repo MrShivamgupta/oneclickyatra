@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { DestinationService } from '../../core/services/destination.service';
@@ -6,6 +6,8 @@ import { PackageService } from '../../core/services/package.service';
 import { Destination } from '../../core/models/master-data.models';
 import { PackageSummary } from '../../core/models/package.models';
 import { Spinner } from '../../shared/components/spinner/spinner';
+
+const HERO_ROTATION_MS = 6000;
 
 @Component({
   selector: 'app-home',
@@ -18,10 +20,20 @@ export class Home {
   private readonly destinationService = inject(DestinationService);
   private readonly packageService = inject(PackageService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   destination = '';
   travelDate = '';
   travelers = 1;
+
+  readonly heroImages = [
+    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=1920&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=1920&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1470770903676-69b98201ea1c?w=1920&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1920&q=80&auto=format&fit=crop'
+  ];
+  readonly heroIndex = signal(0);
 
   readonly featuredDestinations = signal<Destination[]>([]);
   readonly featuredPackages = signal<PackageSummary[]>([]);
@@ -31,6 +43,11 @@ export class Home {
   readonly packagesError = signal<string | null>(null);
 
   constructor() {
+    const rotationId = setInterval(() => {
+      this.heroIndex.update((i) => (i + 1) % this.heroImages.length);
+    }, HERO_ROTATION_MS);
+    this.destroyRef.onDestroy(() => clearInterval(rotationId));
+
     this.destinationService
       .search({ pageNumber: 1, pageSize: 6, isFeatured: true, isPublished: true })
       .subscribe({
