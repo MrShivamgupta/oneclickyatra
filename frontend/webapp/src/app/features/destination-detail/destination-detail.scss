@@ -100,4 +100,13 @@
       background: tokens.$color-primary-dark;
     }
   }
+
+  .location-map {
+    margin-top: tokens.$space-8;
+
+    h2 {
+      font-size: tokens.$font-size-lg;
+      margin: 0 0 tokens.$space-3;
+    }
+  }
 }

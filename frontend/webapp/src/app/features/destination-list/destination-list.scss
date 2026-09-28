@@ -46,6 +46,16 @@
   }
 }
 
+.map-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 tokens.$space-8 tokens.$space-8;
+
+  @include tokens.respond-below(tokens.$breakpoint-tablet) {
+    padding: 0 tokens.$space-4 tokens.$space-6;
+  }
+}
+
 .search-section {
   max-width: 1200px;
   margin: 0 auto;

@@ -58,6 +58,8 @@ export class Destinations {
     name: ['', [Validators.required, Validators.maxLength(150)]],
     slug: ['', [Validators.required, Validators.pattern(/^[a-z0-9]+(-[a-z0-9]+)*$/)]],
     shortDescription: [''],
+    latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
+    longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
     isFeatured: [false],
     isPublished: [true]
   });
@@ -130,7 +132,7 @@ export class Destinations {
     this.editingId.set(null);
     this.formError.set(null);
     this.formFieldErrors.set([]);
-    this.form.reset({ countryId: '', cityId: '', name: '', slug: '', shortDescription: '', isFeatured: false, isPublished: true });
+    this.form.reset({ countryId: '', cityId: '', name: '', slug: '', shortDescription: '', latitude: null, longitude: null, isFeatured: false, isPublished: true });
     this.isModalOpen.set(true);
   }
 
@@ -144,6 +146,8 @@ export class Destinations {
       name: destination.name,
       slug: destination.slug,
       shortDescription: destination.shortDescription ?? '',
+      latitude: destination.latitude ?? null,
+      longitude: destination.longitude ?? null,
       isFeatured: destination.isFeatured,
       isPublished: destination.isPublished
     });
@@ -170,6 +174,8 @@ export class Destinations {
       name: raw.name,
       slug: raw.slug,
       shortDescription: raw.shortDescription || null,
+      latitude: raw.latitude,
+      longitude: raw.longitude,
       isFeatured: raw.isFeatured,
       isPublished: raw.isPublished
     };

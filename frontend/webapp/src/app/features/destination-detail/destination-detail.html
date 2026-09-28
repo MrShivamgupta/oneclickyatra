@@ -32,5 +32,12 @@
     <a class="packages-link" [routerLink]="['/packages']" [queryParams]="{ destinationId: destination.id }">
       Explore packages in {{ destination.name }} →
     </a>
+
+    @if (mapMarkers().length > 0) {
+      <div class="location-map">
+        <h2>Where is {{ destination.name }}?</h2>
+        <app-destination-map [markers]="mapMarkers()" height="280px" />
+      </div>
+    }
   </section>
 }

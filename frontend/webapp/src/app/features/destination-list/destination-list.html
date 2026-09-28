@@ -3,6 +3,12 @@
   <p>Browse curated destinations from around the world and find inspiration for your next trip.</p>
 </section>
 
+@if (mapMarkers().length > 0) {
+  <section class="map-section">
+    <app-destination-map [markers]="mapMarkers()" height="360px" (markerSelected)="goToDestination($event)" />
+  </section>
+}
+
 <section class="search-section">
   <app-filter-bar
     placeholder="Search destinations…"

@@ -1,0 +1,28 @@
+@use '../../styles-public/index' as tokens;
+
+.map-container {
+  width: 100%;
+  border-radius: tokens.$radius-lg;
+  overflow: hidden;
+  z-index: 0; // Contains Leaflet's own internal panes, which use their own z-index stack.
+}
+
+// Leaflet renders markers/tooltips into the DOM outside Angular's normal template, so this
+// component's scoped styles can only reach them via ::ng-deep.
+:host ::ng-deep {
+  .destination-pin .pin-dot {
+    display: block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: tokens.$color-primary;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 3px rgba(199, 67, 26, 0.3);
+    cursor: pointer;
+  }
+
+  .leaflet-tooltip {
+    font-size: tokens.$font-size-xs;
+    font-family: inherit;
+  }
+}

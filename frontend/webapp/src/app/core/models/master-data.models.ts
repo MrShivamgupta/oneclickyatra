@@ -58,6 +58,8 @@ export interface Destination {
   shortDescription?: string | null;
   description?: string | null;
   heroImageUrl?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   isFeatured: boolean;
   isPublished: boolean;
 }
@@ -70,6 +72,8 @@ export interface DestinationRequest {
   shortDescription?: string | null;
   description?: string | null;
   heroImageUrl?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   isFeatured: boolean;
   isPublished: boolean;
 }

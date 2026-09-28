@@ -53,6 +53,8 @@ public sealed class DestinationRequestValidator : AbstractValidator<DestinationR
             .Matches("^[a-z0-9]+(-[a-z0-9]+)*$").WithMessage("Slug must be lowercase, hyphen-separated (e.g. bali-indonesia).");
         RuleFor(request => request.ShortDescription).MaximumLength(300);
         RuleFor(request => request.HeroImageUrl).MaximumLength(500);
+        RuleFor(request => request.Latitude).InclusiveBetween(-90m, 90m).When(request => request.Latitude.HasValue);
+        RuleFor(request => request.Longitude).InclusiveBetween(-180m, 180m).When(request => request.Longitude.HasValue);
     }
 }
 

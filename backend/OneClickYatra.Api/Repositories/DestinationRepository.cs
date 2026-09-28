@@ -10,7 +10,7 @@ public sealed class DestinationRepository : IDestinationRepository
 {
     private const string SelectColumns = """
         SELECT d.Id, d.CountryId, d.CityId, d.Name, d.Slug, d.ShortDescription, d.Description,
-               d.HeroImageUrl, d.IsFeatured, d.IsPublished,
+               d.HeroImageUrl, d.Latitude, d.Longitude, d.IsFeatured, d.IsPublished,
                d.CreatedAt, d.CreatedBy, d.UpdatedAt, d.UpdatedBy, d.IsDeleted,
                co.Name AS CountryName, ci.Name AS CityName
         FROM Destinations d
@@ -102,9 +102,9 @@ public sealed class DestinationRepository : IDestinationRepository
     {
         const string sql = """
             INSERT INTO Destinations
-                (Id, CountryId, CityId, Name, Slug, ShortDescription, Description, HeroImageUrl, IsFeatured, IsPublished, CreatedAt, CreatedBy, IsDeleted)
+                (Id, CountryId, CityId, Name, Slug, ShortDescription, Description, HeroImageUrl, Latitude, Longitude, IsFeatured, IsPublished, CreatedAt, CreatedBy, IsDeleted)
             VALUES
-                (@Id, @CountryId, @CityId, @Name, @Slug, @ShortDescription, @Description, @HeroImageUrl, @IsFeatured, @IsPublished, SYSUTCDATETIME(), @CreatedBy, 0)
+                (@Id, @CountryId, @CityId, @Name, @Slug, @ShortDescription, @Description, @HeroImageUrl, @Latitude, @Longitude, @IsFeatured, @IsPublished, SYSUTCDATETIME(), @CreatedBy, 0)
             """;
         using var connection = _connectionFactory.CreateConnection();
         await connection.ExecuteAsync(new CommandDefinition(sql, __destination, cancellationToken: __cancellationToken));
@@ -117,6 +117,7 @@ public sealed class DestinationRepository : IDestinationRepository
             UPDATE Destinations
             SET CountryId = @CountryId, CityId = @CityId, Name = @Name, Slug = @Slug,
                 ShortDescription = @ShortDescription, Description = @Description, HeroImageUrl = @HeroImageUrl,
+                Latitude = @Latitude, Longitude = @Longitude,
                 IsFeatured = @IsFeatured, IsPublished = @IsPublished,
                 UpdatedAt = SYSUTCDATETIME(), UpdatedBy = @UpdatedBy
             WHERE Id = @Id AND IsDeleted = 0

@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FilterBar } from '../../shared/components/filter-bar/filter-bar';
 import { Pagination } from '../../shared/components/pagination/pagination';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { DestinationMap, MapMarker } from '../../shared/components/destination-map/destination-map';
 import { DestinationService } from '../../core/services/destination.service';
 import { Destination } from '../../core/models/master-data.models';
 
@@ -11,7 +12,7 @@ const PAGE_SIZE = 12;
 @Component({
   selector: 'app-destination-list',
   standalone: true,
-  imports: [RouterLink, FilterBar, Pagination, Spinner],
+  imports: [RouterLink, FilterBar, Pagination, Spinner, DestinationMap],
   templateUrl: './destination-list.html',
   styleUrl: './destination-list.scss'
 })
@@ -27,12 +28,35 @@ export class DestinationList {
   readonly totalCount = signal(0);
   readonly searchTerm = signal('');
 
+  // Independent of the paginated/searchable list below -- the map always shows every published
+  // destination that has coordinates, regardless of the current search or page.
+  readonly mapMarkers = signal<MapMarker[]>([]);
+
   constructor() {
     this.route.queryParamMap.subscribe((params) => {
       this.searchTerm.set(params.get('searchTerm') ?? '');
       this.pageNumber.set(Math.max(1, Number(params.get('page') ?? '1') || 1));
       this.load();
     });
+
+    this.destinationService.search({ pageNumber: 1, pageSize: 100, isPublished: true }).subscribe((response) => {
+      if (response.success && response.data) {
+        this.mapMarkers.set(
+          response.data.items
+            .filter((destination) => destination.latitude != null && destination.longitude != null)
+            .map((destination) => ({
+              lat: destination.latitude!,
+              lng: destination.longitude!,
+              label: destination.name,
+              slug: destination.slug
+            }))
+        );
+      }
+    });
+  }
+
+  goToDestination(marker: MapMarker): void {
+    if (marker.slug) this.router.navigate(['/destinations', marker.slug]);
   }
 
   load(): void {

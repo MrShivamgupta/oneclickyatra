@@ -96,6 +96,24 @@
           <textarea formControlName="shortDescription" rows="2"></textarea>
         </label>
 
+        <div class="coordinates-row">
+          <label>
+            Latitude (optional)
+            <input type="number" step="any" formControlName="latitude" placeholder="e.g. 15.2993" />
+            @if (form.controls.latitude.invalid && form.controls.latitude.touched) {
+              <span class="field-error">Latitude must be between -90 and 90.</span>
+            }
+          </label>
+          <label>
+            Longitude (optional)
+            <input type="number" step="any" formControlName="longitude" placeholder="e.g. 74.1240" />
+            @if (form.controls.longitude.invalid && form.controls.longitude.touched) {
+              <span class="field-error">Longitude must be between -180 and 180.</span>
+            }
+          </label>
+        </div>
+        <span class="hint">Used to place this destination on the public destinations map.</span>
+
         <div class="checkbox-row">
           <label class="checkbox-label">
             <input type="checkbox" formControlName="isFeatured" /> Featured

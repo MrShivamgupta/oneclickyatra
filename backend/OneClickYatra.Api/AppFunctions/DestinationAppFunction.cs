@@ -103,6 +103,8 @@ public sealed class DestinationAppFunction : IDestinationAppFunction
             ShortDescription = __request.ShortDescription,
             Description = __request.Description,
             HeroImageUrl = __request.HeroImageUrl,
+            Latitude = __request.Latitude,
+            Longitude = __request.Longitude,
             IsFeatured = __request.IsFeatured,
             IsPublished = __request.IsPublished,
             CreatedBy = _currentUserAccessor.UserId
@@ -137,6 +139,8 @@ public sealed class DestinationAppFunction : IDestinationAppFunction
         destination.ShortDescription = __request.ShortDescription;
         destination.Description = __request.Description;
         destination.HeroImageUrl = __request.HeroImageUrl;
+        destination.Latitude = __request.Latitude;
+        destination.Longitude = __request.Longitude;
         destination.IsFeatured = __request.IsFeatured;
         destination.IsPublished = __request.IsPublished;
         destination.UpdatedBy = _currentUserAccessor.UserId;
@@ -207,6 +211,8 @@ public sealed class DestinationAppFunction : IDestinationAppFunction
         ShortDescription = destination.ShortDescription,
         Description = destination.Description,
         HeroImageUrl = destination.HeroImageUrl,
+        Latitude = destination.Latitude,
+        Longitude = destination.Longitude,
         IsFeatured = destination.IsFeatured,
         IsPublished = destination.IsPublished
     };

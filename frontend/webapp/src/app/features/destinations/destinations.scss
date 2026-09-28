@@ -145,6 +145,15 @@ textarea {
   font-size: tokens.$font-size-xs;
 }
 
+.coordinates-row {
+  display: flex;
+  gap: tokens.$space-4;
+
+  label {
+    flex: 1;
+  }
+}
+
 .checkbox-row {
   display: flex;
   gap: tokens.$space-5;

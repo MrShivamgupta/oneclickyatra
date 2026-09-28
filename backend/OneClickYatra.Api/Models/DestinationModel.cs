@@ -12,6 +12,8 @@ public sealed class DestinationModel : IDestinationModel
     public string? ShortDescription { get; set; }
     public string? Description { get; set; }
     public string? HeroImageUrl { get; set; }
+    public decimal? Latitude { get; set; }
+    public decimal? Longitude { get; set; }
     public bool IsFeatured { get; set; }
     public bool IsPublished { get; set; }
     public DateTime CreatedAt { get; set; }

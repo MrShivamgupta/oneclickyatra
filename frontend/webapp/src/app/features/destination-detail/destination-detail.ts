@@ -1,13 +1,14 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DestinationService } from '../../core/services/destination.service';
 import { Destination } from '../../core/models/master-data.models';
 import { Spinner } from '../../shared/components/spinner/spinner';
+import { DestinationMap, MapMarker } from '../../shared/components/destination-map/destination-map';
 
 @Component({
   selector: 'app-destination-detail',
   standalone: true,
-  imports: [RouterLink, Spinner],
+  imports: [RouterLink, Spinner, DestinationMap],
   templateUrl: './destination-detail.html',
   styleUrl: './destination-detail.scss'
 })
@@ -19,6 +20,12 @@ export class DestinationDetail {
   readonly loading = signal(true);
   readonly notFound = signal(false);
   readonly error = signal<string | null>(null);
+
+  readonly mapMarkers = computed<MapMarker[]>(() => {
+    const d = this.destination();
+    if (!d || d.latitude == null || d.longitude == null) return [];
+    return [{ lat: d.latitude, lng: d.longitude, label: d.name }];
+  });
 
   constructor() {
     const slug = this.route.snapshot.paramMap.get('slug');
