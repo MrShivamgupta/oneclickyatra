@@ -80,6 +80,9 @@
       @if (basicError()) {
         <div class="form-error">{{ basicError() }}</div>
       }
+      @if (basicSaved()) {
+        <div class="form-success">Saved.</div>
+      }
 
       <div class="form-actions">
         <button type="submit" class="primary-button" [disabled]="basicSaving() || !canManage()">
@@ -103,6 +106,9 @@
       @if (statusError()) {
         <div class="form-error">{{ statusError() }}</div>
       }
+      @if (statusSaved()) {
+        <div class="form-success">Status updated.</div>
+      }
       <div class="form-actions">
         <button type="button" class="primary-button" [disabled]="statusSaving() || !canManage()" (click)="saveStatus()">
           {{ statusSaving() ? 'Updating…' : 'Update Status' }}
@@ -118,6 +124,9 @@
       </label>
       @if (scoreError()) {
         <div class="form-error">{{ scoreError() }}</div>
+      }
+      @if (scoreSaved()) {
+        <div class="form-success">Score updated.</div>
       }
       <div class="form-actions">
         <button type="button" class="primary-button" [disabled]="scoreSaving() || !canManage()" (click)="saveScore()">
@@ -140,6 +149,9 @@
         </label>
         @if (assignError()) {
           <div class="form-error">{{ assignError() }}</div>
+        }
+        @if (assignSaved()) {
+          <div class="form-success">Assigned.</div>
         }
         <div class="form-actions">
           <button type="button" class="primary-button" [disabled]="assignSaving() || !assignValue()" (click)="saveAssign()">
@@ -246,6 +258,9 @@
 
         @if (followUpError()) {
           <div class="form-error">{{ followUpError() }}</div>
+        }
+        @if (followUpSaved()) {
+          <div class="form-success">Follow-up scheduled.</div>
         }
 
         <div class="form-actions">

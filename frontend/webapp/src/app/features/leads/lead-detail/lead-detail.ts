@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, WritableSignal, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationDialog } from '../../../shared/components/confirmation-dialog/confirmation-dialog';
@@ -44,18 +44,22 @@ export class LeadDetail {
 
   readonly basicError = signal<string | null>(null);
   readonly basicSaving = signal(false);
+  readonly basicSaved = signal(false);
 
   readonly statusValue = signal('New');
   readonly statusSaving = signal(false);
   readonly statusError = signal<string | null>(null);
+  readonly statusSaved = signal(false);
 
   readonly scoreValue = signal(0);
   readonly scoreSaving = signal(false);
   readonly scoreError = signal<string | null>(null);
+  readonly scoreSaved = signal(false);
 
   readonly assignValue = signal('');
   readonly assignSaving = signal(false);
   readonly assignError = signal<string | null>(null);
+  readonly assignSaved = signal(false);
 
   readonly claimSaving = signal(false);
   readonly claimError = signal<string | null>(null);
@@ -78,6 +82,7 @@ export class LeadDetail {
 
   readonly followUpError = signal<string | null>(null);
   readonly followUpSaving = signal(false);
+  readonly followUpSaved = signal(false);
   readonly followUpStatusUpdatingId = signal<string | null>(null);
   readonly followUpStatusError = signal<string | null>(null);
 
@@ -135,6 +140,14 @@ export class LeadDetail {
       }
     });
     this.loadFollowUps();
+  }
+
+  /** Fast local networks resolve a save before the "Saving…" label swap is ever perceptible, and
+   * a silently-updated field looks identical to "nothing happened" -- so every save also flashes an
+   * explicit, unmissable confirmation for a couple of seconds rather than relying on that alone. */
+  private flashSuccess(saved: WritableSignal<boolean>): void {
+    saved.set(true);
+    setTimeout(() => saved.set(false), 2500);
   }
 
   private applyLead(lead: Lead): void {
@@ -214,7 +227,10 @@ export class LeadDetail {
     this.leadService.update(id, request).subscribe({
       next: (response) => {
         this.basicSaving.set(false);
-        if (response.success && response.data) this.applyLead(response.data);
+        if (response.success && response.data) {
+          this.applyLead(response.data);
+          this.flashSuccess(this.basicSaved);
+        }
       },
       error: (error) => {
         this.basicSaving.set(false);
@@ -231,7 +247,10 @@ export class LeadDetail {
     this.leadService.updateStatus(id, this.statusValue()).subscribe({
       next: (response) => {
         this.statusSaving.set(false);
-        if (response.success && response.data) this.applyLead(response.data);
+        if (response.success && response.data) {
+          this.applyLead(response.data);
+          this.flashSuccess(this.statusSaved);
+        }
       },
       error: (error) => {
         this.statusSaving.set(false);
@@ -248,7 +267,10 @@ export class LeadDetail {
     this.leadService.updateScore(id, this.scoreValue()).subscribe({
       next: (response) => {
         this.scoreSaving.set(false);
-        if (response.success && response.data) this.applyLead(response.data);
+        if (response.success && response.data) {
+          this.applyLead(response.data);
+          this.flashSuccess(this.scoreSaved);
+        }
       },
       error: (error) => {
         this.scoreSaving.set(false);
@@ -265,7 +287,10 @@ export class LeadDetail {
     this.leadService.assign(id, this.assignValue()).subscribe({
       next: (response) => {
         this.assignSaving.set(false);
-        if (response.success && response.data) this.applyLead(response.data);
+        if (response.success && response.data) {
+          this.applyLead(response.data);
+          this.flashSuccess(this.assignSaved);
+        }
       },
       error: (error) => {
         this.assignSaving.set(false);
@@ -326,6 +351,7 @@ export class LeadDetail {
         this.followUpSaving.set(false);
         this.followUpForm.reset({ scheduledAt: '', type: 'Call', notes: '' });
         this.loadFollowUps();
+        this.flashSuccess(this.followUpSaved);
       },
       error: (error) => {
         this.followUpSaving.set(false);

@@ -95,11 +95,23 @@ select {
   justify-content: flex-end;
 }
 
+// The Status/Score/Assignment/Conversion cards render a bare <label> + action button with no
+// wrapping <form> (unlike Basic Info, which gets its spacing for free from `form`'s flex gap below)
+// -- without this, the button sits right up against the field above it with no breathing room.
+.card > .form-actions {
+  margin-top: tokens.$space-4;
+}
+
 .form-error {
   color: tokens.$color-danger;
   background: rgba(224, 69, 63, 0.08);
   padding: tokens.$space-2 tokens.$space-3;
   border-radius: tokens.$radius-sm;
+  font-size: tokens.$font-size-sm;
+}
+
+.form-success {
+  color: tokens.$color-success-solid;
   font-size: tokens.$font-size-sm;
 }
 
