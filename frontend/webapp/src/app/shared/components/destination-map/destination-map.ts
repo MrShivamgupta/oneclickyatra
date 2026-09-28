@@ -8,8 +8,13 @@ export interface MapMarker {
   slug?: string;
 }
 
-const TILE_LAYER_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+// Esri's free (no API key) World Street Map basemap -- chosen over the plain OpenStreetMap tiles
+// because OSM's standard style renders every place name in its own local script/language (Arabic,
+// Urdu, Greek, etc.), while Esri's reference layer labels everything in English/Latin script
+// globally, matching what a user of this site actually asked for.
+const TILE_LAYER_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
+const TILE_ATTRIBUTION =
+  'Tiles &copy; Esri &mdash; Source: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, (c) OpenStreetMap contributors, and the GIS User Community';
 
 /** Free, no-API-key map (Leaflet + OpenStreetMap tiles) used on the public site to show where a
  * destination (or every destination) actually is. Custom div-icon pins, not Leaflet's default
