@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using OneClickYatra.Api.AppFunctions;
 using OneClickYatra.Api.Globals;
 using OneClickYatra.Api.Infrastructure;
@@ -33,5 +34,17 @@ public sealed class FeedbacksController : ControllerBase
     {
         var result = await _feedbackAppFunction.SearchAsync(__request, __cancellationToken);
         return Ok(ApiResponse<PaginationResponse<FeedbackListResponse>>.Ok(result, _trackingIdAccessor.TrackingId));
+    }
+
+    /// <summary>Public: a handful of recent, well-rated, commented testimonials for the home page.
+    /// Deliberately overrides the controller's [Authorize] -- no booking/customer identifiers are
+    /// exposed, just a name, rating, and comment, so there's nothing here that needs gating.</summary>
+    [HttpGet("testimonials")]
+    [AllowAnonymous]
+    [EnableRateLimiting("public")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<TestimonialResponse>>>> GetPublicTestimonials(CancellationToken __cancellationToken)
+    {
+        var result = await _feedbackAppFunction.GetPublicTestimonialsAsync(__cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<TestimonialResponse>>.Ok(result, _trackingIdAccessor.TrackingId));
     }
 }

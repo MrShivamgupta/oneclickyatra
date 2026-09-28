@@ -112,6 +112,48 @@
   </div>
 </section>
 
+<section class="featured-section alt">
+  <div class="featured-section-inner">
+    <div class="section-header centered">
+      <h2>Why Book With Us</h2>
+    </div>
+
+    <div class="trust-grid">
+      @for (feature of trustFeatures; track feature.title) {
+        <div class="trust-card">
+          <span class="trust-icon">{{ feature.icon }}</span>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+@if (testimonials().length > 0) {
+  <section class="featured-section">
+    <div class="featured-section-inner">
+      <div class="section-header centered">
+        <h2>What Our Travellers Say</h2>
+      </div>
+
+      <div class="testimonial-grid">
+        @for (testimonial of testimonials(); track testimonial.customerName + testimonial.createdAt) {
+          <div class="testimonial-card">
+            <div class="testimonial-stars">
+              @for (star of ratingStars; track star) {
+                <span [class.filled]="star <= testimonial.rating">★</span>
+              }
+            </div>
+            <p class="testimonial-comment">"{{ testimonial.comment }}"</p>
+            <p class="testimonial-name">{{ testimonial.customerName }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
+
 <section class="cta-section">
   <h2>Can't find what you're looking for?</h2>
   <p>Tell us your travel plans and our team will put together a custom itinerary for you.</p>

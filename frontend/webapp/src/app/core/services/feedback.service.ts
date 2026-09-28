@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, PaginationResponse } from '../models/api.models';
-import { Feedback, FeedbackSearchParams } from '../models/feedback.models';
+import { Feedback, FeedbackSearchParams, Testimonial } from '../models/feedback.models';
 import { toHttpParams } from '../http/query-params.util';
 
 @Injectable({ providedIn: 'root' })
@@ -13,5 +13,10 @@ export class FeedbackService {
 
   search(request: FeedbackSearchParams): Observable<ApiResponse<PaginationResponse<Feedback>>> {
     return this.http.get<ApiResponse<PaginationResponse<Feedback>>>(this.baseUrl, { params: toHttpParams(request) });
+  }
+
+  /** Public, no auth required -- a handful of recent well-rated testimonials for the home page. */
+  getPublicTestimonials(): Observable<ApiResponse<Testimonial[]>> {
+    return this.http.get<ApiResponse<Testimonial[]>>(`${this.baseUrl}/testimonials`);
   }
 }

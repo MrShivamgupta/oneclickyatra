@@ -84,4 +84,18 @@ public sealed class FeedbackRepository : IFeedbackRepository
 
         return PaginationResponse<FeedbackModel>.Create(items, __request.PageNumber, __request.PageSize, total);
     }
+
+    public async Task<IReadOnlyList<FeedbackModel>> GetPublicTestimonialsAsync(int __minRating, int __limit, CancellationToken __cancellationToken)
+    {
+        var sql = $"""
+            {SelectColumns}
+            WHERE f.IsDeleted = 0 AND f.Rating >= @MinRating AND f.Comment IS NOT NULL AND LEN(f.Comment) > 0
+            ORDER BY f.CreatedAt DESC
+            OFFSET 0 ROWS FETCH NEXT @Limit ROWS ONLY
+            """;
+        using var connection = _connectionFactory.CreateConnection();
+        var result = await connection.QueryAsync<FeedbackModel>(
+            new CommandDefinition(sql, new { MinRating = __minRating, Limit = __limit }, cancellationToken: __cancellationToken));
+        return result.ToList();
+    }
 }

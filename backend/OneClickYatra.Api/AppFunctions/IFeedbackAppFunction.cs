@@ -7,4 +7,5 @@ namespace OneClickYatra.Api.AppFunctions;
 public interface IFeedbackAppFunction
 {
     Task<PaginationResponse<FeedbackListResponse>> SearchAsync(FeedbackSearchRequest __request, CancellationToken __cancellationToken);
+    Task<IReadOnlyList<TestimonialResponse>> GetPublicTestimonialsAsync(CancellationToken __cancellationToken);
 }

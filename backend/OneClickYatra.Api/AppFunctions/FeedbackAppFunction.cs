@@ -14,6 +14,9 @@ namespace OneClickYatra.Api.AppFunctions;
 /// </summary>
 public sealed class FeedbackAppFunction : IFeedbackAppFunction
 {
+    private const int PublicTestimonialMinRating = 4;
+    private const int PublicTestimonialLimit = 6;
+
     private readonly IFeedbackRepository _feedbackRepository;
 
     public FeedbackAppFunction(IFeedbackRepository __feedbackRepository)
@@ -25,6 +28,18 @@ public sealed class FeedbackAppFunction : IFeedbackAppFunction
     {
         var page = await _feedbackRepository.SearchAsync(__request, __cancellationToken);
         return PaginationResponse<FeedbackListResponse>.Create(page.Items.Select(ToResponse).ToList(), page.PageNumber, page.PageSize, page.TotalCount);
+    }
+
+    public async Task<IReadOnlyList<TestimonialResponse>> GetPublicTestimonialsAsync(CancellationToken __cancellationToken)
+    {
+        var feedback = await _feedbackRepository.GetPublicTestimonialsAsync(PublicTestimonialMinRating, PublicTestimonialLimit, __cancellationToken);
+        return feedback.Select(f => new TestimonialResponse
+        {
+            CustomerName = f.CustomerName ?? "One Click Yatra traveller",
+            Rating = f.Rating,
+            Comment = f.Comment ?? string.Empty,
+            CreatedAt = f.CreatedAt
+        }).ToList();
     }
 
     private static FeedbackListResponse ToResponse(FeedbackModel feedback) => new()

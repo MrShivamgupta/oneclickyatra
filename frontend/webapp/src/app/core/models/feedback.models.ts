@@ -16,3 +16,10 @@ export interface FeedbackSearchParams {
   fromDate?: string;
   toDate?: string;
 }
+
+export interface Testimonial {
+  customerName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
