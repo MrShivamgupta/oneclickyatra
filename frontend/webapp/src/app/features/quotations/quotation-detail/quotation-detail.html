@@ -45,6 +45,9 @@
       <label>
         Title
         <input type="text" formControlName="title" placeholder="e.g. Goa Family Package" [readonly]="!isEditable" />
+        @if (basicForm.controls.title.invalid && basicForm.controls.title.touched) {
+          <span class="field-error">Title is required.</span>
+        }
       </label>
 
       <label>

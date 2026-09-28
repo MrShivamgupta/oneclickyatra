@@ -116,6 +116,11 @@ textarea {
   font-size: tokens.$font-size-sm;
 }
 
+.field-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-xs;
+}
+
 .primary-button {
   padding: tokens.$space-2 tokens.$space-5;
   border: none;
