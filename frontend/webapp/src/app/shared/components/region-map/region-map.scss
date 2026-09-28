@@ -2,7 +2,9 @@
 
 .map-container {
   width: 100%;
-  background: tokens.$color-accent;
+  // Matches the app's own global page background ($color-bg in the admin token set, which `body`
+  // uses site-wide) so the map blends into the page instead of reading as a distinct colored block.
+  background: #f5f7fc;
   z-index: 0;
 }
 
@@ -31,6 +33,22 @@
 
     &:hover .badge-count {
       transform: scale(1.12);
+    }
+  }
+
+  .member-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .pin-dot {
+      display: block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: tokens.$color-primary;
+      border: 2px solid #fff;
+      box-shadow: tokens.$shadow-sm;
     }
   }
 

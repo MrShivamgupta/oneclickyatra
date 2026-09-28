@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FilterBar } from '../../shared/components/filter-bar/filter-bar';
 import { Pagination } from '../../shared/components/pagination/pagination';
 import { Spinner } from '../../shared/components/spinner/spinner';
-import { RegionMap, CountryCount } from '../../shared/components/region-map/region-map';
+import { RegionMap, CountryCount, CountryMember } from '../../shared/components/region-map/region-map';
 import { DestinationService } from '../../core/services/destination.service';
 import { Destination } from '../../core/models/master-data.models';
 
@@ -47,25 +47,30 @@ export class DestinationList {
   }
 
   private aggregateByCountry(destinations: Destination[]): CountryCount[] {
-    const byCountry = new Map<string, { count: number; latSum: number; lngSum: number }>();
+    const byCountry = new Map<string, CountryMember[]>();
 
     for (const destination of destinations) {
       if (destination.latitude == null || destination.longitude == null) continue;
+      const member: CountryMember = {
+        lat: destination.latitude,
+        lng: destination.longitude,
+        label: destination.name,
+        slug: destination.slug
+      };
       const existing = byCountry.get(destination.countryName);
       if (existing) {
-        existing.count++;
-        existing.latSum += destination.latitude;
-        existing.lngSum += destination.longitude;
+        existing.push(member);
       } else {
-        byCountry.set(destination.countryName, { count: 1, latSum: destination.latitude, lngSum: destination.longitude });
+        byCountry.set(destination.countryName, [member]);
       }
     }
 
-    return [...byCountry.entries()].map(([countryName, entry]) => ({
+    return [...byCountry.entries()].map(([countryName, members]) => ({
       countryName,
-      count: entry.count,
-      lat: entry.latSum / entry.count,
-      lng: entry.lngSum / entry.count
+      count: members.length,
+      lat: members.reduce((sum, m) => sum + m.lat, 0) / members.length,
+      lng: members.reduce((sum, m) => sum + m.lng, 0) / members.length,
+      members
     }));
   }
 
