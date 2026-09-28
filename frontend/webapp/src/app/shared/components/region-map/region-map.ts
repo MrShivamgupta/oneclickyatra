@@ -81,8 +81,15 @@ export class RegionMap implements AfterViewInit, OnDestroy {
     const countryShapes = topojson.feature(
       worldTopology as unknown as Parameters<typeof topojson.feature>[0],
       (worldTopology as { objects: { countries: Parameters<typeof topojson.feature>[1] } }).objects.countries
+    ) as GeoJSON.FeatureCollection;
+    // Antarctica (and the small French Southern Antarctic Lands territory) wraps the entire bottom
+    // of a Mercator-style map; at this map's low zoom/southern crop it rendered as a stray thin
+    // horizontal sliver across the map rather than a recognizable shape, with no travel relevance
+    // anyway, so it's excluded rather than left in as visual clutter.
+    countryShapes.features = countryShapes.features.filter(
+      (feature) => !['Antarctica', 'Fr. S. Antarctic Lands'].includes(feature.properties?.['name'])
     );
-    L.geoJSON(countryShapes as GeoJSON.GeoJsonObject, {
+    L.geoJSON(countryShapes, {
       style: () => ({ fillColor: COUNTRY_FILL_COLOR, fillOpacity: 1, color: COUNTRY_BORDER_COLOR, weight: 1 })
     }).addTo(this.map);
 

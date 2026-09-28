@@ -47,27 +47,19 @@
 }
 
 .map-section {
-  padding: tokens.$space-10 0 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: tokens.$space-10 tokens.$space-8 0;
 
   h2 {
-    max-width: 1200px;
-    margin: 0 auto tokens.$space-4;
-    padding: 0 tokens.$space-8;
+    margin: 0 0 tokens.$space-4;
     font-size: tokens.$font-size-lg;
     text-align: center;
-
-    @include tokens.respond-below(tokens.$breakpoint-tablet) {
-      padding: 0 tokens.$space-4;
-    }
   }
-}
 
-// Breaks the map out to the full viewport width regardless of any max-width ancestor, so it reads
-// as a full-bleed strip of the page rather than a bordered card floating inside it.
-.map-full-bleed {
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  margin-right: calc(-50vw + 50%);
+  @include tokens.respond-below(tokens.$breakpoint-tablet) {
+    padding: tokens.$space-8 tokens.$space-4 0;
+  }
 }
 
 .search-section {

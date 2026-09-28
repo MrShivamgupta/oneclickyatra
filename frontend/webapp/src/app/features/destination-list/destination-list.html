@@ -59,8 +59,6 @@
 @if (countryCounts().length > 0) {
   <section class="map-section">
     <h2>All destinations at a glance</h2>
-    <div class="map-full-bleed">
-      <app-region-map [countries]="countryCounts()" height="360px" (countrySelected)="goToCountry($event)" />
-    </div>
+    <app-region-map [countries]="countryCounts()" height="360px" (countrySelected)="goToCountry($event)" />
   </section>
 }
