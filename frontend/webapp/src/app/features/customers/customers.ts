@@ -14,7 +14,7 @@ const PAGE_SIZE = 10;
   standalone: true,
   imports: [ReactiveFormsModule, DataTable, Pagination, FilterBar, ConfirmationDialog],
   templateUrl: './customers.html',
-  styleUrl: '../destinations/destinations.scss'
+  styleUrls: ['../destinations/destinations.scss', './customers.scss']
 })
 export class Customers {
   private readonly customerService = inject(CustomerService);

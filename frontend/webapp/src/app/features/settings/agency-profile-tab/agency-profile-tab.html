@@ -13,6 +13,9 @@
       <label class="field">
         Agency name
         <input type="text" formControlName="name" placeholder="e.g. One Click Yatra" />
+        @if (form.controls.name.invalid && form.controls.name.touched) {
+          <span class="field-error">Agency name is required.</span>
+        }
       </label>
 
       <label class="field">
@@ -34,12 +37,18 @@
       <label class="field">
         Currency
         <input type="text" formControlName="currency" placeholder="e.g. INR" maxlength="10" />
+        @if (form.controls.currency.invalid && form.controls.currency.touched) {
+          <span class="field-error">Currency is required.</span>
+        }
         <span class="field-hint">Shown next to amounts on generated invoices and quotations.</span>
       </label>
 
       <label class="field">
         Support email (optional)
         <input type="email" formControlName="supportEmail" placeholder="support@example.com" />
+        @if (form.controls.supportEmail.invalid && form.controls.supportEmail.touched) {
+          <span class="field-error">Enter a valid email address.</span>
+        }
       </label>
 
       <label class="field">

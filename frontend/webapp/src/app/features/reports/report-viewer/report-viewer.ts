@@ -181,9 +181,9 @@ export class ReportViewer {
         link.click();
         URL.revokeObjectURL(url);
       },
-      error: () => {
+      error: (error) => {
         this.exportingFormat.set(null);
-        this.exportError.set('Could not export this report. Please try again.');
+        this.exportError.set(error?.error?.message ?? 'Could not export this report. Please try again.');
       }
     });
   }

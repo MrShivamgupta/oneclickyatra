@@ -62,6 +62,8 @@ export class QuotationDetailPage {
 
   /** The raw share token is only ever returned by Create/RegenerateLink — never by GetById. */
   readonly lastKnownPublicToken = signal<string | null>(null);
+  readonly linkCopied = signal(false);
+  readonly copyError = signal<string | null>(null);
 
   readonly basicForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(200)]],
@@ -98,13 +100,7 @@ export class QuotationDetailPage {
       next: (response) => {
         this.loading.set(false);
         if (response.success && response.data) {
-          this.quotation.set(response.data.quotation);
-          this.basicForm.setValue({
-            title: response.data.quotation.title,
-            validUntil: response.data.quotation.validUntil ?? '',
-            notes: response.data.quotation.notes ?? ''
-          });
-          this.options.set(response.data.options.map((option) => ({ ...option, items: [...option.items] })));
+          this.applyQuotation(response.data.quotation, response.data.options);
         }
       },
       error: (error) => {
@@ -112,6 +108,16 @@ export class QuotationDetailPage {
         this.loadError.set(error?.error?.message ?? 'Could not load this quotation. Please try again.');
       }
     });
+  }
+
+  private applyQuotation(quotation: Quotation, options: QuotationOption[]): void {
+    this.quotation.set(quotation);
+    this.basicForm.setValue({
+      title: quotation.title,
+      validUntil: quotation.validUntil ?? '',
+      notes: quotation.notes ?? ''
+    });
+    this.options.set(options.map((option) => ({ ...option, items: [...option.items] })));
   }
 
   get isEditable(): boolean {
@@ -150,7 +156,14 @@ export class QuotationDetailPage {
         next: (response) => {
           this.basicSaving.set(false);
           if (response.success && response.data) {
-            this.router.navigate(['/admin/quotations', response.data.id]);
+            // Apply the created quotation's state directly instead of relying on the route
+            // navigation to re-trigger init logic -- /quotations/new and /quotations/:id are the
+            // same route, so Angular's route-reuse strategy keeps this component instance alive
+            // across the navigate() below and its constructor-only load logic never re-runs.
+            this.isNew.set(false);
+            this.quotationId.set(response.data.id);
+            this.applyQuotation(response.data, []);
+            this.router.navigate(['/admin/quotations', response.data.id], { replaceUrl: true });
           }
         },
         error: (error) => {
@@ -219,6 +232,34 @@ export class QuotationDetailPage {
   saveOptions(): void {
     const id = this.quotationId();
     if (!id) return;
+
+    const options = this.options();
+    for (let i = 0; i < options.length; i++) {
+      const option = options[i];
+      const label = `Option ${i + 1}`;
+      if (!option.optionName || !option.optionName.trim()) {
+        this.optionsError.set(`${label}: enter an option name.`);
+        return;
+      }
+      if (option.pricePerPerson === null || option.pricePerPerson === undefined || isNaN(option.pricePerPerson) || option.pricePerPerson < 0) {
+        this.optionsError.set(`${label}: enter a valid price per person (0 or more).`);
+        return;
+      }
+      if (!option.numberOfPeople || option.numberOfPeople < 1) {
+        this.optionsError.set(`${label}: number of people must be at least 1.`);
+        return;
+      }
+      for (const item of option.items) {
+        if (!item.description || !item.description.trim()) {
+          this.optionsError.set(`${label}: enter a description for each price breakdown line.`);
+          return;
+        }
+        if (item.amount === null || item.amount === undefined || isNaN(item.amount)) {
+          this.optionsError.set(`${label}: enter an amount for each price breakdown line.`);
+          return;
+        }
+      }
+    }
 
     this.optionsSaving.set(true);
     this.optionsError.set(null);
@@ -299,9 +340,19 @@ export class QuotationDetailPage {
 
   copyShareLink(): void {
     const url = this.shareUrl;
-    if (url) {
-      navigator.clipboard?.writeText(url);
+    if (!url) return;
+    this.copyError.set(null);
+    if (!navigator.clipboard) {
+      this.copyError.set('Clipboard access is not available in this browser. Please copy the link manually.');
+      return;
     }
+    navigator.clipboard.writeText(url).then(
+      () => {
+        this.linkCopied.set(true);
+        setTimeout(() => this.linkCopied.set(false), 2000);
+      },
+      () => this.copyError.set('Could not copy the link. Please copy it manually.')
+    );
   }
 
   whatsAppShareUrl(): string {

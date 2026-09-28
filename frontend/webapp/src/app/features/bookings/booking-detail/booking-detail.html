@@ -75,16 +75,25 @@
       <label>
         Adults
         <input type="number" min="1" formControlName="numberOfAdults" [readonly]="!isEditable" />
+        @if (basicForm.controls.numberOfAdults.invalid && basicForm.controls.numberOfAdults.touched) {
+          <span class="field-error">Enter at least 1 adult.</span>
+        }
       </label>
 
       <label>
         Children
         <input type="number" min="0" formControlName="numberOfChildren" [readonly]="!isEditable" />
+        @if (basicForm.controls.numberOfChildren.invalid && basicForm.controls.numberOfChildren.touched) {
+          <span class="field-error">Number of children cannot be negative.</span>
+        }
       </label>
 
       <label>
         Total amount
         <input type="number" min="0" formControlName="totalAmount" [readonly]="!isEditable" />
+        @if (basicForm.controls.totalAmount.invalid && basicForm.controls.totalAmount.touched) {
+          <span class="field-error">Enter a valid total amount (0 or more).</span>
+        }
       </label>
 
       <label>
@@ -131,7 +140,7 @@
         <div class="status-actions">
           @for (status of allowedNextStatuses; track status) {
             <button type="button" class="secondary-button" [disabled]="transitionSaving()" (click)="transitionTo(status)">
-              Move to {{ status }}
+              {{ transitionSaving() ? 'Moving…' : 'Move to ' + status }}
             </button>
           }
           @if (canCancel) {

@@ -45,6 +45,7 @@ export class Destinations {
   readonly isModalOpen = signal(false);
   readonly editingId = signal<string | null>(null);
   readonly formError = signal<string | null>(null);
+  readonly formFieldErrors = signal<string[]>([]);
   readonly isSaving = signal(false);
 
   readonly deleteTarget = signal<Destination | null>(null);
@@ -128,6 +129,7 @@ export class Destinations {
   openCreateModal(): void {
     this.editingId.set(null);
     this.formError.set(null);
+    this.formFieldErrors.set([]);
     this.form.reset({ countryId: '', cityId: '', name: '', slug: '', shortDescription: '', isFeatured: false, isPublished: true });
     this.isModalOpen.set(true);
   }
@@ -135,6 +137,7 @@ export class Destinations {
   openEditModal(destination: Destination): void {
     this.editingId.set(destination.id);
     this.formError.set(null);
+    this.formFieldErrors.set([]);
     this.form.setValue({
       countryId: destination.countryId,
       cityId: destination.cityId ?? '',
@@ -159,6 +162,7 @@ export class Destinations {
 
     this.isSaving.set(true);
     this.formError.set(null);
+    this.formFieldErrors.set([]);
     const raw = this.form.getRawValue();
     const request = {
       countryId: raw.countryId,
@@ -182,6 +186,8 @@ export class Destinations {
       error: (error) => {
         this.isSaving.set(false);
         this.formError.set(error?.error?.message ?? 'Something went wrong. Please try again.');
+        const fieldErrors = error?.error?.errors as Record<string, string[]> | null | undefined;
+        this.formFieldErrors.set(fieldErrors ? Object.values(fieldErrors).flat() : []);
       }
     });
   }

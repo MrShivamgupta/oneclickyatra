@@ -29,6 +29,7 @@ export class SeasonsTab {
   readonly loadError = signal<string | null>(null);
   readonly editingId = signal<string | null>(null);
   readonly formError = signal<string | null>(null);
+  readonly formFieldErrors = signal<string[]>([]);
   readonly isSaving = signal(false);
   readonly deleteTarget = signal<Season | null>(null);
   readonly deleting = signal(false);
@@ -69,12 +70,14 @@ export class SeasonsTab {
   edit(season: Season): void {
     this.editingId.set(season.id);
     this.formError.set(null);
+    this.formFieldErrors.set([]);
     this.form.setValue({ name: season.name, startMonth: season.startMonth, endMonth: season.endMonth });
   }
 
   cancelEdit(): void {
     this.editingId.set(null);
     this.formError.set(null);
+    this.formFieldErrors.set([]);
     this.form.reset({ name: '', startMonth: 1, endMonth: 12 });
   }
 
@@ -86,6 +89,7 @@ export class SeasonsTab {
 
     this.isSaving.set(true);
     this.formError.set(null);
+    this.formFieldErrors.set([]);
     const request = this.form.getRawValue();
     const editingId = this.editingId();
     const save$ = editingId ? this.seasonService.update(editingId, request) : this.seasonService.create(request);
@@ -99,6 +103,8 @@ export class SeasonsTab {
       error: (error) => {
         this.isSaving.set(false);
         this.formError.set(error?.error?.message ?? 'Something went wrong.');
+        const fieldErrors = error?.error?.errors as Record<string, string[]> | null | undefined;
+        this.formFieldErrors.set(fieldErrors ? Object.values(fieldErrors).flat() : []);
       }
     });
   }

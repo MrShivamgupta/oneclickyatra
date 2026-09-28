@@ -117,6 +117,11 @@
   padding: tokens.$space-2 tokens.$space-3;
   border-radius: tokens.$radius-sm;
   font-size: tokens.$font-size-sm;
+
+  ul {
+    margin: tokens.$space-1 0 0;
+    padding-left: tokens.$space-4;
+  }
 }
 
 .form-success {
@@ -125,6 +130,11 @@
   padding: tokens.$space-2 tokens.$space-3;
   border-radius: tokens.$radius-sm;
   font-size: tokens.$font-size-sm;
+}
+
+.field-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-xs;
 }
 
 .panel-actions {

@@ -28,6 +28,9 @@
       <label>
         Name
         <input type="text" formControlName="name" />
+        @if (basicForm.controls.name.invalid && basicForm.controls.name.touched) {
+          <span class="field-error">Name is required.</span>
+        }
       </label>
 
       <label>
@@ -42,11 +45,17 @@
       <label>
         Email
         <input type="email" formControlName="email" />
+        @if (basicForm.controls.email.invalid && basicForm.controls.email.touched) {
+          <span class="field-error">Enter a valid email address.</span>
+        }
       </label>
 
       <label>
         Phone
         <input type="text" formControlName="phone" />
+        @if (basicForm.controls.phone.invalid && basicForm.controls.phone.touched) {
+          <span class="field-error">Phone number is required.</span>
+        }
       </label>
 
       <label>

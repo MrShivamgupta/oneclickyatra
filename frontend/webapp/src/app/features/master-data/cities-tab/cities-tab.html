@@ -7,21 +7,36 @@
         <option [value]="country.id">{{ country.name }}</option>
       }
     </select>
+    @if (form.controls.countryId.invalid && form.controls.countryId.touched) {
+      <span class="field-error">Country is required.</span>
+    }
   </label>
   <label class="field">
     Name
     <input type="text" formControlName="name" placeholder="e.g. Goa" />
+    @if (form.controls.name.invalid && form.controls.name.touched) {
+      <span class="field-error">Name is required.</span>
+    }
   </label>
   <div class="form-actions">
     <button type="submit" class="primary-button" [disabled]="isSaving()">
-      {{ editingId() ? 'Update' : 'Add' }} City
+      {{ isSaving() ? 'Saving…' : (editingId() ? 'Update City' : 'Add City') }}
     </button>
     @if (editingId()) {
       <button type="button" class="secondary-button" (click)="cancelEdit()">Cancel</button>
     }
   </div>
   @if (formError()) {
-    <div class="form-error">{{ formError() }}</div>
+    <div class="form-error">
+      {{ formError() }}
+      @if (formFieldErrors().length) {
+        <ul>
+          @for (message of formFieldErrors(); track message) {
+            <li>{{ message }}</li>
+          }
+        </ul>
+      }
+    </div>
   }
 </form>
 

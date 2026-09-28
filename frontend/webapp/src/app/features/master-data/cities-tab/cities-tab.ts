@@ -30,6 +30,7 @@ export class CitiesTab {
   readonly loadError = signal<string | null>(null);
   readonly editingId = signal<string | null>(null);
   readonly formError = signal<string | null>(null);
+  readonly formFieldErrors = signal<string[]>([]);
   readonly isSaving = signal(false);
   readonly deleteTarget = signal<City | null>(null);
   readonly deleting = signal(false);
@@ -69,12 +70,14 @@ export class CitiesTab {
   edit(city: City): void {
     this.editingId.set(city.id);
     this.formError.set(null);
+    this.formFieldErrors.set([]);
     this.form.setValue({ countryId: city.countryId, name: city.name });
   }
 
   cancelEdit(): void {
     this.editingId.set(null);
     this.formError.set(null);
+    this.formFieldErrors.set([]);
     this.form.reset({ countryId: '', name: '' });
   }
 
@@ -86,6 +89,7 @@ export class CitiesTab {
 
     this.isSaving.set(true);
     this.formError.set(null);
+    this.formFieldErrors.set([]);
     const request = this.form.getRawValue();
     const editingId = this.editingId();
     const save$ = editingId ? this.cityService.update(editingId, request) : this.cityService.create(request);
@@ -99,6 +103,8 @@ export class CitiesTab {
       error: (error) => {
         this.isSaving.set(false);
         this.formError.set(error?.error?.message ?? 'Something went wrong.');
+        const fieldErrors = error?.error?.errors as Record<string, string[]> | null | undefined;
+        this.formFieldErrors.set(fieldErrors ? Object.values(fieldErrors).flat() : []);
       }
     });
   }

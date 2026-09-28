@@ -44,8 +44,11 @@ export class PackageEditor {
   readonly seasons = signal<Season[]>([]);
 
   readonly basicError = signal<string | null>(null);
+  readonly basicFieldErrors = signal<string[]>([]);
   readonly basicSaving = signal(false);
+  readonly basicSaved = signal(false);
   readonly sectionError = signal<string | null>(null);
+  readonly sectionFieldErrors = signal<string[]>([]);
   readonly sectionSaving = signal(false);
   readonly sectionSaved = signal<TabKey | null>(null);
 
@@ -100,7 +103,11 @@ export class PackageEditor {
   }
 
   selectTab(tab: TabKey): void {
+    this.basicError.set(null);
+    this.basicFieldErrors.set([]);
+    this.basicSaved.set(false);
     this.sectionError.set(null);
+    this.sectionFieldErrors.set([]);
     this.sectionSaved.set(null);
     this.activeTab.set(tab);
   }
@@ -158,6 +165,8 @@ export class PackageEditor {
 
     this.basicSaving.set(true);
     this.basicError.set(null);
+    this.basicFieldErrors.set([]);
+    this.basicSaved.set(false);
     const request = this.buildBasicRequest();
     const currentId = this.packageId();
     const save$ = currentId ? this.packageService.update(currentId, request) : this.packageService.create(request);
@@ -166,6 +175,7 @@ export class PackageEditor {
       next: (response) => {
         this.basicSaving.set(false);
         if (response.success && response.data) {
+          this.basicSaved.set(true);
           if (!currentId) {
             this.packageId.set(response.data.id);
             this.router.navigate(['/admin/packages', response.data.id], { replaceUrl: true });
@@ -175,6 +185,8 @@ export class PackageEditor {
       error: (error) => {
         this.basicSaving.set(false);
         this.basicError.set(error?.error?.message ?? 'Something went wrong.');
+        const fieldErrors = error?.error?.errors as Record<string, string[]> | null | undefined;
+        this.basicFieldErrors.set(fieldErrors ? Object.values(fieldErrors).flat() : []);
       }
     });
   }
@@ -253,15 +265,18 @@ export class PackageEditor {
   private runSectionSave<T>(tab: TabKey, observable: Observable<ApiResponse<T>>): void {
     this.sectionSaving.set(true);
     this.sectionError.set(null);
+    this.sectionFieldErrors.set([]);
     this.sectionSaved.set(null);
     observable.subscribe({
       next: () => {
         this.sectionSaving.set(false);
         this.sectionSaved.set(tab);
       },
-      error: (error: { error?: { message?: string } }) => {
+      error: (error: { error?: { message?: string; errors?: Record<string, string[]> } }) => {
         this.sectionSaving.set(false);
         this.sectionError.set(error?.error?.message ?? 'Something went wrong.');
+        const fieldErrors = error?.error?.errors;
+        this.sectionFieldErrors.set(fieldErrors ? Object.values(fieldErrors).flat() : []);
       }
     });
   }

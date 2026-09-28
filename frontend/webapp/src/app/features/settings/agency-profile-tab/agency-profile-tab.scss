@@ -33,6 +33,11 @@
   font-size: tokens.$font-size-xs;
 }
 
+.field-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-xs;
+}
+
 .logo-preview {
   display: flex;
   align-items: center;

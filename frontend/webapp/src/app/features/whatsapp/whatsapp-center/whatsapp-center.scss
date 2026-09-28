@@ -203,6 +203,11 @@
   font-size: tokens.$font-size-sm;
 }
 
+.field-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-xs;
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;

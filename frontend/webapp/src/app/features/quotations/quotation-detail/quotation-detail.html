@@ -134,8 +134,11 @@
         @if (shareUrl; as url) {
           <div class="share-box">
             <input type="text" [value]="url" readonly />
-            <button type="button" class="link-button" (click)="copyShareLink()">Copy</button>
+            <button type="button" class="link-button" (click)="copyShareLink()">{{ linkCopied() ? 'Copied!' : 'Copy' }}</button>
             <a class="link-button" [href]="whatsAppShareUrl()" target="_blank" rel="noopener">Share via WhatsApp</a>
+            @if (copyError()) {
+              <span class="field-error">{{ copyError() }}</span>
+            }
           </div>
         }
       }
@@ -230,7 +233,7 @@
         <div class="form-error">{{ optionsError() }}</div>
       }
 
-      @if (isEditable && options().length > 0) {
+      @if (isEditable) {
         <div class="form-actions">
           <button type="button" class="primary-button" [disabled]="optionsSaving()" (click)="saveOptions()">
             {{ optionsSaving() ? 'Saving…' : 'Save Options' }}

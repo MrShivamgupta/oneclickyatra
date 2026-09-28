@@ -32,10 +32,11 @@
       <td class="message-cell">{{ enquiry.message }}</td>
       <td>
         <select
+          #statusSelect
           [ngModel]="enquiry.status"
           [ngModelOptions]="{standalone: true}"
           [disabled]="statusUpdatingId() === enquiry.id"
-          (ngModelChange)="updateStatus(enquiry, $event)"
+          (ngModelChange)="updateStatus(enquiry, $event, statusSelect)"
         >
           @for (status of statuses; track status) {
             <option [value]="status">{{ status }}</option>

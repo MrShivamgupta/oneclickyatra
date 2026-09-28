@@ -18,6 +18,9 @@
     <label class="field">
       Phone number
       <input type="text" formControlName="phoneNumber" placeholder="e.g. +919812300001" />
+      @if (sendForm.controls.phoneNumber.invalid && sendForm.controls.phoneNumber.touched) {
+        <span class="field-error">Phone number is required.</span>
+      }
     </label>
 
     <label class="field">
@@ -28,6 +31,9 @@
           <option [value]="template.name">{{ template.name }} ({{ template.category }})</option>
         }
       </select>
+      @if (sendForm.controls.templateName.invalid && sendForm.controls.templateName.touched) {
+        <span class="field-error">Select a template to send.</span>
+      }
     </label>
 
     <label class="field">
@@ -188,6 +194,9 @@
         <label>
           Name
           <input type="text" formControlName="name" placeholder="e.g. welcome_greeting" />
+          @if (templateForm.controls.name.invalid && templateForm.controls.name.touched) {
+            <span class="field-error">Name is required.</span>
+          }
         </label>
 
         <label>
@@ -202,6 +211,9 @@
         <label>
           Body text
           <textarea formControlName="bodyText" rows="4" placeholder="e.g. Hi &#123;&#123;1&#125;&#125;, thanks for booking &#123;&#123;2&#125;&#125;!"></textarea>
+          @if (templateForm.controls.bodyText.invalid && templateForm.controls.bodyText.touched) {
+            <span class="field-error">Body text is required.</span>
+          }
           <span class="hint">
             Use &#123;&#123;1&#125;&#125;, &#123;&#123;2&#125;&#125;, … as placeholders, filled in
             positionally by the parameter values given when sending.

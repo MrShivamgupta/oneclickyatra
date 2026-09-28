@@ -2,10 +2,16 @@
   <label class="field">
     Name
     <input type="text" formControlName="name" placeholder="e.g. Honeymoon" />
+    @if (form.controls.name.invalid && form.controls.name.touched) {
+      <span class="field-error">Name is required.</span>
+    }
   </label>
   <label class="field">
     Slug
     <input type="text" formControlName="slug" placeholder="e.g. honeymoon" />
+    @if (form.controls.slug.invalid && form.controls.slug.touched) {
+      <span class="field-error">Enter a valid slug (lowercase, hyphen-separated, e.g. honeymoon).</span>
+    }
   </label>
   <label class="field">
     Description
@@ -13,14 +19,23 @@
   </label>
   <div class="form-actions">
     <button type="submit" class="primary-button" [disabled]="isSaving()">
-      {{ editingId() ? 'Update' : 'Add' }} Category
+      {{ isSaving() ? 'Saving…' : (editingId() ? 'Update Category' : 'Add Category') }}
     </button>
     @if (editingId()) {
       <button type="button" class="secondary-button" (click)="cancelEdit()">Cancel</button>
     }
   </div>
   @if (formError()) {
-    <div class="form-error">{{ formError() }}</div>
+    <div class="form-error">
+      {{ formError() }}
+      @if (formFieldErrors().length) {
+        <ul>
+          @for (message of formFieldErrors(); track message) {
+            <li>{{ message }}</li>
+          }
+        </ul>
+      }
+    </div>
   }
 </form>
 

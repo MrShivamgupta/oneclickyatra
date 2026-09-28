@@ -37,6 +37,9 @@
         <label>
           Full name
           <input type="text" formControlName="fullName" placeholder="e.g. Rahul Verma" />
+          @if (form.controls.fullName.invalid && form.controls.fullName.touched) {
+            <span class="field-error">Full name is required.</span>
+          }
         </label>
 
         <label>
@@ -47,6 +50,9 @@
         <label>
           Phone
           <input type="text" formControlName="phone" placeholder="e.g. +919812300001" />
+          @if (form.controls.phone.invalid && form.controls.phone.touched) {
+            <span class="field-error">Phone number is required.</span>
+          }
         </label>
 
         @if (formError()) {

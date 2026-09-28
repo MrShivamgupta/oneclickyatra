@@ -67,6 +67,11 @@
   font-size: tokens.$font-size-xs;
 }
 
+.field-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-xs;
+}
+
 .template-name {
   font-family: monospace;
   font-size: tokens.$font-size-xs;

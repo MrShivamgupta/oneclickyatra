@@ -215,7 +215,17 @@ export class BookingDetail {
       this.bookingService.create(request).subscribe({
         next: (response) => {
           this.basicSaving.set(false);
-          if (response.success && response.data) this.router.navigate(['/admin/bookings', response.data.id]);
+          if (response.success && response.data) {
+            // Apply the created booking's state directly instead of relying on the route
+            // navigation to re-trigger init logic -- /bookings/new and /bookings/:id are the
+            // same route, so Angular's route-reuse strategy keeps this component instance alive
+            // across the navigate() below and its constructor-only load logic never re-runs.
+            this.isNew.set(false);
+            this.bookingId.set(response.data.id);
+            this.applyDetail(response.data, [], []);
+            this.loadHistory();
+            this.router.navigate(['/admin/bookings', response.data.id], { replaceUrl: true });
+          }
         },
         error: (error) => {
           this.basicSaving.set(false);
@@ -371,6 +381,15 @@ export class BookingDetail {
   savePassengers(): void {
     const id = this.bookingId();
     if (!id) return;
+
+    const passengers = this.passengers();
+    for (let i = 0; i < passengers.length; i++) {
+      if (!passengers[i].fullName || !passengers[i].fullName.trim()) {
+        this.passengersError.set(`Passenger ${i + 1}: enter a full name.`);
+        return;
+      }
+    }
+
     this.passengersSaving.set(true);
     this.passengersError.set(null);
     this.bookingService.replacePassengers(id, this.passengers()).subscribe({
@@ -396,6 +415,25 @@ export class BookingDetail {
   saveAddOns(): void {
     const id = this.bookingId();
     if (!id) return;
+
+    const addOns = this.addOns();
+    for (let i = 0; i < addOns.length; i++) {
+      const addOn = addOns[i];
+      const label = `Add-on ${i + 1}`;
+      if (!addOn.name || !addOn.name.trim()) {
+        this.addOnsError.set(`${label}: enter a name.`);
+        return;
+      }
+      if (addOn.price === null || addOn.price === undefined || isNaN(addOn.price) || addOn.price < 0) {
+        this.addOnsError.set(`${label}: enter a valid price (0 or more).`);
+        return;
+      }
+      if (!addOn.quantity || addOn.quantity < 1) {
+        this.addOnsError.set(`${label}: quantity must be at least 1.`);
+        return;
+      }
+    }
+
     this.addOnsSaving.set(true);
     this.addOnsError.set(null);
     this.bookingService.replaceAddOns(id, this.addOns()).subscribe({

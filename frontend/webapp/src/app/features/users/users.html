@@ -42,10 +42,11 @@
       <td><span class="badge" [class.published]="user.isActive" [class.draft]="!user.isActive">{{ user.isActive ? 'Active' : 'Inactive' }}</span></td>
       <td class="actions-cell">
         <select
-          [value]="primaryRole(user)"
+          [ngModel]="primaryRole(user)"
+          [ngModelOptions]="{standalone: true}"
           [disabled]="roleUpdatingId() === user.id"
           [title]="'Change role for ' + user.fullName"
-          (change)="changeRole(user, $any($event.target).value)"
+          (ngModelChange)="changeRole(user, $event)"
         >
           @for (role of staffRoles; track role) {
             <option [value]="role">{{ role }}</option>

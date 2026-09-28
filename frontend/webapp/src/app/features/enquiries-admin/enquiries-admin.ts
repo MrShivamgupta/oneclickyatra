@@ -90,7 +90,8 @@ export class EnquiriesAdmin {
     this.load();
   }
 
-  updateStatus(enquiry: EnquiryResponse, status: string): void {
+  updateStatus(enquiry: EnquiryResponse, status: string, selectEl?: HTMLSelectElement): void {
+    const previousStatus = enquiry.status;
     this.statusUpdatingId.set(enquiry.id);
     this.statusError.set(null);
     this.enquiryService.updateStatus(enquiry.id, status).subscribe({
@@ -101,6 +102,13 @@ export class EnquiriesAdmin {
       error: (error) => {
         this.statusUpdatingId.set(null);
         this.statusError.set(error?.error?.message ?? 'Could not update this enquiry\'s status. Please try again.');
+        // A native <select> shows the user's newly-picked option immediately, before Angular
+        // knows whether the request will succeed -- and since the bound value hasn't actually
+        // changed from Angular's point of view (this.load() wasn't called), nothing would
+        // otherwise force the dropdown back. Revert it explicitly so it doesn't keep showing
+        // an unsaved status that contradicts the error message above.
+        enquiry.status = previousStatus;
+        if (selectEl) selectEl.value = previousStatus;
       }
     });
   }

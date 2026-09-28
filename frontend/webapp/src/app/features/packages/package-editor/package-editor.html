@@ -41,6 +41,9 @@
               <option [value]="destination.id">{{ destination.name }}</option>
             }
           </select>
+          @if (basicForm.controls.destinationId.invalid && basicForm.controls.destinationId.touched) {
+            <span class="field-error">Destination is required.</span>
+          }
         </label>
         <label class="field">
           Category
@@ -63,18 +66,30 @@
         <label class="field">
           Title
           <input type="text" formControlName="title" placeholder="e.g. Goa Family Getaway" />
+          @if (basicForm.controls.title.invalid && basicForm.controls.title.touched) {
+            <span class="field-error">Title is required.</span>
+          }
         </label>
         <label class="field">
           Slug
           <input type="text" formControlName="slug" placeholder="e.g. goa-family-getaway" />
+          @if (basicForm.controls.slug.invalid && basicForm.controls.slug.touched) {
+            <span class="field-error">Enter a valid slug (lowercase, hyphen-separated, e.g. goa-family-getaway).</span>
+          }
         </label>
         <label class="field">
           Duration (days)
           <input type="number" formControlName="durationDays" min="1" />
+          @if (basicForm.controls.durationDays.invalid && basicForm.controls.durationDays.touched) {
+            <span class="field-error">Duration (days) must be at least 1.</span>
+          }
         </label>
         <label class="field">
           Duration (nights)
           <input type="number" formControlName="durationNights" min="0" />
+          @if (basicForm.controls.durationNights.invalid && basicForm.controls.durationNights.touched) {
+            <span class="field-error">Duration (nights) is required.</span>
+          }
         </label>
         <label class="field">
           Hero image URL
@@ -91,7 +106,19 @@
       </label>
 
       @if (basicError()) {
-        <div class="form-error">{{ basicError() }}</div>
+        <div class="form-error">
+          {{ basicError() }}
+          @if (basicFieldErrors().length) {
+            <ul>
+              @for (message of basicFieldErrors(); track message) {
+                <li>{{ message }}</li>
+              }
+            </ul>
+          }
+        </div>
+      }
+      @if (basicSaved()) {
+        <div class="form-success">Basic info saved.</div>
       }
 
       <div class="panel-actions">
@@ -123,7 +150,18 @@
       }
       <button type="button" class="secondary-button" (click)="addItineraryDay()">+ Add day</button>
 
-      @if (sectionError()) { <div class="form-error">{{ sectionError() }}</div> }
+      @if (sectionError()) {
+        <div class="form-error">
+          {{ sectionError() }}
+          @if (sectionFieldErrors().length) {
+            <ul>
+              @for (message of sectionFieldErrors(); track message) {
+                <li>{{ message }}</li>
+              }
+            </ul>
+          }
+        </div>
+      }
       @if (sectionSaved() === 'itinerary') { <div class="form-success">Itinerary saved.</div> }
 
       <div class="panel-actions">
@@ -164,7 +202,18 @@
       }
       <button type="button" class="secondary-button" (click)="addInclusion(false)">+ Add exclusion</button>
 
-      @if (sectionError()) { <div class="form-error">{{ sectionError() }}</div> }
+      @if (sectionError()) {
+        <div class="form-error">
+          {{ sectionError() }}
+          @if (sectionFieldErrors().length) {
+            <ul>
+              @for (message of sectionFieldErrors(); track message) {
+                <li>{{ message }}</li>
+              }
+            </ul>
+          }
+        </div>
+      }
       @if (sectionSaved() === 'inclusions') { <div class="form-success">Inclusions saved.</div> }
 
       <div class="panel-actions">
@@ -200,7 +249,18 @@
       }
       <button type="button" class="secondary-button" (click)="addPricingTier()">+ Add pricing tier</button>
 
-      @if (sectionError()) { <div class="form-error">{{ sectionError() }}</div> }
+      @if (sectionError()) {
+        <div class="form-error">
+          {{ sectionError() }}
+          @if (sectionFieldErrors().length) {
+            <ul>
+              @for (message of sectionFieldErrors(); track message) {
+                <li>{{ message }}</li>
+              }
+            </ul>
+          }
+        </div>
+      }
       @if (sectionSaved() === 'pricing') { <div class="form-success">Pricing saved.</div> }
 
       <div class="panel-actions">
@@ -240,7 +300,18 @@
       }
       <button type="button" class="secondary-button" (click)="addInventoryDeparture()">+ Add departure</button>
 
-      @if (sectionError()) { <div class="form-error">{{ sectionError() }}</div> }
+      @if (sectionError()) {
+        <div class="form-error">
+          {{ sectionError() }}
+          @if (sectionFieldErrors().length) {
+            <ul>
+              @for (message of sectionFieldErrors(); track message) {
+                <li>{{ message }}</li>
+              }
+            </ul>
+          }
+        </div>
+      }
       @if (sectionSaved() === 'inventory') { <div class="form-success">Inventory saved.</div> }
 
       <div class="panel-actions">
@@ -274,7 +345,18 @@
       }
       <button type="button" class="secondary-button" (click)="addMediaItem()">+ Add media</button>
 
-      @if (sectionError()) { <div class="form-error">{{ sectionError() }}</div> }
+      @if (sectionError()) {
+        <div class="form-error">
+          {{ sectionError() }}
+          @if (sectionFieldErrors().length) {
+            <ul>
+              @for (message of sectionFieldErrors(); track message) {
+                <li>{{ message }}</li>
+              }
+            </ul>
+          }
+        </div>
+      }
       @if (sectionSaved() === 'media') { <div class="form-success">Media saved.</div> }
 
       <div class="panel-actions">

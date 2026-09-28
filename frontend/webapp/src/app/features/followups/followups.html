@@ -26,7 +26,9 @@
         <button type="button" class="link-button" [disabled]="statusUpdatingId() === followUp.id" (click)="markStatus(followUp, 'Completed')">
           {{ statusUpdatingId() === followUp.id ? 'Updating…' : 'Mark Completed' }}
         </button>
-        <button type="button" class="link-button danger" [disabled]="statusUpdatingId() === followUp.id" (click)="markStatus(followUp, 'Cancelled')">Cancel</button>
+        <button type="button" class="link-button danger" [disabled]="statusUpdatingId() === followUp.id" (click)="markStatus(followUp, 'Cancelled')">
+          {{ statusUpdatingId() === followUp.id ? 'Updating…' : 'Cancel' }}
+        </button>
       </td>
     </tr>
   </ng-template>

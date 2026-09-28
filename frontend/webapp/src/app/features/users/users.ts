@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DataTable, DataTableColumn } from '../../shared/components/data-table/data-table';
 import { Pagination } from '../../shared/components/pagination/pagination';
 import { FilterBar } from '../../shared/components/filter-bar/filter-bar';
@@ -15,7 +15,7 @@ const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [ReactiveFormsModule, DataTable, Pagination, FilterBar],
+  imports: [ReactiveFormsModule, FormsModule, DataTable, Pagination, FilterBar],
   templateUrl: './users.html',
   styleUrls: ['../destinations/destinations.scss', './users.scss']
 })
@@ -169,6 +169,10 @@ export class Users {
       error: (error) => {
         this.roleUpdatingId.set(null);
         this.roleError.set(error?.error?.message ?? "Could not change this user's role. Please try again.");
+        // The <select>'s bound value can be left showing the rejected in-flight pick (the browser
+        // updates a native select's display on user interaction before Angular re-binds it) -- reload
+        // so it snaps back to what the server actually has, mirroring Roles.saveChanges()'s error path.
+        this.load();
       }
     });
   }
@@ -184,6 +188,9 @@ export class Users {
       error: (error) => {
         this.statusUpdatingId.set(null);
         this.statusError.set(error?.error?.message ?? "Could not update this user's status. Please try again.");
+        // Reload so the row's Active/Inactive label reflects the true server state rather than
+        // whatever this failed attempt was trying to set it to (see changeRole()'s error handler).
+        this.load();
       }
     });
   }

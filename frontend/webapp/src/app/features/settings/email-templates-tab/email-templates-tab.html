@@ -12,16 +12,25 @@
       @if (editingId()) {
         <span class="field-hint">Name can't be changed once created — other code looks this template up by it.</span>
       }
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <span class="field-error">Name is required.</span>
+      }
     </label>
 
     <label class="field">
       Subject
       <input type="text" formControlName="subject" placeholder="e.g. Your booking is confirmed!" />
+      @if (form.controls.subject.invalid && form.controls.subject.touched) {
+        <span class="field-error">Subject is required.</span>
+      }
     </label>
 
     <label class="field">
       Body (HTML)
       <textarea formControlName="bodyHtml" rows="10" placeholder="e.g. <p>Dear customer, ...</p>"></textarea>
+      @if (form.controls.bodyHtml.invalid && form.controls.bodyHtml.touched) {
+        <span class="field-error">Body is required.</span>
+      }
       <span class="field-hint">{{ placeholderHint }}</span>
     </label>
 

@@ -38,6 +38,16 @@
   color: tokens.$color-danger;
   font-size: tokens.$font-size-xs;
   flex-basis: 100%;
+
+  ul {
+    margin: tokens.$space-1 0 0;
+    padding-left: tokens.$space-4;
+  }
+}
+
+.field-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-xs;
 }
 
 .actions-cell {

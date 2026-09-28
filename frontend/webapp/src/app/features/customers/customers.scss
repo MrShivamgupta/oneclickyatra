@@ -1,0 +1,8 @@
+@use '../../shared/styles/index' as tokens;
+
+// destinations.scss (reused alongside this file) styles inputs, the modal and buttons already;
+// this screen additionally needs a field-level validation message.
+.field-error {
+  color: tokens.$color-danger;
+  font-size: tokens.$font-size-xs;
+}

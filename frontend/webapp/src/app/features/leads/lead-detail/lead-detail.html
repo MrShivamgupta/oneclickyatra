@@ -34,11 +34,17 @@
       <label>
         Customer name
         <input type="text" formControlName="customerName" placeholder="e.g. Rahul Verma" />
+        @if (basicForm.controls.customerName.invalid && basicForm.controls.customerName.touched) {
+          <span class="field-error">Customer name is required.</span>
+        }
       </label>
 
       <label>
         Mobile
         <input type="text" formControlName="mobile" placeholder="e.g. +919812300001" />
+        @if (basicForm.controls.mobile.invalid && basicForm.controls.mobile.touched) {
+          <span class="field-error">Mobile number is required.</span>
+        }
       </label>
 
       <label>
@@ -207,7 +213,9 @@
                   <button type="button" class="link-button" [disabled]="followUpStatusUpdatingId() === followUp.id" (click)="markFollowUpStatus(followUp, 'Completed')">
                     {{ followUpStatusUpdatingId() === followUp.id ? 'Updating…' : 'Mark Completed' }}
                   </button>
-                  <button type="button" class="link-button danger" [disabled]="followUpStatusUpdatingId() === followUp.id" (click)="markFollowUpStatus(followUp, 'Cancelled')">Cancel</button>
+                  <button type="button" class="link-button danger" [disabled]="followUpStatusUpdatingId() === followUp.id" (click)="markFollowUpStatus(followUp, 'Cancelled')">
+                    {{ followUpStatusUpdatingId() === followUp.id ? 'Updating…' : 'Cancel' }}
+                  </button>
                 </div>
               }
             </li>
@@ -219,6 +227,9 @@
         <label>
           Scheduled at
           <input type="datetime-local" formControlName="scheduledAt" />
+          @if (followUpForm.controls.scheduledAt.invalid && followUpForm.controls.scheduledAt.touched) {
+            <span class="field-error">Scheduled date/time is required.</span>
+          }
         </label>
         <label>
           Type
