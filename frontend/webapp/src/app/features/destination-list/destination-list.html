@@ -56,9 +56,9 @@
   }
 </section>
 
-@if (mapMarkers().length > 0) {
+@if (countryCounts().length > 0) {
   <section class="map-section">
     <h2>All destinations at a glance</h2>
-    <app-destination-map [markers]="mapMarkers()" height="280px" (markerSelected)="goToDestination($event)" />
+    <app-region-map [countries]="countryCounts()" height="320px" (countrySelected)="goToCountry($event)" />
   </section>
 }

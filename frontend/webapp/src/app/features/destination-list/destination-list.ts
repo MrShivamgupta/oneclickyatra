@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FilterBar } from '../../shared/components/filter-bar/filter-bar';
 import { Pagination } from '../../shared/components/pagination/pagination';
 import { Spinner } from '../../shared/components/spinner/spinner';
-import { DestinationMap, MapMarker } from '../../shared/components/destination-map/destination-map';
+import { RegionMap, CountryCount } from '../../shared/components/region-map/region-map';
 import { DestinationService } from '../../core/services/destination.service';
 import { Destination } from '../../core/models/master-data.models';
 
@@ -12,7 +12,7 @@ const PAGE_SIZE = 12;
 @Component({
   selector: 'app-destination-list',
   standalone: true,
-  imports: [RouterLink, FilterBar, Pagination, Spinner, DestinationMap],
+  imports: [RouterLink, FilterBar, Pagination, Spinner, RegionMap],
   templateUrl: './destination-list.html',
   styleUrl: './destination-list.scss'
 })
@@ -28,9 +28,9 @@ export class DestinationList {
   readonly totalCount = signal(0);
   readonly searchTerm = signal('');
 
-  // Independent of the paginated/searchable list below -- the map always shows every published
-  // destination that has coordinates, regardless of the current search or page.
-  readonly mapMarkers = signal<MapMarker[]>([]);
+  // Independent of the paginated/searchable list below -- the overview map always aggregates
+  // every published destination that has coordinates, regardless of the current search or page.
+  readonly countryCounts = signal<CountryCount[]>([]);
 
   constructor() {
     this.route.queryParamMap.subscribe((params) => {
@@ -41,22 +41,39 @@ export class DestinationList {
 
     this.destinationService.search({ pageNumber: 1, pageSize: 100, isPublished: true }).subscribe((response) => {
       if (response.success && response.data) {
-        this.mapMarkers.set(
-          response.data.items
-            .filter((destination) => destination.latitude != null && destination.longitude != null)
-            .map((destination) => ({
-              lat: destination.latitude!,
-              lng: destination.longitude!,
-              label: destination.name,
-              slug: destination.slug
-            }))
-        );
+        this.countryCounts.set(this.aggregateByCountry(response.data.items));
       }
     });
   }
 
-  goToDestination(marker: MapMarker): void {
-    if (marker.slug) this.router.navigate(['/destinations', marker.slug]);
+  private aggregateByCountry(destinations: Destination[]): CountryCount[] {
+    const byCountry = new Map<string, { count: number; latSum: number; lngSum: number }>();
+
+    for (const destination of destinations) {
+      if (destination.latitude == null || destination.longitude == null) continue;
+      const existing = byCountry.get(destination.countryName);
+      if (existing) {
+        existing.count++;
+        existing.latSum += destination.latitude;
+        existing.lngSum += destination.longitude;
+      } else {
+        byCountry.set(destination.countryName, { count: 1, latSum: destination.latitude, lngSum: destination.longitude });
+      }
+    }
+
+    return [...byCountry.entries()].map(([countryName, entry]) => ({
+      countryName,
+      count: entry.count,
+      lat: entry.latSum / entry.count,
+      lng: entry.lngSum / entry.count
+    }));
+  }
+
+  goToCountry(country: CountryCount): void {
+    this.onSearchChange(country.countryName);
+    // The map sits below the results grid, so without this the filtered cards would update
+    // off-screen and the click would look like it did nothing.
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   load(): void {

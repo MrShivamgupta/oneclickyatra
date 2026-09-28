@@ -1,0 +1,44 @@
+@use '../../styles-public/index' as tokens;
+
+.map-container {
+  width: 100%;
+  border-radius: tokens.$radius-lg;
+  overflow: hidden;
+  background: tokens.$color-accent;
+  z-index: 0;
+}
+
+:host ::ng-deep {
+  .country-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    .badge-count {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid tokens.$color-primary;
+      color: tokens.$color-primary-dark;
+      font-weight: tokens.$font-weight-bold;
+      font-size: tokens.$font-size-sm;
+      box-shadow: tokens.$shadow-sm;
+      transition: transform 0.15s ease;
+    }
+
+    &:hover .badge-count {
+      transform: scale(1.12);
+    }
+  }
+
+  .leaflet-tooltip {
+    font-size: tokens.$font-size-xs;
+    font-family: inherit;
+    font-weight: tokens.$font-weight-semibold;
+  }
+}
