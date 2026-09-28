@@ -19,6 +19,18 @@
     <a routerLink="/about" routerLinkActive="active" (click)="closeMobileNav()">About</a>
     <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileNav()">Contact</a>
 
+    <select
+      class="currency-switcher"
+      [ngModel]="currencyService.selected()"
+      [ngModelOptions]="{standalone: true}"
+      (ngModelChange)="onCurrencyChange($event)"
+      title="Show prices in another currency"
+    >
+      @for (currency of currencyService.currencies; track currency) {
+        <option [value]="currency">{{ currency }}</option>
+      }
+    </select>
+
     @if (authService.isAuthenticated()) {
       @if (isStaff()) {
         <a routerLink="/admin/dashboard" class="admin-link" (click)="closeMobileNav()">Admin</a>

@@ -87,6 +87,7 @@ public static class AppServicesExtensions
         // Services
         __services.AddScoped<IAuditLogWriter, AuditLogWriter>();
         __services.AddHttpClient<IAgencyBrandingProvider, AgencyBrandingProvider>();
+        __services.AddHttpClient<ICurrencyRateProvider, CurrencyRateProvider>();
         __services.AddScoped<IQuotationPdfService, QuotationPdfService>();
         __services.AddScoped<IInvoicePdfService, InvoicePdfService>();
         __services.Configure<RazorpayOptions>(__configuration.GetSection(RazorpayOptions.SectionName));

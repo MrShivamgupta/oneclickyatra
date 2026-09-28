@@ -1,19 +1,26 @@
 import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { CurrencyService, OfferedCurrency } from '../../core/services/currency.service';
 
 const STAFF_ROLES = ['SuperAdmin', 'TravelAgent', 'OperationsStaff', 'Finance'];
 
 @Component({
   selector: 'app-public-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, FormsModule],
   templateUrl: './public-layout.html',
   styleUrl: './public-layout.scss'
 })
 export class PublicLayout {
   protected readonly authService = inject(AuthService);
+  protected readonly currencyService = inject(CurrencyService);
   readonly mobileNavOpen = signal(false);
+
+  onCurrencyChange(currency: string): void {
+    this.currencyService.setSelected(currency as OfferedCurrency);
+  }
 
   isStaff(): boolean {
     const roles = this.authService.currentUser()?.roles ?? [];

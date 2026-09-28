@@ -254,6 +254,12 @@
     color: tokens.$color-text-secondary;
     font-weight: tokens.$font-weight-semibold;
   }
+
+  .converted-price {
+    margin-left: tokens.$space-1;
+    color: tokens.$color-text-secondary;
+    font-size: tokens.$font-size-xs;
+  }
 }
 
 .status-badge {

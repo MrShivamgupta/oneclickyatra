@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { DestinationService } from '../../core/services/destination.service';
 import { PackageService } from '../../core/services/package.service';
+import { CurrencyService } from '../../core/services/currency.service';
 import { Destination } from '../../core/models/master-data.models';
 import { PackageSummary } from '../../core/models/package.models';
 import { Spinner } from '../../shared/components/spinner/spinner';
@@ -21,6 +22,7 @@ export class Home {
   private readonly packageService = inject(PackageService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  protected readonly currencyService = inject(CurrencyService);
 
   destination = '';
   travelDate = '';

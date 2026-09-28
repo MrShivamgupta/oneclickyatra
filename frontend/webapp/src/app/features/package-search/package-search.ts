@@ -6,6 +6,7 @@ import { Pagination } from '../../shared/components/pagination/pagination';
 import { Spinner } from '../../shared/components/spinner/spinner';
 import { PackageService } from '../../core/services/package.service';
 import { DestinationService } from '../../core/services/destination.service';
+import { CurrencyService } from '../../core/services/currency.service';
 import { PackageSummary } from '../../core/models/package.models';
 import { Destination } from '../../core/models/master-data.models';
 
@@ -23,6 +24,7 @@ export class PackageSearch {
   private readonly destinationService = inject(DestinationService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  protected readonly currencyService = inject(CurrencyService);
 
   readonly packages = signal<PackageSummary[]>([]);
   readonly destinations = signal<Destination[]>([]);

@@ -235,6 +235,13 @@
     color: tokens.$color-primary;
     font-weight: tokens.$font-weight-semibold;
     font-size: tokens.$font-size-sm;
+
+    .converted-price {
+      margin-left: tokens.$space-1;
+      color: tokens.$color-text-secondary;
+      font-weight: tokens.$font-weight-regular;
+      font-size: tokens.$font-size-xs;
+    }
   }
 }
 

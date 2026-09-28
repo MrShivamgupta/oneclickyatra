@@ -116,7 +116,12 @@
                 <tr>
                   <td>{{ tier.tierName }}</td>
                   <td>{{ tier.hotelCategory ?? '—' }}</td>
-                  <td>{{ tier.currency }} {{ formatPrice(tier.pricePerPerson) }}</td>
+                  <td>
+                    {{ tier.currency }} {{ formatPrice(tier.pricePerPerson) }}
+                    @if (currencyService.format(tier.pricePerPerson); as converted) {
+                      <span class="converted-price">≈ {{ converted }}</span>
+                    }
+                  </td>
                 </tr>
               }
             </tbody>

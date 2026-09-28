@@ -95,6 +95,17 @@ main {
     color: tokens.$color-accent;
   }
 
+  .currency-switcher {
+    padding: tokens.$space-1 tokens.$space-2;
+    border: 1px solid tokens.$color-border;
+    border-radius: tokens.$radius-sm;
+    background: tokens.$color-surface;
+    color: tokens.$color-text-secondary;
+    font-size: tokens.$font-size-sm;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
   @include tokens.respond-below(tokens.$breakpoint-tablet) {
     display: none;
     position: absolute;

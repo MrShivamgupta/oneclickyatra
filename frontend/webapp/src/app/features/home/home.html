@@ -97,7 +97,12 @@
               <h3>{{ pkg.title }}</h3>
               <p>{{ pkg.destinationName }} · {{ pkg.durationDays }}D/{{ pkg.durationNights }}N</p>
               @if (pkg.startingPricePerPerson) {
-                <p class="card-price">From {{ pkg.priceCurrency ?? 'INR' }} {{ formatPrice(pkg.startingPricePerPerson) }}</p>
+                <p class="card-price">
+                  From {{ pkg.priceCurrency ?? 'INR' }} {{ formatPrice(pkg.startingPricePerPerson) }}
+                  @if (currencyService.format(pkg.startingPricePerPerson); as converted) {
+                    <span class="converted-price">≈ {{ converted }}</span>
+                  }
+                </p>
               }
             </div>
           </a>

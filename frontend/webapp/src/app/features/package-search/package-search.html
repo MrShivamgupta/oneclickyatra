@@ -45,7 +45,12 @@
             <p class="destination">{{ pkg.destinationName }}</p>
             <p class="duration">{{ pkg.durationDays }}D / {{ pkg.durationNights }}N</p>
             @if (pkg.startingPricePerPerson) {
-              <p class="price">From {{ pkg.priceCurrency ?? 'INR' }} {{ formatPrice(pkg.startingPricePerPerson) }} / person</p>
+              <p class="price">
+                From {{ pkg.priceCurrency ?? 'INR' }} {{ formatPrice(pkg.startingPricePerPerson) }} / person
+                @if (currencyService.format(pkg.startingPricePerPerson); as converted) {
+                  <span class="converted-price">≈ {{ converted }}</span>
+                }
+              </p>
             }
             @if (pkg.shortDescription) {
               <p class="short-description">{{ pkg.shortDescription }}</p>

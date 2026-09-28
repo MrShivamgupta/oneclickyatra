@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PackageService } from '../../core/services/package.service';
+import { CurrencyService } from '../../core/services/currency.service';
 import { PackageDetail as PackageDetailDto, PackageInventoryDeparture } from '../../core/models/package.models';
 import { Spinner } from '../../shared/components/spinner/spinner';
 
@@ -14,6 +15,7 @@ import { Spinner } from '../../shared/components/spinner/spinner';
 export class PackageDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly packageService = inject(PackageService);
+  protected readonly currencyService = inject(CurrencyService);
 
   readonly loading = signal(true);
   readonly notFound = signal(false);
